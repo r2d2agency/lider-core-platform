@@ -120,7 +120,7 @@ export function AdminShell() {
     queryClient.clear();
     signOut();
     toast.success("Até logo.");
-    navigate({ to: "/auth", replace: true });
+    navigate({ to: "/auth", search: {}, replace: true } as any);
   };
 
   return (

@@ -27,7 +27,7 @@ export function TenantShell({
     qc.clear();
     signOut();
     toast.success("Até logo.");
-    navigate({ to: "/auth", replace: true });
+    navigate({ to: "/auth", search: {}, replace: true } as any);
   };
 
   const isRoot = (to: string) =>
