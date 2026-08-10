@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { Eye, EyeOff } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { Logo } from "@/components/brand/Logo";
 
 type SignupPlan = { slug: string; name: string; description: string | null; targetRole: string; planTier: string };
 
