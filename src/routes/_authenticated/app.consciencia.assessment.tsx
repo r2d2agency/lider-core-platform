@@ -552,7 +552,6 @@ function AssessmentWizard() {
                             ? "border-primary bg-primary/10"
                             : "border-border hover:bg-secondary/60")
                         }>
-                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{o.dim}</div>
                         <div className="mt-0.5">{o.text}</div>
                       </button>
                     ))}
