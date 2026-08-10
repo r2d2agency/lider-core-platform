@@ -1,3 +1,8 @@
+/**
+ * Revisar a tela “Riscos” para indicar origem, intensidade e significado, evitando rótulos sem contexto.
+ * Calcular “Sua jornada” pelo total ponderado de etapas concluídas, e não por avanço visual ou respostas isoladas.
+ * Adicionar salvamento automático e retomada dos diagnósticos incompletos.
+ */
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Brain, Compass, Sparkles, Target } from "lucide-react";

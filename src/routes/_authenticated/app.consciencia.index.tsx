@@ -161,6 +161,7 @@ function ConscienciaPage() {
     subtitle: string;
     minutes: number;
     done: boolean;
+    weight: number; 
     to: "/app/consciencia/assessment" | "/app/consciencia/activity" | "/app/consciencia/pdi" | "/app/consciencia/coach" | "/app/consciencia/liderados";
     search?: { step: "behavioral" | "hsh" | "sabotages"; showResults?: boolean };
   };
@@ -175,6 +176,7 @@ function ConscienciaPage() {
           : "DISC · MBTI",
       minutes: 8,
       done: !!(profile?.discPrimary || profile?.mbtiType),
+      weight: 20,
       to: "/app/consciencia/assessment",
       search: { step: "behavioral" },
     },
@@ -185,6 +187,7 @@ function ConscienciaPage() {
       subtitle: "Autoavaliação nas 3 dimensões",
       minutes: 4,
       done: !!hshFilled,
+      weight: 15,
       to: "/app/consciencia/assessment",
       search: { step: "hsh" },
     },
@@ -198,6 +201,7 @@ function ConscienciaPage() {
           : "Identifique os principais",
       minutes: 6,
       done: (profile?.sabotages?.length ?? 0) >= 3,
+      weight: 15,
       to: "/app/consciencia/assessment",
       search: { step: "sabotages" },
     },
@@ -208,6 +212,7 @@ function ConscienciaPage() {
       subtitle: "O que ocupa suas horas hoje",
       minutes: 5,
       done: !!(profile?.activityDescription && profile.activityDescription.trim().length > 20),
+      weight: 10,
       to: "/app/consciencia/activity",
     },
     {
@@ -217,6 +222,7 @@ function ConscienciaPage() {
       subtitle: activeCommitments > 0 ? `${activeCommitments} meta${activeCommitments > 1 ? "s" : ""} ativa${activeCommitments > 1 ? "s" : ""}` : "Plano de desenvolvimento",
       minutes: 3,
       done: activeCommitments > 0 || !!profile?.autoPdiGeneratedAt,
+      weight: 20,
       to: "/app/consciencia/pdi",
     },
     {
@@ -229,6 +235,7 @@ function ConscienciaPage() {
           : "Perfis e trilha individual do time",
       minutes: 4,
       done: subordinateCount > 0,
+      weight: 10,
       to: "/app/consciencia/liderados",
     },
     {
@@ -238,13 +245,16 @@ function ConscienciaPage() {
       subtitle: "Trilha guiada de evolução",
       minutes: 3,
       done: !!profile?.coachTrackGeneratedAt,
+      weight: 10,
       to: "/app/consciencia/coach",
     },
   ];
 
+  const totalWeight = steps.reduce((sum, s) => sum + s.weight, 0);
+  const completedWeight = steps.filter((s) => s.done).reduce((sum, s) => sum + s.weight, 0);
+  const progressPct = Math.round((completedWeight / totalWeight) * 100);
   const completed = steps.filter((s) => s.done).length;
   const total = steps.length;
-  const progressPct = Math.round((completed / total) * 100);
   const missing = total - completed;
   const currentIdx = steps.findIndex((s) => !s.done);
   const current = currentIdx >= 0 ? steps[currentIdx] : null;

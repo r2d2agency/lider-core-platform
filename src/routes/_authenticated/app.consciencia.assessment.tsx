@@ -75,12 +75,48 @@ const SABOTAGE_PILLARS = [
 ] as const;
 
 const RISKS = [
-  { value: "controle", label: "Controle excessivo" },
-  { value: "evita_conflito", label: "Evita conflito" },
-  { value: "cobranca_dura", label: "Cobrança dura" },
-  { value: "perfeccionismo", label: "Perfeccionismo" },
-  { value: "impaciencia", label: "Impaciência" },
-  { value: "acomodacao", label: "Acomodação" },
+  { 
+    value: "controle", 
+    label: "Controle excessivo", 
+    origin: "Tubarão / Perfeccionista",
+    intensity: "Alta",
+    meaning: "Necessidade de garantir o resultado final através da microgestão, gerando gargalos e desmotivação no time." 
+  },
+  { 
+    value: "evita_conflito", 
+    label: "Evita conflito",
+    origin: "Gato / Evasivo",
+    intensity: "Média",
+    meaning: "Dificuldade em ter conversas difíceis ou dar feedbacks corretivos, acumulando problemas não resolvidos."
+  },
+  { 
+    value: "cobranca_dura", 
+    label: "Cobrança dura",
+    origin: "Tubarão / Juiz interno",
+    intensity: "Alta",
+    meaning: "Foco exclusivo no 'quê' em detrimento do 'como', podendo gerar um clima de medo ou estresse."
+  },
+  { 
+    value: "perfeccionismo", 
+    label: "Perfeccionismo",
+    origin: "Águia / Perfeccionista",
+    intensity: "Média",
+    meaning: "Retenção de entregas por busca de um padrão irreal, impactando a velocidade da operação."
+  },
+  { 
+    value: "impaciencia", 
+    label: "Impaciência",
+    origin: "Tubarão / Inquieto",
+    intensity: "Média",
+    meaning: "Dificuldade em respeitar o tempo de aprendizado ou execução dos outros, gerando ansiedade."
+  },
+  { 
+    value: "acomodacao", 
+    label: "Acomodação",
+    origin: "Lobo / Estável",
+    intensity: "Baixa",
+    meaning: "Manutenção do status quo para evitar desconforto, perdendo oportunidades de inovação ou melhoria."
+  },
 ];
 
 // 30 perguntas oficiais Hard·Soft·Heart (10 por dimensão)
@@ -213,6 +249,50 @@ function AssessmentWizard() {
   useEffect(() => {
     setStep(requestedStep);
   }, [requestedStep]);
+
+  // Salvamento automático: persiste estado local a cada mudança
+  useEffect(() => {
+    if (!orgId) return;
+    const state = {
+      declaredRole,
+      notMine,
+      discPrimary,
+      mbtiType,
+      riskFlags,
+      sabAns,
+      cerAns,
+      hard,
+      soft,
+      heart,
+      step
+    };
+    localStorage.setItem(`assessment_draft_${orgId}`, JSON.stringify(state));
+  }, [orgId, declaredRole, notMine, discPrimary, mbtiType, riskFlags, sabAns, cerAns, hard, soft, heart, step]);
+
+  // Retomada: tenta carregar draft do localStorage
+  useEffect(() => {
+    if (!orgId) return;
+    const draft = localStorage.getItem(`assessment_draft_${orgId}`);
+    if (draft && !initial) {
+      try {
+        const s = JSON.parse(draft);
+        if (s.declaredRole) setDeclaredRole(s.declaredRole);
+        if (s.notMine) setNotMine(s.notMine);
+        if (s.discPrimary) setDiscPrimary(s.discPrimary);
+        if (s.mbtiType) setMbtiType(s.mbtiType);
+        if (s.riskFlags) setRiskFlags(s.riskFlags);
+        if (s.sabAns) setSabAns(s.sabAns);
+        if (s.cerAns) setCerAns(s.cerAns);
+        if (s.hard) setHard(s.hard);
+        if (s.soft) setSoft(s.soft);
+        if (s.heart) setHeart(s.heart);
+        // Não forçamos o step se vier via URL, mas se não vier, retomamos
+        if (requestedStep === 0 && s.step) setStep(s.step);
+      } catch (e) {
+        console.error("Erro ao carregar draft", e);
+      }
+    }
+  }, [orgId, initial, requestedStep]);
 
   // hidrata quando dados chegam
   useEffect(() => {
@@ -588,12 +668,29 @@ function AssessmentWizard() {
                     key={r.value}
                     onClick={() => toggle(riskFlags, r.value, setRiskFlags)}
                     className={
-                      "flex items-center justify-between rounded-xl border p-3 text-sm transition-colors " +
-                      (on ? "border-primary bg-primary/10" : "border-border hover:bg-secondary/60")
+                      "flex flex-col gap-2 rounded-xl border p-4 text-left transition-all " +
+                      (on ? "border-primary bg-primary/5 ring-1 ring-primary/20" : "border-border hover:bg-secondary/60")
                     }
                   >
-                    <span>{r.label}</span>
-                    {on && <CheckCircle2 className="h-4 w-4" />}
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-foreground">{r.label}</span>
+                      {on && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                    </div>
+                    {on && (
+                      <div className="mt-1 space-y-2 text-[11px] animate-in fade-in slide-in-from-top-1 duration-200">
+                        <div className="flex gap-2">
+                          <span className="font-bold text-accent uppercase tracking-tighter">Origem:</span>
+                          <span className="text-muted-foreground">{(r as any).origin}</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <span className="font-bold text-accent uppercase tracking-tighter">Intensidade:</span>
+                          <span className="text-muted-foreground">{(r as any).intensity}</span>
+                        </div>
+                        <div className="mt-2 text-muted-foreground leading-relaxed italic border-l-2 border-accent/20 pl-2">
+                          {(r as any).meaning}
+                        </div>
+                      </div>
+                    )}
                   </button>
                 );
               })}
