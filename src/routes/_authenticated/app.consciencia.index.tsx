@@ -161,6 +161,7 @@ function ConscienciaPage() {
     subtitle: string;
     minutes: number;
     done: boolean;
+    weight: number; // Peso ponderado para o cálculo da jornada
     to: "/app/consciencia/assessment" | "/app/consciencia/activity" | "/app/consciencia/pdi" | "/app/consciencia/coach" | "/app/consciencia/liderados";
     search?: { step: "behavioral" | "hsh" | "sabotages"; showResults?: boolean };
   };
