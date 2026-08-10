@@ -221,9 +221,9 @@ function Index() {
             <span className="italic text-accent">depois do treinamento.</span>
           </h2>
           <p className="mt-4 max-w-xl text-primary-foreground/70">
-            LÍDER C.O.R.E. é feito para virar rotina. Não depende de novos
-            treinamentos para gerar valor — cada dia usado, o líder lidera
-            melhor.
+            Tudo começa pela Consciência. Inicie com seus assessments e receba
+            seu diagnóstico de liderança. Essa é a porta de entrada da
+            metodologia.
           </p>
           <Link
             to="/auth"
@@ -238,9 +238,23 @@ function Index() {
 
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-6 py-10 text-xs text-muted-foreground md:flex-row md:items-center">
-          <div className="flex items-center gap-4">
-            <Logo className="h-6 w-auto max-w-[140px] opacity-80" />
-            <span>© {new Date().getFullYear()} Neo Pessoas</span>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-4">
+              <Logo className="h-6 w-auto max-w-[140px] opacity-80" />
+              <span>© {new Date().getFullYear()} Neo Pessoas</span>
+            </div>
+            <p className="max-w-md opacity-60">
+              Seus dados são protegidos com a finalidade exclusiva de suporte ao
+              seu desenvolvimento de liderança. Ao utilizar a plataforma, você
+              consente com o processamento de suas informações conforme nossos{" "}
+              <a href="#" className="underline">
+                Termos de Uso
+              </a>{" "}
+              e{" "}
+              <a href="#" className="underline">
+                Política de Privacidade
+              </a>.
+            </p>
           </div>
           <div>lidercore.com.br</div>
         </div>
