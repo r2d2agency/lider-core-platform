@@ -16,7 +16,7 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>) => ({
     invite: typeof search.invite === "string" ? search.invite : undefined,
-  }),
+  }) as { invite?: string },
   head: () => ({
     meta: [
       { title: "Entrar — LÍDER C.O.R.E." },

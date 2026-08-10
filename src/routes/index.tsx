@@ -58,6 +58,7 @@ function Index() {
         </nav>
         <Link
           to="/auth"
+          search={{}}
           className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-secondary"
         >
           Entrar
@@ -88,6 +89,7 @@ function Index() {
           <div className="mt-10 flex flex-wrap items-center gap-3">
             <Link
               to="/auth"
+              search={{}}
               className="inline-flex items-center gap-2 rounded-sm bg-accent px-7 py-3.5 text-sm font-semibold uppercase tracking-wider text-accent-foreground transition-transform hover:-translate-y-0.5"
             >
               Acessar a plataforma
@@ -227,6 +229,7 @@ function Index() {
           </p>
           <Link
             to="/auth"
+            search={{}}
             className="mt-8 inline-flex items-center gap-2 rounded-sm bg-accent px-7 py-3.5 text-sm font-semibold uppercase tracking-wider text-accent-foreground transition-transform hover:-translate-y-0.5"
           >
             Acessar a plataforma

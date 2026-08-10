@@ -12,7 +12,7 @@ function AuthGate() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth", replace: true });
+    if (!loading && !user) navigate({ to: "/auth", search: {}, replace: true } as any);
   }, [loading, user, navigate]);
 
   if (loading) {
