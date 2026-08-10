@@ -14,9 +14,67 @@ export const HSH_AXES: Record<HshAxis, { name: string; subtitle: string; descrip
   heart: { name: "HEART", subtitle: "saber ser", description: "Escuta, humildade, empatia, coerência, reconhecimento e cuidado com as pessoas." },
 };
 
-export const RADAR_HSH_HELP = "Escala: 1 Discordo totalmente · 2 Discordo · 3 Às vezes · 4 Concordo · 5 Concordo totalmente";
+export const RADAR_HSH_HELP =
+  "Escala: 1 Quase nunca · 2 Raramente · 3 Às vezes · 4 Frequentemente · 5 Quase sempre";
 
 export const RADAR_HSH_BLOCKS: Array<{ axis: HshAxis; title: string; description: string; items: string[] }> = [
+  {
+    axis: "hard",
+    title: "HARD — saber fazer",
+    description:
+      "Competências técnicas, gerenciais e analíticas. Responda em que grau cada competência está presente na sua atuação hoje.",
+    items: [
+      "Gestão de indicadores — eu acompanho e uso indicadores (KPIs/OKRs) para tomar decisões no dia a dia da minha área.",
+      "Planejamento de entregas — eu planejo entregas com prazos, prioridades e etapas claras antes de começar a execução.",
+      "Gestão de processos — os processos da minha área estão documentados e padronizados, permitindo que outras pessoas os executem sem depender de mim.",
+      "Gestão de prioridades — eu consigo distinguir o urgente do importante e organizar minha agenda e a da equipe de acordo com isso.",
+      "Decisão baseada em dados — minhas decisões se apoiam em dados e evidências, e não apenas na percepção ou urgência do momento.",
+      "Domínio técnico da área — eu domino os sistemas, normas e metodologias técnicas específicas da minha área de atuação.",
+      "Avaliação da qualidade das entregas — eu tenho critérios claros e objetivos para avaliar se uma entrega está dentro do padrão esperado.",
+      "Diagnóstico e solução de problemas — eu busco a causa raiz dos problemas antes de agir, em vez de apenas tratar os sintomas.",
+      "Estruturação da autonomia da equipe — minha equipe sabe até onde pode decidir sozinha, sem precisar recorrer a mim para tudo.",
+      "Desenvolvimento e atualização técnica — eu me mantenho atualizado tecnicamente, buscando novos conhecimentos e boas práticas da minha área.",
+    ],
+  },
+  {
+    axis: "soft",
+    title: "SOFT — saber agir e se relacionar",
+    description:
+      "Competências para comunicar, influenciar, delegar e conduzir o time.",
+    items: [
+      "Comunicação clara e assertiva — eu me comunico de forma clara, direta e respeitosa, mesmo em situações de tensão.",
+      "Conversas difíceis — eu me sinto preparado e disposto a ter conversas difíceis quando o assunto exige.",
+      "Delegação — eu delego de forma estruturada, com briefing, autonomia e checkpoints, e não apenas repasso a tarefa.",
+      "Redução do microgerenciamento — eu confio nos resultados combinados e evito controlar demais o passo a passo da equipe.",
+      "Decisão sob pressão — eu consigo tomar boas decisões mesmo sob pressão de tempo ou de resultado.",
+      "Comunicação adaptativa — eu ajusto minha forma de me comunicar de acordo com o perfil e o contexto de cada pessoa da equipe.",
+      "Feedback — eu dou feedbacks claros, específicos e frequentes, não só nas avaliações formais.",
+      "Abertura ao feedback — eu recebo feedback sobre mim mesmo sem me colocar na defensiva.",
+      "Confiança na equipe — eu confio na capacidade da minha equipe de entregar com autonomia.",
+      "Influência e mobilização — eu consigo mobilizar e engajar pessoas em torno de um propósito, mesmo sem usar minha autoridade formal.",
+    ],
+  },
+  {
+    axis: "heart",
+    title: "HEART — saber ser",
+    description:
+      "Maturidade emocional, caráter, coerência e qualidade humana da liderança.",
+    items: [
+      "Escuta genuína — eu realmente escuto as pessoas antes de responder, sem já estar formulando minha resposta enquanto o outro fala.",
+      "Humildade e vulnerabilidade — eu consigo reconhecer publicamente um erro meu ou pedir ajuda quando não sei algo.",
+      "Autorresponsabilidade — eu assumo a responsabilidade pelos resultados da minha área, mesmo quando fatores externos contribuíram.",
+      "Empatia sob pressão — eu consigo manter empatia com as pessoas mesmo em momentos de pressão ou crise.",
+      "Coerência entre discurso e prática — minhas atitudes no dia a dia são coerentes com o que eu falo e defendo como líder.",
+      "Reconhecimento das pessoas — eu reconheço publicamente e de forma específica o bom trabalho da minha equipe.",
+      "Disponibilidade para o time — eu estou genuinamente disponível para as pessoas da minha equipe, além das pautas operacionais.",
+      "Justiça nas decisões sobre pessoas — minhas decisões sobre pessoas se baseiam em critérios objetivos, e não em preferência pessoal.",
+      "Coragem para enfrentar a realidade — eu encaro e comunico verdades difíceis, mesmo quando isso é desconfortável.",
+      "Sensibilidade humana — eu percebo mudanças de comportamento ou de humor nas pessoas da minha equipe antes que se tornem um problema maior.",
+    ],
+  },
+];
+
+const LEGACY_HSH_BLOCKS: Array<{ axis: HshAxis; title: string; description: string; items: string[] }> = [
   {
     axis: "hard",
     title: "HARD — saber fazer",
@@ -84,7 +142,7 @@ function normalize(text: string): string {
 }
 
 const AXIS_BY_PROMPT = new Map<string, HshAxis>();
-for (const block of RADAR_HSH_BLOCKS) {
+for (const block of [...RADAR_HSH_BLOCKS, ...LEGACY_HSH_BLOCKS]) {
   for (const item of block.items) AXIS_BY_PROMPT.set(normalize(item), block.axis);
 }
 
