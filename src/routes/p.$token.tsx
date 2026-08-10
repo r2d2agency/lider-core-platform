@@ -424,7 +424,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2.5">
             <Logo variant="mark" className="h-9 w-9 rounded-xl shadow-md" />
             <div>
-              <div className="font-display text-base leading-none tracking-tight">líder core</div>
+              <div className="font-display text-base font-bold uppercase leading-none tracking-tight">Líder C.O.R.E.</div>
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Neo Pessoas</div>
             </div>
           </div>

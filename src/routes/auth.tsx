@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { Eye, EyeOff } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { Logo } from "@/components/brand/Logo";
 
 type SignupPlan = { slug: string; name: string; description: string | null; targetRole: string; planTier: string };
 
@@ -116,10 +117,8 @@ function AuthPage() {
       <aside className="relative hidden overflow-hidden bg-primary p-12 text-primary-foreground md:flex md:flex-col md:justify-between">
         <div className="absolute inset-0 bg-grid opacity-10" />
         <Link to="/" className="relative flex items-center gap-2">
-          <span className="grid h-9 w-9 place-items-center rounded-md bg-accent text-accent-foreground font-display text-lg font-semibold">
-            L
-          </span>
-          <span className="font-display text-lg">líder core</span>
+          <Logo variant="mark" className="h-9 w-9" />
+          <span className="font-display text-lg font-bold uppercase tracking-wider">Líder C.O.R.E.</span>
         </Link>
         <div className="relative">
           <p className="font-display text-3xl leading-tight md:text-4xl">
@@ -136,10 +135,8 @@ function AuthPage() {
       <main className="flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-sm">
           <div className="md:hidden mb-8 flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground font-display font-semibold">
-              L
-            </span>
-            <span className="font-display text-lg">líder core</span>
+            <Logo variant="mark" className="h-8 w-8" />
+            <span className="font-display text-lg font-bold uppercase tracking-wider">Líder C.O.R.E.</span>
           </div>
           <h1 className="font-display text-3xl">
             {mode === "signin" ? "Entrar" : "Criar conta"}
