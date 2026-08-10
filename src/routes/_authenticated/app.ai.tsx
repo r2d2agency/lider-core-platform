@@ -355,7 +355,7 @@ function CoachAvatar() {
 
 function EmptyConversation({ firstName, onPick }: { firstName: string; onPick: (t: string) => void }) {
   const starters = [
-    `Bom dia, ${firstName}! 👋\nAqui está o que mais importa agora:`,
+    `Olá, ${firstName}! 👋\nAqui está o que mais importa agora:`,
   ];
   const highlights = [
     { icon: <AlertTriangle className="h-3.5 w-3.5 text-attention" />, text: "João Pedro está há 42 dias sem feedback." },
