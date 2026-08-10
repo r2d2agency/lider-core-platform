@@ -118,7 +118,7 @@ const BASIC_STEPS: Step[] = [
     key: "done",
     title: "Pronto para começar",
     description:
-      "Conforme você conclui a Consciência, os próximos módulos aparecem no seu app. Em 'Ajuda' você acompanha o que já está liberado.",
+      "Agora você tem o sistema de liderança em suas mãos. Inicie sua jornada pelo primeiro assessment para receber seu diagnóstico.",
     icon: CheckCircle2,
   },
 ];
