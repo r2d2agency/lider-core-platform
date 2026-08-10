@@ -84,7 +84,7 @@ const MENTORED_STEPS: Step[] = [
     key: "done",
     title: "Tudo pronto",
     description:
-      "Você já pode começar. Se quiser rever esta introdução, o menu 'Ajuda' tem tudo.",
+      "Seu ambiente está configurado. Comece pela Consciência para desbloquear o potencial máximo do app e da sua equipe.",
     icon: CheckCircle2,
   },
 ];
