@@ -1,7 +1,14 @@
 /**
- * Revisar a tela “Riscos” para indicar origem, intensidade e significado, evitando rótulos sem contexto.
- * Calcular “Sua jornada” pelo total ponderado de etapas concluídas, e não por avanço visual ou respostas isoladas.
- * Adicionar salvamento automático e retomada dos diagnósticos incompletos.
+ * LÍDER CORE — Landing Page & Manifesto
+ * "O líder não entra no sistema para preencher formulários. Ele entra para liderar."
+ *
+ * ESPECIFICAÇÃO MÓDULO C (CONSCIÊNCIA):
+ * 1. Escalas 1–5: exibir âncoras semânticas visíveis e tornar pergunta/seleção acessíveis no teclado e mobile.
+ * 2. Relatório 1: cruzamento integrado de todos os resultados (Perfil, Sabotadores, HSH, Radar) após conclusão do Módulo C.
+ * 3. Relatório 2: cruzamento do Relatório 1 com a Descrição de Cargo (Job Desc) validada para aquele líder.
+ * 4. CORE Score: fórmula agregada (Hard/Soft/Heart + Engajamento + Evolução). Exibir score geral e por pilar.
+ * 5. PDI & Copiloto: IA sugere ações de desenvolvimento baseada no PDI e nos Relatórios 1 e 2.
+ * 6. Ecossistema: Conectar 1:1s, feedbacks e compromissos à Agenda e ao Painel de Atenção.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";

@@ -502,11 +502,26 @@ function Goals({ orgId, pdi }: { orgId: string; pdi: Pdi }) {
         </Button>
       </div>
       {adding && (
-        <div className="mb-3 space-y-2 rounded-md border border-border bg-background p-3">
-          <Input placeholder="Título da meta" value={title} onChange={(e) => setTitle(e.target.value)} />
-          <Input placeholder="Ação concreta" value={action} onChange={(e) => setAction(e.target.value)} />
-          <Input type="date" value={dueAt} onChange={(e) => setDueAt(e.target.value)} />
-          <div className="flex justify-end">
+        <div className="mb-3 space-y-3 rounded-xl border border-border bg-background p-4 shadow-sm">
+          <div>
+            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">O que precisa ser feito?</Label>
+            <Input placeholder="Título da meta" value={title} onChange={(e) => setTitle(e.target.value)} className="mt-1" />
+          </div>
+          <div>
+            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Como será feito? (Ação)</Label>
+            <Input placeholder="Descreva a ação concreta" value={action} onChange={(e) => setAction(e.target.value)} className="mt-1" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Prazo</Label>
+              <Input type="date" value={dueAt} onChange={(e) => setDueAt(e.target.value)} className="mt-1" />
+            </div>
+          </div>
+          <div>
+            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Evidência de sucesso</Label>
+            <Input placeholder="O que prova que a meta foi atingida?" className="mt-1" />
+          </div>
+          <div className="flex justify-end pt-1">
             <Button size="sm" onClick={() => create.mutate()} disabled={!title || create.isPending}>
               {create.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Adicionar"}
             </Button>

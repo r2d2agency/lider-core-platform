@@ -752,22 +752,31 @@ function HshBlock({
         {questions.map((q, i) => (
           <li key={i}>
             <div className="text-sm">{q}</div>
-            <div className="mt-1.5 flex gap-1.5">
-              {[1, 2, 3, 4, 5].map((v) => (
+            <div className="mt-2.5 flex flex-col gap-3">
+              <div className="flex gap-1.5">
+                {[1, 2, 3, 4, 5].map((v) => (
                   <button
                     type="button"
-                  key={v}
-                  onClick={() => setValues(values.map((x, j) => (j === i ? v : x)))}
-                  className={
-                    "h-9 flex-1 rounded-lg border text-sm transition-colors " +
-                    (values[i] === v
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card hover:bg-secondary")
-                  }
-                >
-                  {v}
-                </button>
-              ))}
+                    key={v}
+                    onClick={() => setValues(values.map((x, j) => (j === i ? v : x)))}
+                    className={
+                      "h-10 flex-1 rounded-lg border text-sm font-medium transition-all focus:ring-2 focus:ring-primary/40 focus:outline-none " +
+                      (values[i] === v
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm scale-[1.02]"
+                        : "border-border bg-card hover:bg-secondary active:scale-[0.98]")
+                    }
+                    aria-label={`Avaliação ${v} de 5`}
+                    aria-pressed={values[i] === v}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+              <div className="flex justify-between px-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                <span>Discordo</span>
+                <span>Neutro</span>
+                <span>Concordo</span>
+              </div>
             </div>
           </li>
         ))}
