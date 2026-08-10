@@ -624,12 +624,29 @@ function AssessmentWizard() {
                     key={r.value}
                     onClick={() => toggle(riskFlags, r.value, setRiskFlags)}
                     className={
-                      "flex items-center justify-between rounded-xl border p-3 text-sm transition-colors " +
-                      (on ? "border-primary bg-primary/10" : "border-border hover:bg-secondary/60")
+                      "flex flex-col gap-2 rounded-xl border p-4 text-left transition-all " +
+                      (on ? "border-primary bg-primary/5 ring-1 ring-primary/20" : "border-border hover:bg-secondary/60")
                     }
                   >
-                    <span>{r.label}</span>
-                    {on && <CheckCircle2 className="h-4 w-4" />}
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-foreground">{r.label}</span>
+                      {on && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                    </div>
+                    {on && (
+                      <div className="mt-1 space-y-2 text-[11px] animate-in fade-in slide-in-from-top-1 duration-200">
+                        <div className="flex gap-2">
+                          <span className="font-bold text-accent uppercase tracking-tighter">Origem:</span>
+                          <span className="text-muted-foreground">{(r as any).origin}</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <span className="font-bold text-accent uppercase tracking-tighter">Intensidade:</span>
+                          <span className="text-muted-foreground">{(r as any).intensity}</span>
+                        </div>
+                        <div className="mt-2 text-muted-foreground leading-relaxed italic border-l-2 border-accent/20 pl-2">
+                          {(r as any).meaning}
+                        </div>
+                      </div>
+                    )}
                   </button>
                 );
               })}
