@@ -9,6 +9,13 @@
  * 4. CORE Score: fórmula agregada (Hard/Soft/Heart + Engajamento + Evolução). Exibir score geral e por pilar.
  * 5. PDI & Copiloto: IA sugere ações de desenvolvimento baseada no PDI e nos Relatórios 1 e 2.
  * 6. Ecossistema: Conectar 1:1s, feedbacks e compromissos à Agenda e ao Painel de Atenção.
+ * 
+ * PADRONIZAÇÃO E QUALIDADE:
+ * - Padronizar carregamento, vazio, erro, sucesso e indisponibilidade para todas as telas.
+ * - Criar administração de instrumentos: versão, vigência, público, perguntas, pesos, faixas e publicação controlada.
+ * - Validar isolamento de dados por empresa, perfis de acesso e visibilidade gestor/liderado.
+ * - Instrumentar funil: onboarding concluído, diagnóstico iniciado/concluído, abandono, relatório aberto, PDI criado e retorno semanal.
+ * - Revisar desktop, tablet e celular; eliminar títulos cortados, rolagem horizontal e CTAs fora da área visível.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
