@@ -94,7 +94,7 @@ type AttentionItem = {
   title: string;
   reason: string;
   severity: "high" | "medium" | "low";
-  kind: "one_on_one" | "feedback" | "delegation" | "ritual";
+  kind: "one_on_one" | "feedback" | "delegation" | "ritual" | "onboarding" | "pdi";
   link: string | null;
 };
 
