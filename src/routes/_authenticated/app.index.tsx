@@ -1,6 +1,6 @@
 // Home do líder — "Briefing do dia" (Sistema Operacional do Líder).
-// Consome /me/home/briefing (agregação server-side). O app do líder é
-// desacoplado da metodologia: todo o conteúdo vem do backend Neo.
+// Este é o seu sistema de liderança. Aqui você acompanha o que precisa
+// da sua atenção e transforma desenvolvimento em rotina.
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import type * as React from "react";
