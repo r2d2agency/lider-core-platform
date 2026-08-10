@@ -34,6 +34,8 @@ function ProfilePage() {
           <h1 className="font-display text-3xl font-semibold leading-tight">Perfil</h1>
           <p className="text-sm text-muted-foreground">
             {user?.fullName ?? user?.email} · {user?.jobTitle ?? "sem cargo definido"}
+            <br />
+            WhatsApp: {user?.whatsapp ? (user.whatsapp.startsWith("55") ? user.whatsapp : `55 ${user.whatsapp}`) : "não informado"}
           </p>
         </div>
       </header>

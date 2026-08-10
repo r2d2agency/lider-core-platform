@@ -85,7 +85,7 @@ function HomeBriefing() {
           {data?.greeting ?? "Sala de liderança"}
         </h1>
         <p className="mt-3 max-w-xl text-sm text-muted-foreground">
-          O que precisa da sua atenção hoje. Este é o seu Sistema Operacional do Líder — a metodologia vem toda do backend Neo.
+          A jornada toda começa pela consciência. Faça seus assessments e receba seu diagnóstico de liderança — esta é a porta de entrada da metodologia.
         </p>
       </header>
 
@@ -116,14 +116,22 @@ function HomeBriefing() {
 
       <section className="grid gap-3 md:grid-cols-2">
         {/* Módulo C (ativo hoje) */}
-        <Tile icon={Brain} label="Meu perfil" desc="Diagnóstico C.O.R.E. e CORE DNA" to="/app/consciencia" enabled={hasC} />
-        <Tile icon={UsersIcon} label="Minha equipe" desc="Radar HSH, 9-box e delegações" to="/app/team" enabled={hasC} />
-        <Tile icon={Target} label="PDIs" desc="Plano de desenvolvimento" to="/app/pdis" enabled={hasC} />
-        <Tile icon={MessageSquare} label="Feedbacks e pulsos" desc="Enviar, receber e coletar respostas" to="/app/pulses" enabled={hasC} />
-        {/* Base do app — sempre disponível, independente de módulo */}
-        <Tile icon={CalendarIcon} label="Agenda" desc="Rituais, 1:1s e compromissos" to="/app/consciencia/agenda" enabled />
-        <Tile icon={NotebookPen} label="Notas" desc="Anotações rápidas e por voz" to="/app/notes" enabled />
-        <Tile icon={Sparkles} label="Copiloto IA" desc="Coach e recomendações" to="/app/ai" enabled />
+        <Tile icon={Brain} label="1. Consciência" desc={!data?.profile?.onboardingCompletedAt ? "Meu perfil — incompleto" : "Diagnóstico C.O.R.E. e CORE DNA"} to="/app/consciencia" enabled={hasC} />
+        <Tile icon={Compass} label="2. Organização" desc="Rituais, 1:1s e delegações" to="/app/organization" enabled={hasC} />
+        <Tile icon={Target} label="3. Resultados" desc="Indicadores e metas do time" to="/app/indicators" enabled={hasC} />
+        <Tile icon={Sparkles} label="4. Evolução" desc="PDIs — não iniciado" to="/app/pdis" enabled={hasC} />
+        
+        <div className="md:col-span-2 my-4">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-1 opacity-60">
+            Principais da ferramenta
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <Tile icon={MessageSquare} label="Feedbacks e 1:1s" desc="Gerir conversas e pulsos de clima" to="/app/pulses" enabled={hasC} />
+            <Tile icon={CalendarIcon} label="Agenda do líder" desc="Seu calendário de gestão" to="/app/consciencia/agenda" enabled />
+            <Tile icon={NotebookPen} label="Notas & Reuniões" desc="Anotações rápidas e por voz" to="/app/notes" enabled />
+            <Tile icon={Sparkles} label="Copiloto IA" desc="Coach e recomendações" to="/app/ai" enabled />
+          </div>
+        </div>
       </section>
 
       <section>

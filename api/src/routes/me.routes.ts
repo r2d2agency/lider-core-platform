@@ -80,7 +80,10 @@ meRouter.get("/home/briefing", async (req, res) => {
 });
 
 function buildGreeting(name: string | null): string {
-  const hour = new Date().getHours();
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const brDate = new Date(utc + 3600000 * -3); // UTC-3 (Brasília)
+  const hour = brDate.getHours();
   const first = (name ?? "").trim().split(" ")[0];
   const prefix = hour < 5 ? "Boa madrugada" : hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
   return first ? `${prefix}, ${first}` : prefix;

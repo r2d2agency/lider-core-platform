@@ -10,7 +10,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "O sistema onde o líder entra para liderar. Rituais, 1:1s, feedbacks, PDIs e IA que aponta quem precisa da sua atenção hoje.",
+          "O sistema onde o líder entra para liderar. Uma plataforma que continua útil depois do treinamento.",
       },
     ],
   }),
@@ -58,6 +58,7 @@ function Index() {
         </nav>
         <Link
           to="/auth"
+          search={{}}
           className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-secondary"
         >
           Entrar
@@ -74,12 +75,11 @@ function Index() {
             Programa de Desenvolvimento de Liderança
           </div>
           <h1 className="mt-8 text-5xl font-extrabold leading-[1.02] tracking-tight md:text-7xl">
-            O líder não entra no sistema
+            O líder entra para ter
             <br />
-            para preencher{" "}
-            <span className="italic font-black text-accent">formulários.</span>
+            a <span className="italic font-black text-accent">liderança</span>
             <br />
-            Ele entra para liderar.
+            em suas mãos.
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
             LÍDER C.O.R.E. transforma a metodologia da Neo Pessoas em rotina
@@ -89,6 +89,7 @@ function Index() {
           <div className="mt-10 flex flex-wrap items-center gap-3">
             <Link
               to="/auth"
+              search={{}}
               className="inline-flex items-center gap-2 rounded-sm bg-accent px-7 py-3.5 text-sm font-semibold uppercase tracking-wider text-accent-foreground transition-transform hover:-translate-y-0.5"
             >
               Acessar a plataforma
@@ -114,7 +115,7 @@ function Index() {
             <h2 className="mt-3 text-4xl font-extrabold tracking-tight md:text-5xl">
               O método <span className="italic text-accent">C.O.R.E.</span>
               <br />
-              <span className="text-muted-foreground">Quatro pilares, uma rotina.</span>
+              <span className="text-muted-foreground">Quatro pilares fundamentais.</span>
             </h2>
           </div>
           <p className="max-w-sm text-sm text-muted-foreground">
@@ -124,10 +125,10 @@ function Index() {
         </div>
 
         <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-2 lg:grid-cols-4">
-          {pillars.map(({ key, title, text, icon: Icon }) => (
+          {pillars.map(({ key, title, text, icon: Icon }, idx) => (
             <div key={key} className="group relative flex flex-col gap-6 bg-card p-8 transition-colors hover:bg-secondary">
               <div className="flex items-center justify-between">
-                <span className="text-6xl font-black text-accent">{key}</span>
+                <span className="text-6xl font-black text-accent">{idx + 1}</span>
                 <Icon className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} />
               </div>
               <div>
@@ -149,9 +150,9 @@ function Index() {
               A plataforma
             </div>
             <h2 className="mt-3 text-4xl font-extrabold tracking-tight md:text-5xl">
-              O sistema registra fatos.
+              Este é o seu sistema de liderança.
               <br />
-              <span className="italic text-accent">A IA</span> gera diagnósticos.
+              <span className="italic text-accent">Diretamente em suas mãos</span> diariamente.
             </h2>
             <p className="mt-5 max-w-lg text-muted-foreground">
               Rituais de 1:1, delegações, feedbacks e check-ins alimentam um
@@ -219,7 +220,7 @@ function Index() {
         <div className="rounded-3xl border border-border bg-primary p-10 text-primary-foreground md:p-16">
           <h2 className="max-w-2xl text-4xl font-extrabold leading-[1.05] tracking-tight md:text-5xl">
             Uma plataforma que continua útil{" "}
-            <span className="italic text-accent">depois da mentoria.</span>
+            <span className="italic text-accent">depois do treinamento.</span>
           </h2>
           <p className="mt-4 max-w-xl text-primary-foreground/70">
             LÍDER C.O.R.E. é feito para virar rotina. Não depende de novos
@@ -228,6 +229,7 @@ function Index() {
           </p>
           <Link
             to="/auth"
+            search={{}}
             className="mt-8 inline-flex items-center gap-2 rounded-sm bg-accent px-7 py-3.5 text-sm font-semibold uppercase tracking-wider text-accent-foreground transition-transform hover:-translate-y-0.5"
           >
             Acessar a plataforma

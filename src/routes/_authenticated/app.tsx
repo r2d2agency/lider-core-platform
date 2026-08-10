@@ -161,7 +161,7 @@ function AppShell() {
     queryClient.clear();
     signOut();
     toast.success("Até logo.");
-    navigate({ to: "/auth", replace: true });
+    navigate({ to: "/auth", search: {}, replace: true } as any);
   };
 
   const handleVoiceIntent = async (intent: VoiceIntent) => {
@@ -361,7 +361,7 @@ function AppShell() {
           <Logo className="h-6 w-auto max-w-[130px] md:hidden" />
           <div className="hidden min-w-0 md:block">
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              {formatToday()}
+              {formatTodayBr()}
             </div>
             <div className="truncate text-sm font-medium">{currentLabel}</div>
           </div>
@@ -478,6 +478,17 @@ function AppShell() {
       </div>
     </div>
   );
+}
+
+function formatTodayBr() {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const brDate = new Date(utc + 3600000 * -3); // UTC-3 (Brasília)
+  return new Intl.DateTimeFormat("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(brDate);
 }
 
 function formatToday() {
