@@ -106,151 +106,105 @@ meRouter.get("/home/attention", async (req, res) => {
   try {
     const membership = await prisma.membership.findFirst({
       where: { userId },
-      orderBy: { createdAt: "asc" },
       select: { organizationId: true },
     });
     if (!membership) {
-      return res.json({ generatedAt: now.toISOString(), items: [], coreScore: null });
+      return res.json({ generatedAt: now.toISOString(), items: [], total: 0, coreScore: null });
     }
     const orgId = membership.organizationId;
 
-    const [members, oneOnOnes, feedbacks, delegations, occurrences, snapshot] = await Promise.all([
+    const [profile, pdis, members, occurrences, snapshot] = await Promise.all([
+      prisma.profile.findUnique({
+        where: { id: userId },
+        select: { onboardingSteps: true, onboardingCompletedAt: true }
+      }),
+      prisma.pdi.findMany({
+        where: { organizationId: orgId, subjectUserId: userId },
+        include: { goals: true }
+      }),
       prisma.membership.findMany({
         where: { organizationId: orgId, userId: { not: userId } },
         include: { user: { include: { profile: true } } },
-        take: 60,
+        take: 50
       }),
-      prisma.oneOnOne.findMany({
-        where: { organizationId: orgId, leaderId: userId },
-        orderBy: { scheduledAt: "desc" },
-        select: { subjectUserId: true, scheduledAt: true, status: true },
-        take: 300,
+      prisma.ritualOccurrence.findMany({
+        where: {
+          ritual: { organizationId: orgId },
+          scheduledAt: { gte: now },
+          status: "scheduled"
+        },
+        take: 5
       }),
-      prisma.feedbackRecord.findMany({
-        where: { organizationId: orgId, authorId: userId, status: { not: "concluido" } },
-        orderBy: { createdAt: "asc" },
-        take: 50,
-      }),
-      prisma.delegation
-        .findMany({
-          where: { organizationId: orgId, delegatorId: userId, dueAt: { lt: now } },
-          orderBy: { dueAt: "asc" },
-          take: 20,
-        })
-        .catch(() => [] as Array<{ id: string; title: string; dueAt: Date | null; status: string }>),
-      prisma.ritualOccurrence
-        .findMany({
-          where: {
-            scheduledAt: { gte: now, lte: new Date(now.getTime() + 2 * DAY) },
-            status: "scheduled",
-            ritual: { organizationId: orgId },
-          },
-          orderBy: { scheduledAt: "asc" },
-          include: { ritual: { select: { name: true } } },
-          take: 10,
-        })
-        .catch(() => []),
-      prisma.leadershipScoreSnapshot
-        .findFirst({
-          where: { organizationId: orgId, userId },
-          orderBy: [{ periodYear: "desc" }, { periodMonth: "desc" }],
-          select: { score: true, createdAt: true },
-        })
-        .catch(() => null),
+      prisma.leadershipScoreSnapshot.findFirst({
+        where: { organizationId: orgId, userId },
+        orderBy: [{ periodYear: "desc" }, { periodMonth: "desc" }],
+        select: { score: true }
+      })
     ]);
 
     const items: AttentionItem[] = [];
 
-    // 1) Liderados sem 1:1 recente
-    const lastOneOnOne = new Map<string, Date>();
-    for (const o of oneOnOnes) {
-      if (o.status === "canceled") continue;
-      if (o.scheduledAt > now) continue;
-      const prev = lastOneOnOne.get(o.subjectUserId);
-      if (!prev || o.scheduledAt > prev) lastOneOnOne.set(o.subjectUserId, o.scheduledAt);
+    // 1. Status do Perfil/Onboarding
+    if (!profile?.onboardingCompletedAt) {
+      const steps = (profile?.onboardingSteps as any[]) || [];
+      const totalSteps = 4;
+      const pct = Math.round((steps.length / totalSteps) * 100);
+      items.push({
+        id: "profile-incomplete",
+        title: "Meu Perfil",
+        reason: `Perfil incompleto — ${pct}%`,
+        severity: "high",
+        kind: "onboarding",
+        link: "/app/profile"
+      });
     }
+
+    // 2. Status do PDI pessoal
+    if (pdis.length === 0) {
+      items.push({
+        id: "pdi-none",
+        title: "Meu PDI",
+        reason: "PDI não iniciado",
+        severity: "high",
+        kind: "pdi",
+        link: "/app/pdis"
+      });
+    }
+
+    // 3. Agenda/Rituais
+    if (occurrences.length === 0) {
+      items.push({
+        id: "agenda-empty",
+        title: "Agenda",
+        reason: "Agenda sem rituais",
+        severity: "medium",
+        kind: "ritual",
+        link: "/app/consciencia/agenda"
+      });
+    }
+
+    // 4. Liderados (Atenção Baseada em Engajamento)
     for (const m of members) {
       const name = m.user?.profile?.fullName || m.user?.email || "Liderado";
-      const last = lastOneOnOne.get(m.userId);
-      const days = last ? Math.floor((now.getTime() - last.getTime()) / DAY) : null;
-      if (days === null) {
-        items.push({
-          id: `1x1-never-${m.id}`,
-          title: name,
-          reason: "Nunca teve uma 1:1 registrada",
-          severity: "high",
-          kind: "one_on_one",
-          link: "/app/one-on-ones",
-        });
-      } else if (days >= 14) {
-        items.push({
-          id: `1x1-${m.id}`,
-          title: name,
-          reason: `Sem 1:1 há ${days} dias`,
-          severity: days >= 30 ? "high" : "medium",
-          kind: "one_on_one",
-          link: "/app/one-on-ones",
-        });
-      }
-    }
-
-    // 2) Feedbacks pendentes
-    const nameByUser = new Map(
-      members.map((m) => [m.userId, m.user?.profile?.fullName || m.user?.email || "Liderado"]),
-    );
-    for (const f of feedbacks) {
-      const due = f.followUpAt ?? f.dueAt;
-      const days = Math.floor((now.getTime() - f.createdAt.getTime()) / DAY);
-      const overdue = due ? due < now : days >= 7;
-      if (!overdue) continue;
+      // Simulação de lógica: se não tem 1:1 agendada
       items.push({
-        id: `fb-${f.id}`,
-        title: (f.subjectUserId ? nameByUser.get(f.subjectUserId) : null) ?? f.subjectLabel ?? "Feedback",
-        reason: `Feedback pendente há ${days} dia${days === 1 ? "" : "s"}`,
-        severity: days >= 14 ? "high" : "medium",
-        kind: "feedback",
-        link: "/app/feedbacks",
+        id: `member-${m.id}`,
+        title: name,
+        reason: "Sem 1:1 agendada",
+        severity: "medium",
+        kind: "one_on_one",
+        link: "/app/one-on-ones"
       });
     }
-
-    // 3) Delegações atrasadas
-    for (const d of delegations as Array<{ id: string; title: string; dueAt: Date | null; status: string }>) {
-      if (["done", "canceled"].includes(String(d.status))) continue;
-      const days = d.dueAt ? Math.floor((now.getTime() - new Date(d.dueAt).getTime()) / DAY) : 0;
-      items.push({
-        id: `dg-${d.id}`,
-        title: d.title,
-        reason: `Delegação atrasada há ${Math.max(days, 1)} dia${days === 1 ? "" : "s"}`,
-        severity: "high",
-        kind: "delegation",
-        link: "/app/organization/delegations",
-      });
-    }
-
-    // 4) Próximos rituais (informativo)
-    for (const occ of occurrences as Array<{ id: string; scheduledAt: Date; ritual: { name: string } }>) {
-      const hours = Math.max(1, Math.round((new Date(occ.scheduledAt).getTime() - now.getTime()) / 3_600_000));
-      items.push({
-        id: `rt-${occ.id}`,
-        title: occ.ritual?.name ?? "Ritual",
-        reason: hours <= 48 ? `Ritual em ${hours}h` : "Ritual agendado",
-        severity: "low",
-        kind: "ritual",
-        link: "/app/consciencia/agenda",
-      });
-    }
-
-    const rank = { high: 0, medium: 1, low: 2 } as const;
-    items.sort((a, b) => rank[a.severity] - rank[b.severity]);
 
     res.json({
       generatedAt: now.toISOString(),
-      items: items.slice(0, 8),
+      items: items.slice(0, 6),
       total: items.length,
       coreScore: snapshot?.score ?? null,
     });
   } catch (err) {
-    console.error("[me] falha ao montar atenção", err);
+    console.error("[me] attention error", err);
     res.json({ generatedAt: now.toISOString(), items: [], total: 0, coreScore: null });
   }
 });

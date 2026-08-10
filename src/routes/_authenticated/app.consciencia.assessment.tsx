@@ -310,8 +310,8 @@ function AssessmentWizard() {
 
   const steps = [
     { title: "Papel",      hint: "Pra que sua liderança existe." },
-    { title: "DISC · MBTI",         hint: "Como você opera no mundo." },
-    { title: "Sabotadores (oficial)", hint: "10 pilares · escala 1 a 5." },
+    { title: "Perfil",         hint: "DISC · MBTI · Papel." },
+    { title: "Sabotadores", hint: "Os 10 pilares da inteligência positiva." },
     { title: "Predominância cerebral", hint: "Águia · Lobo · Gato · Tubarão." },
     { title: "Riscos",              hint: "Padrões que aparecem sob pressão." },
     { title: "Hard · Soft · Heart", hint: "30 afirmações oficiais (10 por dimensão)." },
@@ -552,7 +552,6 @@ function AssessmentWizard() {
                             ? "border-primary bg-primary/10"
                             : "border-border hover:bg-secondary/60")
                         }>
-                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{o.dim}</div>
                         <div className="mt-0.5">{o.text}</div>
                       </button>
                     ))}
