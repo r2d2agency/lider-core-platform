@@ -75,11 +75,9 @@ function Index() {
             Programa de Desenvolvimento de Liderança
           </div>
           <h1 className="mt-8 text-5xl font-extrabold leading-[1.02] tracking-tight md:text-7xl">
-            O líder entra para ter
+            O líder não entra no sistema para preencher formulários.
             <br />
-            a <span className="italic font-black text-accent">liderança</span>
-            <br />
-            em suas mãos.
+            Ele entra para <span className="italic font-black text-accent">liderar</span>.
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
             LÍDER C.O.R.E. transforma a metodologia da Neo Pessoas em rotina
