@@ -22,6 +22,7 @@ import {
 } from "../lib/herrmann.js";
 import { DISC_BLOCK_DESCRIPTION, DISC_BLOCK_TITLE, DISC_FACTORS, DISC_HELP, DISC_ITEMS, scoreDisc } from "../lib/disc.js";
 import { HSH_AXES, RADAR_HSH_BLOCKS, RADAR_HSH_HELP, scoreRadarHsh } from "../lib/radar-hsh.js";
+import { isAutogestaoAssessment, scoreAutogestao } from "../lib/autogestao.js";
 
 export const neoRouter = Router();
 neoRouter.use(requireAuth, requireRoles("super_admin", "neo_admin"));
@@ -799,8 +800,9 @@ neoRouter.post("/assessments/responses/:responseId/analyze", async (req, res) =>
   const herrmann = isHerrmann ? scoreHerrmann(questions, answers) : null;
   const disc = isDisc ? scoreDisc(questions, answers) : null;
   const radar = isRadar ? scoreRadarHsh(questions, answers) : null;
+  const autogestao = isAutogestaoAssessment(slug) ? scoreAutogestao(questions, answers) : null;
   const computed: Record<string, unknown> | null =
-    herrmann ?? disc ?? radar ?? scorePositivity(questions, answers);
+    herrmann ?? disc ?? radar ?? autogestao ?? scorePositivity(questions, answers);
 
   const readable = questions
     .map((q) => {
@@ -822,6 +824,13 @@ neoRouter.post("/assessments/responses/:responseId/analyze", async (req, res) =>
         ? `Score calculado (Radar das Competências H.S.H — média das respostas × 20): ${(["hard", "soft", "heart"] as const)
             .map((a) => `${HSH_AXES[a].name} ${radar.scores[a]}/100`)
             .join(" · ")}. Média geral ${radar.overall}/100.`
+        : autogestao
+          ? `Score calculado (Radar de Autogestão — padrão = soma dos 5 itens × 5; IPM = soma ÷ 40 × 100): ${autogestao.patterns
+              .map((pt) => `${pt.name} ${pt.intensity}% (${pt.band})`)
+              .join(" · ")}. IPM ${autogestao.ipm ?? "—"}%. Padrões dominantes: ${autogestao.patterns
+              .slice(0, 3)
+              .map((pt) => pt.name)
+              .join(", ")}. Instrumento de desenvolvimento, não psicométrico: evite linguagem clínica ou diagnóstica.`
         : computed
       ? `Score calculado (Positivity Ratio de Fredrickson): razão ${(computed as { ratio?: number | null }).ratio ?? "acima de 5"} · faixa ${(computed as { band?: string }).band}.`
       : "";
