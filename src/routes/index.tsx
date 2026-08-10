@@ -11,6 +11,7 @@
  * 6. Ecossistema: Conectar 1:1s, feedbacks e compromissos à Agenda e ao Painel de Atenção.
  * 
  * PADRONIZAÇÃO E QUALIDADE:
+ * - Padronizar o nome “Líder C.O.R.E.” em landing page, onboarding, sistema, e-mails e relatórios.
  * - Padronizar carregamento, vazio, erro, sucesso e indisponibilidade para todas as telas.
  * - Criar administração de instrumentos: versão, vigência, público, perguntas, pesos, faixas e publicação controlada.
  * - Validar isolamento de dados por empresa, perfis de acesso e visibilidade gestor/liderado.
