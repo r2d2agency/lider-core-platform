@@ -75,12 +75,48 @@ const SABOTAGE_PILLARS = [
 ] as const;
 
 const RISKS = [
-  { value: "controle", label: "Controle excessivo" },
-  { value: "evita_conflito", label: "Evita conflito" },
-  { value: "cobranca_dura", label: "Cobrança dura" },
-  { value: "perfeccionismo", label: "Perfeccionismo" },
-  { value: "impaciencia", label: "Impaciência" },
-  { value: "acomodacao", label: "Acomodação" },
+  { 
+    value: "controle", 
+    label: "Controle excessivo", 
+    origin: "Tubarão / Perfeccionista",
+    intensity: "Alta",
+    meaning: "Necessidade de garantir o resultado final através da microgestão, gerando gargalos e desmotivação no time." 
+  },
+  { 
+    value: "evita_conflito", 
+    label: "Evita conflito",
+    origin: "Gato / Evasivo",
+    intensity: "Média",
+    meaning: "Dificuldade em ter conversas difíceis ou dar feedbacks corretivos, acumulando problemas não resolvidos."
+  },
+  { 
+    value: "cobranca_dura", 
+    label: "Cobrança dura",
+    origin: "Tubarão / Juiz interno",
+    intensity: "Alta",
+    meaning: "Foco exclusivo no 'quê' em detrimento do 'como', podendo gerar um clima de medo ou estresse."
+  },
+  { 
+    value: "perfeccionismo", 
+    label: "Perfeccionismo",
+    origin: "Águia / Perfeccionista",
+    intensity: "Média",
+    meaning: "Retenção de entregas por busca de um padrão irreal, impactando a velocidade da operação."
+  },
+  { 
+    value: "impaciencia", 
+    label: "Impaciência",
+    origin: "Tubarão / Inquieto",
+    intensity: "Média",
+    meaning: "Dificuldade em respeitar o tempo de aprendizado ou execução dos outros, gerando ansiedade."
+  },
+  { 
+    value: "acomodacao", 
+    label: "Acomodação",
+    origin: "Lobo / Estável",
+    intensity: "Baixa",
+    meaning: "Manutenção do status quo para evitar desconforto, perdendo oportunidades de inovação ou melhoria."
+  },
 ];
 
 // 30 perguntas oficiais Hard·Soft·Heart (10 por dimensão)
