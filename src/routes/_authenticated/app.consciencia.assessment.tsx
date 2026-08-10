@@ -250,6 +250,50 @@ function AssessmentWizard() {
     setStep(requestedStep);
   }, [requestedStep]);
 
+  // Salvamento automático: persiste estado local a cada mudança
+  useEffect(() => {
+    if (!orgId) return;
+    const state = {
+      declaredRole,
+      notMine,
+      discPrimary,
+      mbtiType,
+      riskFlags,
+      sabAns,
+      cerAns,
+      hard,
+      soft,
+      heart,
+      step
+    };
+    localStorage.setItem(`assessment_draft_${orgId}`, JSON.stringify(state));
+  }, [orgId, declaredRole, notMine, discPrimary, mbtiType, riskFlags, sabAns, cerAns, hard, soft, heart, step]);
+
+  // Retomada: tenta carregar draft do localStorage
+  useEffect(() => {
+    if (!orgId) return;
+    const draft = localStorage.getItem(`assessment_draft_${orgId}`);
+    if (draft && !initial) {
+      try {
+        const s = JSON.parse(draft);
+        if (s.declaredRole) setDeclaredRole(s.declaredRole);
+        if (s.notMine) setNotMine(s.notMine);
+        if (s.discPrimary) setDiscPrimary(s.discPrimary);
+        if (s.mbtiType) setMbtiType(s.mbtiType);
+        if (s.riskFlags) setRiskFlags(s.riskFlags);
+        if (s.sabAns) setSabAns(s.sabAns);
+        if (s.cerAns) setCerAns(s.cerAns);
+        if (s.hard) setHard(s.hard);
+        if (s.soft) setSoft(s.soft);
+        if (s.heart) setHeart(s.heart);
+        // Não forçamos o step se vier via URL, mas se não vier, retomamos
+        if (requestedStep === 0 && s.step) setStep(s.step);
+      } catch (e) {
+        console.error("Erro ao carregar draft", e);
+      }
+    }
+  }, [orgId, initial, requestedStep]);
+
   // hidrata quando dados chegam
   useEffect(() => {
     if (!initial) return;
