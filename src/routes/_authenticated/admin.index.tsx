@@ -53,7 +53,7 @@ function AdminHome() {
     <>
       <AdminPageHeader
         eyebrow={new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}
-        title={`Bom dia, ${user?.fullName?.split(" ")[0] ?? "admin"}.`}
+        title={`Olá, ${user?.fullName?.split(" ")[0] ?? "admin"}.`}
         description="Briefing da inteligência Neo — metodologia, base de conhecimento, receita e uso de IA em uma leitura só."
       />
 
