@@ -177,12 +177,17 @@ export function LeaderOnboarding() {
     setSaving(true);
     try {
       if (step.key === "profile") {
+        let phoneVal = whatsapp.trim();
+        // Garante o prefixo 55 se não houver
+        if (phoneVal && !phoneVal.startsWith("55") && phoneVal.length >= 10) {
+          phoneVal = "55" + phoneVal.replace(/\D/g, "");
+        }
         await persist({
           step: step.key,
           profile: {
             fullName: fullName.trim(),
             jobTitle: jobTitle.trim(),
-            whatsapp: whatsapp.trim(),
+            whatsapp: phoneVal,
           },
         });
       } else {
@@ -304,8 +309,8 @@ export function LeaderOnboarding() {
                 label="WhatsApp (com DDD)"
                 value={whatsapp}
                 onChange={setWhatsapp}
-                placeholder="55 11 99999-9999"
-                hint="Usaremos esse número apenas para envio dos pulsos."
+                placeholder="11 99999-9999"
+                hint="DDI 55 (Brasil) será adicionado automaticamente."
               />
             </div>
           )}
