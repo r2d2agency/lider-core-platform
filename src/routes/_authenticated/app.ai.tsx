@@ -58,6 +58,14 @@ function AICoachPage() {
   const abortRef = useRef<AbortController | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
+  const { data: pdis = [], isLoading: pdisLoading } = useQuery<any[]>({
+    queryKey: ["pdis", orgId],
+    enabled: !!orgId,
+    queryFn: () => api<any[]>(`/organization/${orgId}/pdis`),
+  });
+
+  const isLocked = pdis.length === 0 && !pdisLoading;
+
   const insightMut = useMutation({
     mutationFn: () => api<{ insight: string }>(`/organization/${orgId}/ai/coach/insight`, { method: "POST" }),
     onSuccess: (d) => {
@@ -70,6 +78,30 @@ function AICoachPage() {
   useEffect(() => {
     scrollerRef.current?.scrollTo({ top: scrollerRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, streaming]);
+
+  if (isLocked) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-20 text-center">
+        <div className="mx-auto mb-6 grid h-20 w-20 place-items-center rounded-3xl bg-accent/10 text-accent">
+          <Sparkles className="h-10 w-10" />
+        </div>
+        <h1 className="font-display text-3xl font-bold">Copiloto IA</h1>
+        <p className="mt-4 text-muted-foreground">
+          O Copiloto IA utiliza seu PDI e diagnósticos como contexto para sugerir
+          caminhos de desenvolvimento personalizados.
+        </p>
+        <div className="mt-8 rounded-2xl border border-dashed border-border bg-secondary/30 p-6">
+          <p className="text-sm font-medium">Acesso bloqueado</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Registre seu primeiro PDI para liberar o Coach.
+          </p>
+          <Button asChild className="mt-4 bg-accent hover:bg-accent/90" size="sm">
+            <Link to="/app/pdis">Criar meu PDI</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   async function send(text?: string) {
     const content = (text ?? input).trim();
