@@ -40,6 +40,7 @@ import { Route as AuthenticatedAppOneOnOnesRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppNotificationsRouteImport } from './routes/_authenticated/app.notifications'
 import { Route as AuthenticatedAppNotesRouteImport } from './routes/_authenticated/app.notes'
 import { Route as AuthenticatedAppNineboxRouteImport } from './routes/_authenticated/app.ninebox'
+import { Route as AuthenticatedAppJourneyProgressRouteImport } from './routes/_authenticated/app.journey-progress'
 import { Route as AuthenticatedAppJourneyRouteImport } from './routes/_authenticated/app.journey'
 import { Route as AuthenticatedAppIndicatorsRouteImport } from './routes/_authenticated/app.indicators'
 import { Route as AuthenticatedAppHelpRouteImport } from './routes/_authenticated/app.help'
@@ -273,6 +274,12 @@ const AuthenticatedAppNineboxRoute = AuthenticatedAppNineboxRouteImport.update({
   path: '/ninebox',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppJourneyProgressRoute =
+  AuthenticatedAppJourneyProgressRouteImport.update({
+    id: '/journey-progress',
+    path: '/journey-progress',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppJourneyRoute = AuthenticatedAppJourneyRouteImport.update({
   id: '/journey',
   path: '/journey',
@@ -695,6 +702,7 @@ export interface FileRoutesByFullPath {
   '/app/help': typeof AuthenticatedAppHelpRoute
   '/app/indicators': typeof AuthenticatedAppIndicatorsRoute
   '/app/journey': typeof AuthenticatedAppJourneyRoute
+  '/app/journey-progress': typeof AuthenticatedAppJourneyProgressRoute
   '/app/ninebox': typeof AuthenticatedAppNineboxRoute
   '/app/notes': typeof AuthenticatedAppNotesRoute
   '/app/notifications': typeof AuthenticatedAppNotificationsRoute
@@ -787,6 +795,7 @@ export interface FileRoutesByTo {
   '/app/help': typeof AuthenticatedAppHelpRoute
   '/app/indicators': typeof AuthenticatedAppIndicatorsRoute
   '/app/journey': typeof AuthenticatedAppJourneyRoute
+  '/app/journey-progress': typeof AuthenticatedAppJourneyProgressRoute
   '/app/ninebox': typeof AuthenticatedAppNineboxRoute
   '/app/notes': typeof AuthenticatedAppNotesRoute
   '/app/notifications': typeof AuthenticatedAppNotificationsRoute
@@ -882,6 +891,7 @@ export interface FileRoutesById {
   '/_authenticated/app/help': typeof AuthenticatedAppHelpRoute
   '/_authenticated/app/indicators': typeof AuthenticatedAppIndicatorsRoute
   '/_authenticated/app/journey': typeof AuthenticatedAppJourneyRoute
+  '/_authenticated/app/journey-progress': typeof AuthenticatedAppJourneyProgressRoute
   '/_authenticated/app/ninebox': typeof AuthenticatedAppNineboxRoute
   '/_authenticated/app/notes': typeof AuthenticatedAppNotesRoute
   '/_authenticated/app/notifications': typeof AuthenticatedAppNotificationsRoute
@@ -981,6 +991,7 @@ export interface FileRouteTypes {
     | '/app/help'
     | '/app/indicators'
     | '/app/journey'
+    | '/app/journey-progress'
     | '/app/ninebox'
     | '/app/notes'
     | '/app/notifications'
@@ -1073,6 +1084,7 @@ export interface FileRouteTypes {
     | '/app/help'
     | '/app/indicators'
     | '/app/journey'
+    | '/app/journey-progress'
     | '/app/ninebox'
     | '/app/notes'
     | '/app/notifications'
@@ -1167,6 +1179,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/help'
     | '/_authenticated/app/indicators'
     | '/_authenticated/app/journey'
+    | '/_authenticated/app/journey-progress'
     | '/_authenticated/app/ninebox'
     | '/_authenticated/app/notes'
     | '/_authenticated/app/notifications'
@@ -1447,6 +1460,13 @@ declare module '@tanstack/react-router' {
       path: '/ninebox'
       fullPath: '/app/ninebox'
       preLoaderRoute: typeof AuthenticatedAppNineboxRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/journey-progress': {
+      id: '/_authenticated/app/journey-progress'
+      path: '/journey-progress'
+      fullPath: '/app/journey-progress'
+      preLoaderRoute: typeof AuthenticatedAppJourneyProgressRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/app/journey': {
@@ -2118,6 +2138,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppHelpRoute: typeof AuthenticatedAppHelpRoute
   AuthenticatedAppIndicatorsRoute: typeof AuthenticatedAppIndicatorsRoute
   AuthenticatedAppJourneyRoute: typeof AuthenticatedAppJourneyRoute
+  AuthenticatedAppJourneyProgressRoute: typeof AuthenticatedAppJourneyProgressRoute
   AuthenticatedAppNineboxRoute: typeof AuthenticatedAppNineboxRoute
   AuthenticatedAppNotesRoute: typeof AuthenticatedAppNotesRoute
   AuthenticatedAppNotificationsRoute: typeof AuthenticatedAppNotificationsRoute
@@ -2144,6 +2165,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppHelpRoute: AuthenticatedAppHelpRoute,
   AuthenticatedAppIndicatorsRoute: AuthenticatedAppIndicatorsRoute,
   AuthenticatedAppJourneyRoute: AuthenticatedAppJourneyRoute,
+  AuthenticatedAppJourneyProgressRoute: AuthenticatedAppJourneyProgressRoute,
   AuthenticatedAppNineboxRoute: AuthenticatedAppNineboxRoute,
   AuthenticatedAppNotesRoute: AuthenticatedAppNotesRoute,
   AuthenticatedAppNotificationsRoute: AuthenticatedAppNotificationsRoute,

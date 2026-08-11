@@ -52,6 +52,7 @@ export const Route = createFileRoute("/_authenticated/app")({
 const nav = [
   { to: "/app", label: "Hoje", icon: Home, section: "Consciência", module: "consciencia" },
   { to: "/app/journey", label: "Jornada", icon: Compass, section: "Consciência", module: "consciencia" },
+  { to: "/app/journey-progress", label: "Progresso C.O.R.E.", icon: Gauge, section: "Consciência", module: "consciencia" },
   { to: "/app/consciencia", label: "Meu perfil", icon: Brain, section: "Consciência", module: "consciencia" },
   { to: "/app/team", label: "Minha equipe", icon: Users, section: "Consciência", module: "consciencia" },
   { to: "/app/consciencia/agenda", label: "Agenda do líder", icon: Calendar, section: "Consciência", module: "consciencia" },
