@@ -78,7 +78,7 @@ function HomeBriefing() {
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <header>
-        <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.22em]" style={{ color: 'var(--pilar-c)' }}>
           Briefing do dia
         </div>
         <h1 className="mt-2 font-display text-4xl font-semibold leading-[1.05] tracking-tight md:text-5xl">
@@ -116,13 +116,14 @@ function HomeBriefing() {
 
       <section className="grid gap-3 md:grid-cols-2">
         {/* Módulo C (ativo hoje) */}
-        <Tile icon={Brain} label="1. Consciência" desc={!data?.profile?.onboardingCompletedAt ? "Perfil incompleto — clique para finalizar" : "Diagnóstico C.O.R.E. e CORE DNA"} to="/app/consciencia" enabled={hasC} />
-        <Tile icon={Compass} label="2. Organização" desc="Agenda sem rituais — organize sua semana" to="/app/organization" enabled={hasC} />
-        <Tile icon={Target} label="3. Resultados" desc="Indicadores e metas do time" to="/app/indicators" enabled={hasC} />
-        <Tile icon={Sparkles} label="4. Evolução" desc="PDI não iniciado — comece seu crescimento" to="/app/pdis" enabled={hasC} />
+        <Tile icon={Brain} label="1. Consciência" desc={!data?.profile?.onboardingCompletedAt ? "Perfil incompleto — clique para finalizar" : "Diagnóstico C.O.R.E. e CORE DNA"} to="/app/consciencia" enabled={hasC} pilar="c" />
+        <Tile icon={Compass} label="2. Organização" desc="Agenda sem rituais — organize sua semana" to="/app/organization" enabled={hasC} pilar="o" />
+        <Tile icon={Target} label="3. Resultados" desc="Indicadores e metas do time" to="/app/indicators" enabled={hasC} pilar="r" />
+        <Tile icon={Sparkles} label="4. Evolução" desc="PDI não iniciado — comece seu crescimento" to="/app/pdis" enabled={hasC} pilar="e" />
+
         
         <div className="md:col-span-2 my-4">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-1 opacity-60">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-1 opacity-60" style={{ color: 'var(--pilar-c)' }}>
             Principais da ferramenta
           </div>
           <div className="grid gap-3 md:grid-cols-2">
@@ -260,13 +261,22 @@ function Tile({
   desc,
   to,
   enabled,
+  pilar,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   desc: string;
   to: string;
   enabled: boolean;
+  pilar?: "c" | "o" | "r" | "e";
 }) {
+  const pilarColor = 
+    pilar === "c" ? "var(--pilar-c)" :
+    pilar === "o" ? "var(--pilar-o)" :
+    pilar === "r" ? "var(--pilar-r)" :
+    pilar === "e" ? "var(--pilar-e)" :
+    "var(--accent)";
+
   const inner = (
     <div
       className={
@@ -275,15 +285,23 @@ function Tile({
           ? "border-border bg-card hover:bg-secondary/40"
           : "border-dashed border-border bg-muted/40 text-muted-foreground")
       }
+      style={{
+        borderColor: enabled && pilar ? `color-mix(in oklab, ${pilarColor} 30%, var(--border))` : undefined
+      }}
     >
       <div
         className={
           "grid h-11 w-11 shrink-0 place-items-center rounded-xl " +
-          (enabled ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground")
+          (enabled ? "" : "bg-muted text-muted-foreground")
         }
+        style={{
+          backgroundColor: enabled ? `color-mix(in oklab, ${pilarColor} 12%, transparent)` : undefined,
+          color: enabled ? pilarColor : undefined
+        }}
       >
         <Icon className="h-5 w-5" />
       </div>
+
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <div className="text-sm font-semibold">{label}</div>

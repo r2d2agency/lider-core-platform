@@ -120,9 +120,11 @@ function Avatar({ name }: { name?: string }) {
     .map((n) => n[0]?.toUpperCase())
     .join("");
   return (
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-sm font-semibold text-primary ring-1 ring-primary/25">
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-semibold ring-1" style={{ color: 'var(--pilar-e)', backgroundColor: 'color-mix(in oklab, var(--pilar-e) 12%, transparent)', boxShadow: '0 0 0 1px color-mix(in oklab, var(--pilar-e) 25%, transparent)' }}>
       {initials || <Users className="h-4 w-4" />}
     </div>
+
+
   );
 }
 
@@ -433,9 +435,13 @@ function PdisPage() {
                     <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
                       <div
                         className="h-full rounded-full bg-primary transition-all"
-                        style={{ width: `${pct}%` }}
+                        style={{ 
+                          width: `${pct}%`,
+                          backgroundColor: "var(--pilar-e)"
+                        }}
                       />
                     </div>
+
                   </div>
                 )}
 

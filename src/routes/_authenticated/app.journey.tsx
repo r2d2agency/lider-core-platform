@@ -32,7 +32,7 @@ function JourneyPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <header className="flex items-center gap-3">
-        <div className="grid h-11 w-11 place-items-center rounded-2xl bg-accent/10 text-accent">
+        <div className="grid h-11 w-11 place-items-center rounded-2xl" style={{ backgroundColor: 'color-mix(in oklab, var(--pilar-c) 12%, transparent)', color: 'var(--pilar-c)' }}>
           <Compass className="h-5 w-5" />
         </div>
         <div>

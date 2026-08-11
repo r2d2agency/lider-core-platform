@@ -122,7 +122,7 @@ function IndicatorsPage() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
-            <BarChart3 className="h-3.5 w-3.5" /> Módulo Resultado
+            <BarChart3 className="h-3.5 w-3.5" style={{ color: 'var(--pilar-r)' }} /> Módulo Resultado
           </div>
           <h1 className="mt-1 font-display text-4xl">Indicadores</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">

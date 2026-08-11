@@ -350,9 +350,13 @@ function ConscienciaPage() {
         <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
           <div
             className="h-full rounded-full bg-accent transition-[width] duration-700 ease-out"
-            style={{ width: `${progressPct}%` }}
+            style={{ 
+              width: `${progressPct}%`,
+              backgroundColor: "var(--pilar-c)"
+            }}
           />
         </div>
+
       </section>
 
       {/* 3 · Continue de onde parou */}

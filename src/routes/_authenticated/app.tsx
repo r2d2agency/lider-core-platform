@@ -291,23 +291,39 @@ function AppShell() {
                 </div>
               )}
               <ul className="space-y-0.5">
-                {items.map(({ to, label, icon: Icon }) => {
+                {items.map(({ to, label, icon: Icon, section }) => {
                   const active = isActiveRoute(to);
+                  const pilarColor = 
+                    section === "Consciência" ? "var(--pilar-c)" :
+                    section === "Organização" ? "var(--pilar-o)" :
+                    section === "Resultado" ? "var(--pilar-r)" :
+                    section === "Evolução" ? "var(--pilar-e)" :
+                    "var(--sidebar-accent-foreground)";
+
                   return (
                     <li key={to}>
                       <Link
                         to={to}
                         title={collapsed ? label : undefined}
+                        style={{
+                          color: active ? pilarColor : undefined,
+                          backgroundColor: active ? `color-mix(in oklab, ${pilarColor} 10%, transparent)` : undefined,
+                        }}
                         className={
                           "flex items-center rounded-lg text-sm transition-colors " +
                           (collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2") +
                           " " +
                           (active
-                            ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
+                            ? "font-semibold"
                             : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground")
                         }
                       >
-                        <Icon className="h-4 w-4 shrink-0" strokeWidth={active ? 2 : 1.75} />
+                        <Icon 
+                          className="h-4 w-4 shrink-0" 
+                          strokeWidth={active ? 2.5 : 1.75} 
+                          style={{ color: active ? pilarColor : undefined }}
+                        />
+
                         {!collapsed && <span className="truncate">{label}</span>}
                       </Link>
                     </li>
@@ -385,9 +401,11 @@ function AppShell() {
             )}
             <TeamHealthPill orgId={orgId} />
             <NotificationBell />
-            <div className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-secondary text-sm font-medium ring-2 ring-border">
+            <div className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-secondary text-sm font-medium ring-2" style={{ borderColor: 'var(--pilar-c)' }}>
               <Logo variant="mark" className="h-8 w-8 rounded-full" />
             </div>
+
+
           </div>
         </header>
         <main className="flex-1 px-4 py-5 pb-28 md:px-8 md:py-10 md:pb-14 xl:px-12">
