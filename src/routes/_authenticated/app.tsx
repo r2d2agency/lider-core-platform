@@ -28,6 +28,8 @@ import {
   Settings2,
   Bell,
   NotebookPen,
+  Grid3X3,
+  CheckCircle2,
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
