@@ -401,9 +401,10 @@ function AppShell() {
             )}
             <TeamHealthPill orgId={orgId} />
             <NotificationBell />
-            <div className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-secondary text-sm font-medium ring-2 ring-border" style={{ borderColor: 'var(--pilar-c)' }}>
+            <div className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-secondary text-sm font-medium ring-2" style={{ borderColor: 'var(--pilar-c)' }}>
               <Logo variant="mark" className="h-8 w-8 rounded-full" />
             </div>
+
 
           </div>
         </header>
