@@ -415,6 +415,7 @@ function AssessmentWizard() {
     if (step === 1) return "Selecione seu estilo DISC predominante para continuar.";
     if (step === 2) return `Responda pelo menos 8 sabotadores. Faltam ${Math.max(0, 8 - sabAnswered)}.`;
     if (step === 3) return `Responda pelo menos 6 blocos de predominância cerebral. Faltam ${Math.max(0, 6 - cerAnswered)}.`;
+    if (step === 5) return "Responda todas as 30 afirmações do radar para concluir.";
     return "Complete esta etapa para continuar.";
   };
   const goNext = () => {
