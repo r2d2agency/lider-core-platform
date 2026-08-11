@@ -1,5 +1,5 @@
 /**
- * LÍDER CORE — Landing Page & Manifesto
+ * LÍDER C.O.R.E. — Sistema Operacional para Liderança
  * "O líder não entra no sistema para preencher formulários. Ele entra para liderar."
  *
  * ESPECIFICAÇÃO MÓDULO C (CONSCIÊNCIA):
