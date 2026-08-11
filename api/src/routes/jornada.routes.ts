@@ -269,7 +269,7 @@ jornadaRouter.delete("/:orgId/jornada/okrs/:id", async (req, res) => {
 async function computeAgendaAdherence(orgId: string, startAt: Date, endAt: Date) {
   const rituals = await prisma.ritual.findMany({
     where: { organizationId: orgId },
-    select: { id: true, title: true, type: true },
+    select: { id: true, name: true, type: true },
   });
   const occurrences = await prisma.ritualOccurrence.findMany({
     where: {
@@ -283,7 +283,7 @@ async function computeAgendaAdherence(orgId: string, startAt: Date, endAt: Date)
     const done = own.filter((o) => o.status === "done").length;
     return {
       ritualId: r.id,
-      title: r.title,
+      title: r.name,
       type: r.type,
       planned: own.length,
       done,
