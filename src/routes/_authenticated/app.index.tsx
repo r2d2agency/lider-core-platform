@@ -261,13 +261,22 @@ function Tile({
   desc,
   to,
   enabled,
+  pilar,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   desc: string;
   to: string;
   enabled: boolean;
+  pilar?: "c" | "o" | "r" | "e";
 }) {
+  const pilarColor = 
+    pilar === "c" ? "var(--pilar-c)" :
+    pilar === "o" ? "var(--pilar-o)" :
+    pilar === "r" ? "var(--pilar-r)" :
+    pilar === "e" ? "var(--pilar-e)" :
+    "var(--accent)";
+
   const inner = (
     <div
       className={
@@ -276,15 +285,23 @@ function Tile({
           ? "border-border bg-card hover:bg-secondary/40"
           : "border-dashed border-border bg-muted/40 text-muted-foreground")
       }
+      style={{
+        borderColor: enabled && pilar ? `color-mix(in oklab, ${pilarColor} 30%, var(--border))` : undefined
+      }}
     >
       <div
         className={
           "grid h-11 w-11 shrink-0 place-items-center rounded-xl " +
-          (enabled ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground")
+          (enabled ? "" : "bg-muted text-muted-foreground")
         }
+        style={{
+          backgroundColor: enabled ? `color-mix(in oklab, ${pilarColor} 12%, transparent)` : undefined,
+          color: enabled ? pilarColor : undefined
+        }}
       >
         <Icon className="h-5 w-5" />
       </div>
+
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <div className="text-sm font-semibold">{label}</div>
