@@ -86,6 +86,7 @@ import { Route as AuthenticatedAppOrganizationDelegationsRouteImport } from './r
 import { Route as AuthenticatedAppOrganizationDecisionsRouteImport } from './routes/_authenticated/app.organization.decisions'
 import { Route as AuthenticatedAppOrganizationCyclesRouteImport } from './routes/_authenticated/app.organization.cycles'
 import { Route as AuthenticatedAppOrganizationAreasRouteImport } from './routes/_authenticated/app.organization.areas'
+import { Route as AuthenticatedAppOrganizationAgreementsRouteImport } from './routes/_authenticated/app.organization.agreements'
 import { Route as AuthenticatedAppOrganizationAgendaRouteImport } from './routes/_authenticated/app.organization.agenda'
 import { Route as AuthenticatedAppConscienciaPdiRouteImport } from './routes/_authenticated/app.consciencia.pdi'
 import { Route as AuthenticatedAppConscienciaLideradosRouteImport } from './routes/_authenticated/app.consciencia.liderados'
@@ -536,6 +537,12 @@ const AuthenticatedAppOrganizationAreasRoute =
     path: '/areas',
     getParentRoute: () => AuthenticatedAppOrganizationRoute,
   } as any)
+const AuthenticatedAppOrganizationAgreementsRoute =
+  AuthenticatedAppOrganizationAgreementsRouteImport.update({
+    id: '/agreements',
+    path: '/agreements',
+    getParentRoute: () => AuthenticatedAppOrganizationRoute,
+  } as any)
 const AuthenticatedAppOrganizationAgendaRoute =
   AuthenticatedAppOrganizationAgendaRouteImport.update({
     id: '/agenda',
@@ -724,6 +731,7 @@ export interface FileRoutesByFullPath {
   '/app/consciencia/liderados': typeof AuthenticatedAppConscienciaLideradosRoute
   '/app/consciencia/pdi': typeof AuthenticatedAppConscienciaPdiRoute
   '/app/organization/agenda': typeof AuthenticatedAppOrganizationAgendaRoute
+  '/app/organization/agreements': typeof AuthenticatedAppOrganizationAgreementsRoute
   '/app/organization/areas': typeof AuthenticatedAppOrganizationAreasRoute
   '/app/organization/cycles': typeof AuthenticatedAppOrganizationCyclesRoute
   '/app/organization/decisions': typeof AuthenticatedAppOrganizationDecisionsRoute
@@ -811,6 +819,7 @@ export interface FileRoutesByTo {
   '/app/consciencia/liderados': typeof AuthenticatedAppConscienciaLideradosRoute
   '/app/consciencia/pdi': typeof AuthenticatedAppConscienciaPdiRoute
   '/app/organization/agenda': typeof AuthenticatedAppOrganizationAgendaRoute
+  '/app/organization/agreements': typeof AuthenticatedAppOrganizationAgreementsRoute
   '/app/organization/areas': typeof AuthenticatedAppOrganizationAreasRoute
   '/app/organization/cycles': typeof AuthenticatedAppOrganizationCyclesRoute
   '/app/organization/decisions': typeof AuthenticatedAppOrganizationDecisionsRoute
@@ -909,6 +918,7 @@ export interface FileRoutesById {
   '/_authenticated/app/consciencia/liderados': typeof AuthenticatedAppConscienciaLideradosRoute
   '/_authenticated/app/consciencia/pdi': typeof AuthenticatedAppConscienciaPdiRoute
   '/_authenticated/app/organization/agenda': typeof AuthenticatedAppOrganizationAgendaRoute
+  '/_authenticated/app/organization/agreements': typeof AuthenticatedAppOrganizationAgreementsRoute
   '/_authenticated/app/organization/areas': typeof AuthenticatedAppOrganizationAreasRoute
   '/_authenticated/app/organization/cycles': typeof AuthenticatedAppOrganizationCyclesRoute
   '/_authenticated/app/organization/decisions': typeof AuthenticatedAppOrganizationDecisionsRoute
@@ -1007,6 +1017,7 @@ export interface FileRouteTypes {
     | '/app/consciencia/liderados'
     | '/app/consciencia/pdi'
     | '/app/organization/agenda'
+    | '/app/organization/agreements'
     | '/app/organization/areas'
     | '/app/organization/cycles'
     | '/app/organization/decisions'
@@ -1094,6 +1105,7 @@ export interface FileRouteTypes {
     | '/app/consciencia/liderados'
     | '/app/consciencia/pdi'
     | '/app/organization/agenda'
+    | '/app/organization/agreements'
     | '/app/organization/areas'
     | '/app/organization/cycles'
     | '/app/organization/decisions'
@@ -1191,6 +1203,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/consciencia/liderados'
     | '/_authenticated/app/consciencia/pdi'
     | '/_authenticated/app/organization/agenda'
+    | '/_authenticated/app/organization/agreements'
     | '/_authenticated/app/organization/areas'
     | '/_authenticated/app/organization/cycles'
     | '/_authenticated/app/organization/decisions'
@@ -1758,6 +1771,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppOrganizationAreasRouteImport
       parentRoute: typeof AuthenticatedAppOrganizationRoute
     }
+    '/_authenticated/app/organization/agreements': {
+      id: '/_authenticated/app/organization/agreements'
+      path: '/agreements'
+      fullPath: '/app/organization/agreements'
+      preLoaderRoute: typeof AuthenticatedAppOrganizationAgreementsRouteImport
+      parentRoute: typeof AuthenticatedAppOrganizationRoute
+    }
     '/_authenticated/app/organization/agenda': {
       id: '/_authenticated/app/organization/agenda'
       path: '/agenda'
@@ -2032,6 +2052,7 @@ const AuthenticatedAppConscienciaRouteWithChildren =
 
 interface AuthenticatedAppOrganizationRouteChildren {
   AuthenticatedAppOrganizationAgendaRoute: typeof AuthenticatedAppOrganizationAgendaRoute
+  AuthenticatedAppOrganizationAgreementsRoute: typeof AuthenticatedAppOrganizationAgreementsRoute
   AuthenticatedAppOrganizationAreasRoute: typeof AuthenticatedAppOrganizationAreasRoute
   AuthenticatedAppOrganizationCyclesRoute: typeof AuthenticatedAppOrganizationCyclesRoute
   AuthenticatedAppOrganizationDecisionsRoute: typeof AuthenticatedAppOrganizationDecisionsRoute
@@ -2047,6 +2068,8 @@ const AuthenticatedAppOrganizationRouteChildren: AuthenticatedAppOrganizationRou
   {
     AuthenticatedAppOrganizationAgendaRoute:
       AuthenticatedAppOrganizationAgendaRoute,
+    AuthenticatedAppOrganizationAgreementsRoute:
+      AuthenticatedAppOrganizationAgreementsRoute,
     AuthenticatedAppOrganizationAreasRoute:
       AuthenticatedAppOrganizationAreasRoute,
     AuthenticatedAppOrganizationCyclesRoute:
