@@ -21,6 +21,9 @@
  * - Substituir o teste atual de Sabotadores pelo novo instrumento aprovado. Retirar “(oficial)” se não houver licença/validação que sustente essa alegação.
  * - Experiência de Retomada: nenhum teste deve vir com respostas pré-selecionadas ao ser reiniciado, garantindo neutralidade.
  * - Testes Canônicos: os testes Herrmann, DISC, Radar HSH e Autogestão Mental estão com as perguntas oficiais enviadas atualizadas e rodando via bootstrap na API.
+ * - Cruzamento de Inteligência: cruzamento do Radar de Competências e Sabotadores com a Descrição de Cargo para gerar gaps de desenvolvimento.
+ * - Ciclos de Recorrência: lembretes automáticos para Assessments (6 meses), Competências (6 meses) e Skills/IPM (90 dias).
+ * - Dinamismo: o líder tem autonomia para atualizar suas atividades e responsabilidades a qualquer momento.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
