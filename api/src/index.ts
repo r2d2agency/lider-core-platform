@@ -145,6 +145,7 @@ app.use("/organization", oneOnOnesRouter);
 app.use("/organization", threeSixtyRouter);
 app.use("/organization", pulsesRouter);
 app.use("/organization", cyclesRouter);
+app.use("/organization", jornadaRouter);
 app.use("/organization", kudosRouter);
 app.use("/organization", coachRouter);
 app.use("/organization", calendarRouter);
