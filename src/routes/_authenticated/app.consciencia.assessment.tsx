@@ -405,6 +405,7 @@ function AssessmentWizard() {
     if (step === 1) return !!discPrimary;
     if (step === 2) return Object.keys(sabAns).length >= 8;
     if (step === 3) return Object.keys(cerAns).length >= 6;
+    if (step === 5) return hard.length >= 10 && soft.length >= 10 && heart.length >= 10;
     return true;
   };
   const sabAnswered = Object.keys(sabAns).length;
