@@ -19,7 +19,10 @@ import {
   Users,
   Users2,
 } from "lucide-react";
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 import { api } from "@/lib/api";
+
 import { exportCsv } from "@/lib/csv-export";
 import { useCurrentOrg } from "@/lib/use-current-org";
 import { Button } from "@/components/ui/button";
@@ -526,7 +529,7 @@ function ProfileDialog({
 }) {
   const qc = useQueryClient();
   const [roleTitle, setRoleTitle] = useState(member.profile?.roleTitle ?? "");
-  const [whatsapp, setWhatsapp] = useState(member.whatsapp ?? "");
+  const [whatsapp, setWhatsapp] = useState<string | undefined>(member.whatsapp ?? undefined);
   const [deliverables, setDeliverables] = useState((member.profile?.expectedDeliverables ?? []).join("\n"));
   const [indicators, setIndicators] = useState((member.profile?.keyIndicators ?? []).join("\n"));
   const [autonomy, setAutonomy] = useState<Autonomy>(member.profile?.autonomyLevel ?? "n2_acompanho");
@@ -536,6 +539,10 @@ function ProfileDialog({
 
   const save = useMutation({
     mutationFn: async () => {
+      if (whatsapp && !isValidPhoneNumber(whatsapp)) {
+        throw new Error("Número de WhatsApp inválido");
+      }
+
       await api(`/organization/${orgId}/team/${member.membershipId}/profile`, {
         method: "PUT",
         body: {
@@ -548,13 +555,14 @@ function ProfileDialog({
           notes: notes || null,
         },
       });
-      if ((whatsapp || "") !== (member.whatsapp ?? "")) {
+      if ((whatsapp || null) !== (member.whatsapp ?? null)) {
         await api(`/organization/${orgId}/team/${member.membershipId}/contact`, {
           method: "PUT",
           body: { whatsapp: whatsapp || null, phone: whatsapp || null },
         });
       }
     },
+
     onSuccess: () => {
       toast.success("Perfil atualizado");
       qc.invalidateQueries({ queryKey: ["team", orgId] });
@@ -586,17 +594,20 @@ function ProfileDialog({
             </Select>
           </div>
         </div>
-        <div>
+        <div className="whatsapp-input-container">
           <Label>WhatsApp</Label>
-          <Input
+          <PhoneInput
+            defaultCountry="BR"
             value={whatsapp}
-            onChange={(e) => setWhatsapp(e.target.value)}
-            placeholder="+55 11 90000-0000"
+            onChange={setWhatsapp}
+            placeholder="Ex.: +55 11 90000-0000"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
           <p className="mt-1 text-[11px] text-muted-foreground">
             Preenche automaticamente o envio de Pulsos por WhatsApp.
           </p>
         </div>
+
         <div>
           <Label>Entregas esperadas (uma por linha)</Label>
           <Textarea value={deliverables} onChange={(e) => setDeliverables(e.target.value)} className="min-h-[80px]" />
@@ -842,7 +853,7 @@ function InviteDialog({ orgId, onDone }: { orgId: string; onDone: () => void }) 
   const qc = useQueryClient();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
+  const [whatsapp, setWhatsapp] = useState<string | undefined>("");
   const [roleTitle, setRoleTitle] = useState("");
   const [role, setRole] = useState<"collaborator" | "leader" | "hr_admin">("collaborator");
   const [autonomy, setAutonomy] = useState<Autonomy>("n2_acompanho");
@@ -850,8 +861,11 @@ function InviteDialog({ orgId, onDone }: { orgId: string; onDone: () => void }) 
   const [notes, setNotes] = useState("");
 
   const create = useMutation({
-    mutationFn: () =>
-      api(`/organization/${orgId}/team`, {
+    mutationFn: () => {
+      if (whatsapp && !isValidPhoneNumber(whatsapp)) {
+        throw new Error("Número de WhatsApp inválido");
+      }
+      return api(`/organization/${orgId}/team`, {
         method: "POST",
         body: {
           fullName,
@@ -864,7 +878,9 @@ function InviteDialog({ orgId, onDone }: { orgId: string; onDone: () => void }) 
           expectedDeliverables: deliverables.split("\n").map((s) => s.trim()).filter(Boolean),
           notes: notes || null,
         },
-      }),
+      });
+    },
+
     onSuccess: () => {
       toast.success("Pessoa adicionada à equipe");
       qc.invalidateQueries({ queryKey: ["team", orgId] });
@@ -888,17 +904,20 @@ function InviteDialog({ orgId, onDone }: { orgId: string; onDone: () => void }) 
             <Label>E-mail *</Label>
             <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ana@empresa.com" />
           </div>
-          <div>
+          <div className="whatsapp-input-container">
             <Label>WhatsApp</Label>
-            <Input
+            <PhoneInput
+              defaultCountry="BR"
               value={whatsapp}
-              onChange={(e) => setWhatsapp(e.target.value)}
-              placeholder="+55 11 90000-0000"
+              onChange={setWhatsapp}
+              placeholder="Ex.: +55 11 90000-0000"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
             <p className="mt-1 text-[11px] text-muted-foreground">
               Usado para enviar Pulsos direto pelo WhatsApp.
             </p>
           </div>
+
           <div>
             <Label>Cargo</Label>
             <Input value={roleTitle} onChange={(e) => setRoleTitle(e.target.value)} placeholder="Ex.: Analista de Marketing" />
