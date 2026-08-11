@@ -762,7 +762,13 @@ function HshBlock({
                   <button
                     type="button"
                     key={v}
-                    onClick={() => setValues(values.map((x, j) => (j === i ? v : x)))}
+                    onClick={() => {
+                      const newArr = [...values];
+                      // Garante que o array tenha o tamanho correto
+                      while (newArr.length <= i) newArr.push(0);
+                      newArr[i] = v;
+                      setValues(newArr);
+                    }}
                     className={
                       "h-10 flex-1 rounded-lg border text-sm font-medium transition-all focus:ring-2 focus:ring-primary/40 focus:outline-none " +
                       (values[i] === v
