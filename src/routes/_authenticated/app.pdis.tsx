@@ -120,9 +120,10 @@ function Avatar({ name }: { name?: string }) {
     .map((n) => n[0]?.toUpperCase())
     .join("");
   return (
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-sm font-semibold text-primary ring-1 ring-primary/25">
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-sm font-semibold text-primary ring-1" style={{ color: 'var(--pilar-e)', backgroundColor: 'color-mix(in oklab, var(--pilar-e) 12%, transparent)', ringColor: 'color-mix(in oklab, var(--pilar-e) 25%, transparent)' }}>
       {initials || <Users className="h-4 w-4" />}
     </div>
+
   );
 }
 
