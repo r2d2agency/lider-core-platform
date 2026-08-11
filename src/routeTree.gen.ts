@@ -45,6 +45,7 @@ import { Route as AuthenticatedAppIndicatorsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAppHelpRouteImport } from './routes/_authenticated/app.help'
 import { Route as AuthenticatedAppFeedbacksRouteImport } from './routes/_authenticated/app.feedbacks'
 import { Route as AuthenticatedAppEvolutionRouteImport } from './routes/_authenticated/app.evolution'
+import { Route as AuthenticatedAppCycleClosureRouteImport } from './routes/_authenticated/app.cycle-closure'
 import { Route as AuthenticatedAppConscienciaRouteImport } from './routes/_authenticated/app.consciencia'
 import { Route as AuthenticatedAppCoachRouteImport } from './routes/_authenticated/app.coach'
 import { Route as AuthenticatedAppAiRouteImport } from './routes/_authenticated/app.ai'
@@ -297,6 +298,12 @@ const AuthenticatedAppEvolutionRoute =
   AuthenticatedAppEvolutionRouteImport.update({
     id: '/evolution',
     path: '/evolution',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCycleClosureRoute =
+  AuthenticatedAppCycleClosureRouteImport.update({
+    id: '/cycle-closure',
+    path: '/cycle-closure',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppConscienciaRoute =
@@ -675,6 +682,7 @@ export interface FileRoutesByFullPath {
   '/app/ai': typeof AuthenticatedAppAiRoute
   '/app/coach': typeof AuthenticatedAppCoachRoute
   '/app/consciencia': typeof AuthenticatedAppConscienciaRouteWithChildren
+  '/app/cycle-closure': typeof AuthenticatedAppCycleClosureRoute
   '/app/evolution': typeof AuthenticatedAppEvolutionRoute
   '/app/feedbacks': typeof AuthenticatedAppFeedbacksRoute
   '/app/help': typeof AuthenticatedAppHelpRoute
@@ -765,6 +773,7 @@ export interface FileRoutesByTo {
   '/app/360': typeof AuthenticatedApp360Route
   '/app/ai': typeof AuthenticatedAppAiRoute
   '/app/coach': typeof AuthenticatedAppCoachRoute
+  '/app/cycle-closure': typeof AuthenticatedAppCycleClosureRoute
   '/app/evolution': typeof AuthenticatedAppEvolutionRoute
   '/app/feedbacks': typeof AuthenticatedAppFeedbacksRoute
   '/app/help': typeof AuthenticatedAppHelpRoute
@@ -858,6 +867,7 @@ export interface FileRoutesById {
   '/_authenticated/app/ai': typeof AuthenticatedAppAiRoute
   '/_authenticated/app/coach': typeof AuthenticatedAppCoachRoute
   '/_authenticated/app/consciencia': typeof AuthenticatedAppConscienciaRouteWithChildren
+  '/_authenticated/app/cycle-closure': typeof AuthenticatedAppCycleClosureRoute
   '/_authenticated/app/evolution': typeof AuthenticatedAppEvolutionRoute
   '/_authenticated/app/feedbacks': typeof AuthenticatedAppFeedbacksRoute
   '/_authenticated/app/help': typeof AuthenticatedAppHelpRoute
@@ -955,6 +965,7 @@ export interface FileRouteTypes {
     | '/app/ai'
     | '/app/coach'
     | '/app/consciencia'
+    | '/app/cycle-closure'
     | '/app/evolution'
     | '/app/feedbacks'
     | '/app/help'
@@ -1045,6 +1056,7 @@ export interface FileRouteTypes {
     | '/app/360'
     | '/app/ai'
     | '/app/coach'
+    | '/app/cycle-closure'
     | '/app/evolution'
     | '/app/feedbacks'
     | '/app/help'
@@ -1137,6 +1149,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/ai'
     | '/_authenticated/app/coach'
     | '/_authenticated/app/consciencia'
+    | '/_authenticated/app/cycle-closure'
     | '/_authenticated/app/evolution'
     | '/_authenticated/app/feedbacks'
     | '/_authenticated/app/help'
@@ -1456,6 +1469,13 @@ declare module '@tanstack/react-router' {
       path: '/evolution'
       fullPath: '/app/evolution'
       preLoaderRoute: typeof AuthenticatedAppEvolutionRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/cycle-closure': {
+      id: '/_authenticated/app/cycle-closure'
+      path: '/cycle-closure'
+      fullPath: '/app/cycle-closure'
+      preLoaderRoute: typeof AuthenticatedAppCycleClosureRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/app/consciencia': {
@@ -2069,6 +2089,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAiRoute: typeof AuthenticatedAppAiRoute
   AuthenticatedAppCoachRoute: typeof AuthenticatedAppCoachRoute
   AuthenticatedAppConscienciaRoute: typeof AuthenticatedAppConscienciaRouteWithChildren
+  AuthenticatedAppCycleClosureRoute: typeof AuthenticatedAppCycleClosureRoute
   AuthenticatedAppEvolutionRoute: typeof AuthenticatedAppEvolutionRoute
   AuthenticatedAppFeedbacksRoute: typeof AuthenticatedAppFeedbacksRoute
   AuthenticatedAppHelpRoute: typeof AuthenticatedAppHelpRoute
@@ -2094,6 +2115,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppCoachRoute: AuthenticatedAppCoachRoute,
   AuthenticatedAppConscienciaRoute:
     AuthenticatedAppConscienciaRouteWithChildren,
+  AuthenticatedAppCycleClosureRoute: AuthenticatedAppCycleClosureRoute,
   AuthenticatedAppEvolutionRoute: AuthenticatedAppEvolutionRoute,
   AuthenticatedAppFeedbacksRoute: AuthenticatedAppFeedbacksRoute,
   AuthenticatedAppHelpRoute: AuthenticatedAppHelpRoute,
