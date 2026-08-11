@@ -24,6 +24,7 @@
  * - Cruzamento de Inteligência: cruzamento do Radar de Competências e Sabotadores com a Descrição de Cargo para gerar gaps de desenvolvimento.
  * - Ciclos de Recorrência: lembretes automáticos para Assessments (6 meses), Competências (6 meses) e Skills/IPM (90 dias).
  * - Dinamismo: o líder tem autonomia para atualizar suas atividades e responsabilidades a qualquer momento.
+ * - Identidade Visual: paleta semântica definida por pilar (Azul C, Verde O, Vermelho R, Laranja E) aplicada em cards, progressos e gráficos.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
