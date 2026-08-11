@@ -1053,24 +1053,24 @@ model LeaderAgendaItem {
 // liderado" enviada de volta a ele.
 // ============================================================
 model SubordinateAssessment {
-  id              String        @id @default(uuid()) @db.Uuid
-  organizationId  String        @map("organization_id") @db.Uuid
-  leaderId        String        @map("leader_id") @db.Uuid
-  memberId        String?       @map("member_id") @db.Uuid
-  memberLabel     String        @map("member_label")
-  memberPhone     String?       @map("member_phone")
-  discPrimary     String?       @map("disc_primary")
-  discProfile     Json?         @map("disc_profile")
-  cerebralPrimary CerebralMode? @map("cerebral_primary")
-  cerebralProfile Json?         @map("cerebral_profile")
-  sabotageScores  Json?         @map("sabotage_scores")
-  aiReading       String?       @map("ai_reading")
-  aiTrack         String?       @map("ai_track")
-  trackSteps      Json?         @map("track_steps")
-  trackGeneratedAt DateTime?    @map("track_generated_at")
-  lastPulseSendId String?       @map("last_pulse_send_id") @db.Uuid
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
+  id               String        @id @default(uuid()) @db.Uuid
+  organizationId   String        @map("organization_id") @db.Uuid
+  leaderId         String        @map("leader_id") @db.Uuid
+  memberId         String?       @map("member_id") @db.Uuid
+  memberLabel      String        @map("member_label")
+  memberPhone      String?       @map("member_phone")
+  discPrimary      String?       @map("disc_primary")
+  discProfile      Json?         @map("disc_profile")
+  cerebralPrimary  CerebralMode? @map("cerebral_primary")
+  cerebralProfile  Json?         @map("cerebral_profile")
+  sabotageScores   Json?         @map("sabotage_scores")
+  aiReading        String?       @map("ai_reading")
+  aiTrack          String?       @map("ai_track")
+  trackSteps       Json?         @map("track_steps")
+  trackGeneratedAt DateTime?     @map("track_generated_at")
+  lastPulseSendId  String?       @map("last_pulse_send_id") @db.Uuid
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
 
   @@index([organizationId, leaderId])
   @@index([memberId])
@@ -2088,15 +2088,15 @@ model AssessmentOption {
 }
 
 model AssessmentShareLink {
-  id           String                        @id @default(uuid()) @db.Uuid
-  assessmentId String                        @map("assessment_id") @db.Uuid
-  token        String                        @unique
+  id           String                     @id @default(uuid()) @db.Uuid
+  assessmentId String                     @map("assessment_id") @db.Uuid
+  token        String                     @unique
   label        String?
-  expiresAt    DateTime?                     @map("expires_at")
-  maxResponses Int?                          @map("max_responses")
-  revokedAt    DateTime?                     @map("revoked_at")
-  createdById  String?                       @map("created_by") @db.Uuid
-  createdAt    DateTime                      @default(now()) @map("created_at")
+  expiresAt    DateTime?                  @map("expires_at")
+  maxResponses Int?                       @map("max_responses")
+  revokedAt    DateTime?                  @map("revoked_at")
+  createdById  String?                    @map("created_by") @db.Uuid
+  createdAt    DateTime                   @default(now()) @map("created_at")
   responses    AssessmentPublicResponse[]
 
   @@index([assessmentId])
@@ -2241,4 +2241,153 @@ model BaseNote {
 
   @@index([organizationId, userId, kind, createdAt])
   @@map("base_notes")
+}
+
+// ============================================================
+// JORNADA C.O.R.E. — modelo transversal (Spec Jornada · Mariana)
+// 9-box nasce em O (potencial), ganha desempenho em R e é lido em E.
+// Causa raiz aceita múltiplas causas. PDI é versionado por ciclo.
+// ============================================================
+
+enum NineBoxLevel {
+  baixo
+  medio
+  alto
+}
+
+enum NineBoxStage {
+  organizacao
+  resultado
+  evolucao
+}
+
+model NineBoxEntry {
+  id             String        @id @default(uuid()) @db.Uuid
+  organizationId String        @map("organization_id") @db.Uuid
+  cycleId        String        @map("cycle_id") @db.Uuid
+  membershipId   String        @map("membership_id") @db.Uuid
+  subjectUserId  String?       @map("subject_user_id") @db.Uuid
+  subjectLabel   String?       @map("subject_label")
+  stage          NineBoxStage  @default(organizacao)
+  potential      NineBoxLevel?
+  performance    NineBoxLevel?
+  notes          String?
+  createdBy      String?       @map("created_by") @db.Uuid
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  @@unique([cycleId, membershipId, stage])
+  @@index([organizationId, cycleId])
+  @@map("nine_box_entries")
+}
+
+enum RootCauseCategory {
+  comportamental
+  processo
+  dado
+  estrutural
+  outro
+}
+
+model RootCause {
+  id             String            @id @default(uuid()) @db.Uuid
+  organizationId String            @map("organization_id") @db.Uuid
+  cycleId        String            @map("cycle_id") @db.Uuid
+  category       RootCauseCategory @default(outro)
+  description    String
+  createdBy      String?           @map("created_by") @db.Uuid
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  @@index([organizationId, cycleId])
+  @@map("root_causes")
+}
+
+model CycleOkr {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  cycleId        String   @map("cycle_id") @db.Uuid
+  objective      String
+  linkedGoalId   String?  @map("linked_goal_id") @db.Uuid
+  horizonDays    Int      @default(90) @map("horizon_days")
+  createdBy      String?  @map("created_by") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  keyResults CycleOkrKeyResult[]
+
+  @@index([organizationId, cycleId])
+  @@map("cycle_okrs")
+}
+
+model CycleOkrKeyResult {
+  id           String   @id @default(uuid()) @db.Uuid
+  okrId        String   @map("okr_id") @db.Uuid
+  title        String
+  targetValue  Float?   @map("target_value")
+  currentValue Float?   @map("current_value")
+  unit         String?
+  done         Boolean  @default(false)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  okr CycleOkr @relation(fields: [okrId], references: [id], onDelete: Cascade)
+
+  @@index([okrId])
+  @@map("cycle_okr_key_results")
+}
+
+model CycleClosure {
+  id                String   @id @default(uuid()) @db.Uuid
+  organizationId    String   @map("organization_id") @db.Uuid
+  cycleId           String   @unique @map("cycle_id") @db.Uuid
+  targetValue       Float?   @map("target_value")
+  resultValue       Float?   @map("result_value")
+  targetLabel       String?  @map("target_label")
+  recalibrateGoal   Boolean  @default(false) @map("recalibrate_goal")
+  recalibrateReason String?  @map("recalibrate_reason")
+  agendaAdherence   Json?    @map("agenda_adherence")
+  learnings         String?
+  decision          String?
+  coachSuggestion   String?  @map("coach_suggestion")
+  coachResponse     String?  @map("coach_response")
+  createdBy         String?  @map("created_by") @db.Uuid
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([organizationId])
+  @@map("cycle_closures")
+}
+
+model PdiSnapshot {
+  id              String   @id @default(uuid()) @db.Uuid
+  organizationId  String   @map("organization_id") @db.Uuid
+  subjectUserId   String   @map("subject_user_id") @db.Uuid
+  pdiId           String?  @map("pdi_id") @db.Uuid
+  cycleId         String?  @map("cycle_id") @db.Uuid
+  version         Int      @default(1)
+  selfDevelopment String[] @default([]) @map("self_development")
+  teamFront       String[] @default([]) @map("team_front")
+  ritualsFront    String[] @default([]) @map("rituals_front")
+  goalsFront      String[] @default([]) @map("goals_front")
+  radarSnapshot   Json?    @map("radar_snapshot")
+  createdBy       String?  @map("created_by") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([organizationId, subjectUserId, version])
+  @@map("pdi_snapshots")
+}
+
+model TeamAgreement {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  teamId         String?  @map("team_id") @db.Uuid
+  areaId         String?  @map("area_id") @db.Uuid
+  kind           String   @default("comportamento") // comportamento | entrega
+  text           String
+  createdBy      String?  @map("created_by") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([organizationId, kind])
+  @@map("team_agreements")
 }
