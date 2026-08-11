@@ -1,4 +1,24 @@
 @import "tailwindcss" source(none);
+
+/* Ajustes para o react-phone-number-input no estilo da plataforma */
+.whatsapp-input-container .PhoneInputInput {
+  outline: none;
+  background: transparent;
+  border: none;
+  flex: 1;
+  font-size: 0.875rem;
+}
+
+.whatsapp-input-container .PhoneInputCountry {
+  display: flex;
+  align-items: center;
+  margin-right: 0.5rem;
+}
+
+.whatsapp-input-container .PhoneInputCountrySelect {
+  cursor: pointer;
+}
+
 @source "../src";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
