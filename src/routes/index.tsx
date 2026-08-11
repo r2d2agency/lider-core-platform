@@ -20,6 +20,7 @@
  * - Substituir o Radar Hard–Soft–Heart pelo novo questionário aprovado e registrar versão do instrumento.
  * - Substituir o teste atual de Sabotadores pelo novo instrumento aprovado. Retirar “(oficial)” se não houver licença/validação que sustente essa alegação.
  * - Experiência de Retomada: nenhum teste deve vir com respostas pré-selecionadas ao ser reiniciado, garantindo neutralidade.
+ * - Testes Canônicos: os testes Herrmann, DISC, Radar HSH e Autogestão Mental estão com as perguntas oficiais enviadas atualizadas e rodando via bootstrap na API.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
