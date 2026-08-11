@@ -241,9 +241,9 @@ function AssessmentWizard() {
   const [riskFlags, setRiskFlags] = useState<string[]>([]);
   const [sabAns, setSabAns] = useState<Record<string, number>>({});
   const [cerAns, setCerAns] = useState<Record<string, CerebralMode>>({});
-  const [hard, setHard] = useState<number[]>(Array(10).fill(3));
-  const [soft, setSoft] = useState<number[]>(Array(10).fill(3));
-  const [heart, setHeart] = useState<number[]>(Array(10).fill(3));
+  const [hard, setHard] = useState<number[]>([]);
+  const [soft, setSoft] = useState<number[]>([]);
+  const [heart, setHeart] = useState<number[]>([]);
   const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -296,7 +296,11 @@ function AssessmentWizard() {
 
   // hidrata quando dados chegam
   useEffect(() => {
-    if (!initial) return;
+    // Se o usuário já concluiu ou se estamos visualizando resultados, hidratamos do perfil.
+    // Mas a pedido do usuário: "nenhum teste deve vir com respostas selecionadas" ao refazer.
+    // O requestedStep > 0 indica que o usuário escolheu uma etapa específica para (re)fazer.
+    if (!initial || requestedStep > 0) return;
+
     setDeclaredRole(initial.declaredRole ?? "");
     setNotMine(initial.notMine ?? "");
     setDiscPrimary(initial.discPrimary ?? null);
@@ -312,7 +316,7 @@ function AssessmentWizard() {
       });
       setSabAns(answers);
     }
-  }, [initial]);
+  }, [initial, requestedStep]);
 
   const avg = (arr: number[]) => Math.round((arr.reduce((s, v) => s + v, 0) / arr.length) * 20); // 1..5 → 20..100
   const hardScore = avg(hard);
@@ -401,6 +405,7 @@ function AssessmentWizard() {
     if (step === 1) return !!discPrimary;
     if (step === 2) return Object.keys(sabAns).length >= 8;
     if (step === 3) return Object.keys(cerAns).length >= 6;
+    if (step === 5) return hard.length >= 10 && soft.length >= 10 && heart.length >= 10;
     return true;
   };
   const sabAnswered = Object.keys(sabAns).length;
@@ -410,6 +415,7 @@ function AssessmentWizard() {
     if (step === 1) return "Selecione seu estilo DISC predominante para continuar.";
     if (step === 2) return `Responda pelo menos 8 sabotadores. Faltam ${Math.max(0, 8 - sabAnswered)}.`;
     if (step === 3) return `Responda pelo menos 6 blocos de predominância cerebral. Faltam ${Math.max(0, 6 - cerAnswered)}.`;
+    if (step === 5) return "Responda todas as 30 afirmações do radar para concluir.";
     return "Complete esta etapa para continuar.";
   };
   const goNext = () => {
@@ -758,7 +764,13 @@ function HshBlock({
                   <button
                     type="button"
                     key={v}
-                    onClick={() => setValues(values.map((x, j) => (j === i ? v : x)))}
+                    onClick={() => {
+                      const newArr = [...values];
+                      // Garante que o array tenha o tamanho correto
+                      while (newArr.length <= i) newArr.push(0);
+                      newArr[i] = v;
+                      setValues(newArr);
+                    }}
                     className={
                       "h-10 flex-1 rounded-lg border text-sm font-medium transition-all focus:ring-2 focus:ring-primary/40 focus:outline-none " +
                       (values[i] === v
