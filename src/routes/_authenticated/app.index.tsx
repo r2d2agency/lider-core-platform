@@ -116,10 +116,11 @@ function HomeBriefing() {
 
       <section className="grid gap-3 md:grid-cols-2">
         {/* Módulo C (ativo hoje) */}
-        <Tile icon={Brain} label="1. Consciência" desc={!data?.profile?.onboardingCompletedAt ? "Perfil incompleto — clique para finalizar" : "Diagnóstico C.O.R.E. e CORE DNA"} to="/app/consciencia" enabled={hasC} />
-        <Tile icon={Compass} label="2. Organização" desc="Agenda sem rituais — organize sua semana" to="/app/organization" enabled={hasC} />
-        <Tile icon={Target} label="3. Resultados" desc="Indicadores e metas do time" to="/app/indicators" enabled={hasC} />
-        <Tile icon={Sparkles} label="4. Evolução" desc="PDI não iniciado — comece seu crescimento" to="/app/pdis" enabled={hasC} />
+        <Tile icon={Brain} label="1. Consciência" desc={!data?.profile?.onboardingCompletedAt ? "Perfil incompleto — clique para finalizar" : "Diagnóstico C.O.R.E. e CORE DNA"} to="/app/consciencia" enabled={hasC} pilar="c" />
+        <Tile icon={Compass} label="2. Organização" desc="Agenda sem rituais — organize sua semana" to="/app/organization" enabled={hasC} pilar="o" />
+        <Tile icon={Target} label="3. Resultados" desc="Indicadores e metas do time" to="/app/indicators" enabled={hasC} pilar="r" />
+        <Tile icon={Sparkles} label="4. Evolução" desc="PDI não iniciado — comece seu crescimento" to="/app/pdis" enabled={hasC} pilar="e" />
+
         
         <div className="md:col-span-2 my-4">
           <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-1 opacity-60">
