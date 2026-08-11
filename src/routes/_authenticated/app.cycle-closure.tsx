@@ -8,6 +8,7 @@ import { useCurrentOrg } from "@/lib/use-current-org";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { PdiSnapshotPanel } from "@/components/jornada/PdiSnapshotPanel";
 
 export const Route = createFileRoute("/_authenticated/app/cycle-closure")({
   ssr: false,
@@ -434,6 +435,8 @@ function CycleClosurePage() {
               </Button>
             </div>
           </section>
+
+          <PdiSnapshotPanel orgId={orgId} cycleId={activeCycleId} />
 
           <div className="flex flex-wrap gap-2 pb-4">
             <Button
