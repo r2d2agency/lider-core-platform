@@ -433,9 +433,13 @@ function PdisPage() {
                     <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
                       <div
                         className="h-full rounded-full bg-primary transition-all"
-                        style={{ width: `${pct}%` }}
+                        style={{ 
+                          width: `${pct}%`,
+                          backgroundColor: "var(--pilar-e)"
+                        }}
                       />
                     </div>
+
                   </div>
                 )}
 
