@@ -560,7 +560,7 @@ jornadaRouter.get("/:orgId/jornada/progress", async (req, res) => {
     const organizacao: JourneyStep[] = [
       { key: "meta", label: "Meta do período com indicador", status: mark(goalsWithIndicator > 0, (cycle?.goals.length ?? 0) > 0), detail: goalsWithIndicator > 0 ? `${goalsWithIndicator} meta(s) vinculada(s) a indicador` : cycle ? "Ciclo criado, mas sem meta ligada a indicador" : "Nenhum ciclo criado", to: "/app/organization/cycles" },
       { key: "mapa", label: "Mapa do time (liderados e papéis)", status: mark(memberships > 1 && memberProfiles > 0, memberships > 1), detail: memberships > 1 ? `${memberships} pessoas · ${memberProfiles} com papel definido` : "Cadastre os liderados da sua equipe", to: "/app/team" },
-      { key: "rituais", label: "Agenda de rituais combinada", status: mark(rituais_ok(rituals), rituals > 0), detail: rituals > 0 ? `${rituals} ritual(is) ativos` : "Combine 1:1, gestão à vista e reunião de indicadores", to: "/app/organization/rituals" },
+      { key: "rituais", label: "Agenda de rituais combinada", status: mark(rituals >= 3, rituals > 0), detail: rituals > 0 ? `${rituals} ritual(is) ativos` : "Combine 1:1, gestão à vista e reunião de indicadores", to: "/app/organization/rituals" },
       { key: "ninebox-o", label: "9-Box baseline (potencial)", status: mark(potentialEntries > 0), detail: potentialEntries > 0 ? `${potentialEntries} liderado(s) avaliados em potencial` : "Faça a primeira leitura de potencial do time", to: "/app/ninebox" },
       { key: "acordos", label: "Acordos de comportamento e entrega", status: mark(behaviourAgreements > 0 && deliveryAgreements > 0, agreements.length > 0), detail: agreements.length > 0 ? `${behaviourAgreements} de comportamento · ${deliveryAgreements} de entrega` : "Registre o que o time não abre mão", to: "/app/organization/agreements" },
     ];
@@ -612,7 +612,3 @@ jornadaRouter.get("/:orgId/jornada/progress", async (req, res) => {
     res.status(500).json({ error: "Não foi possível calcular o progresso da jornada." });
   }
 });
-
-function rituais_ok(count: number) {
-  return count >= 3;
-}
