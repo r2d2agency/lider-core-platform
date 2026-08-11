@@ -241,9 +241,9 @@ function AssessmentWizard() {
   const [riskFlags, setRiskFlags] = useState<string[]>([]);
   const [sabAns, setSabAns] = useState<Record<string, number>>({});
   const [cerAns, setCerAns] = useState<Record<string, CerebralMode>>({});
-  const [hard, setHard] = useState<number[]>(Array(10).fill(3));
-  const [soft, setSoft] = useState<number[]>(Array(10).fill(3));
-  const [heart, setHeart] = useState<number[]>(Array(10).fill(3));
+  const [hard, setHard] = useState<number[]>([]);
+  const [soft, setSoft] = useState<number[]>([]);
+  const [heart, setHeart] = useState<number[]>([]);
   const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -296,7 +296,11 @@ function AssessmentWizard() {
 
   // hidrata quando dados chegam
   useEffect(() => {
-    if (!initial) return;
+    // Se o usuário já concluiu ou se estamos visualizando resultados, hidratamos do perfil.
+    // Mas a pedido do usuário: "nenhum teste deve vir com respostas selecionadas" ao refazer.
+    // O requestedStep > 0 indica que o usuário escolheu uma etapa específica para (re)fazer.
+    if (!initial || requestedStep > 0) return;
+
     setDeclaredRole(initial.declaredRole ?? "");
     setNotMine(initial.notMine ?? "");
     setDiscPrimary(initial.discPrimary ?? null);
@@ -312,7 +316,7 @@ function AssessmentWizard() {
       });
       setSabAns(answers);
     }
-  }, [initial]);
+  }, [initial, requestedStep]);
 
   const avg = (arr: number[]) => Math.round((arr.reduce((s, v) => s + v, 0) / arr.length) * 20); // 1..5 → 20..100
   const hardScore = avg(hard);
