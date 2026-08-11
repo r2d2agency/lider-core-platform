@@ -455,3 +455,164 @@ jornadaRouter.delete("/:orgId/jornada/agreements/:id", async (req, res) => {
   await prisma.teamAgreement.delete({ where: { id: req.params.id } }).catch(() => null);
   res.status(204).end();
 });
+// ============================================================
+// VISÃO GERAL DA JORNADA — status por etapa (C, O, R, E)
+// ============================================================
+
+type StepStatus = "done" | "partial" | "todo";
+type JourneyStep = {
+  key: string;
+  label: string;
+  status: StepStatus;
+  detail: string;
+  to: string;
+};
+
+const mark = (ok: boolean, partial = false): StepStatus =>
+  ok ? "done" : partial ? "partial" : "todo";
+
+jornadaRouter.get("/:orgId/jornada/progress", async (req, res) => {
+  try {
+    const { orgId } = req.params;
+    const userId = req.userId!;
+    const cycleIdParam = typeof req.query.cycleId === "string" ? req.query.cycleId : null;
+
+    const cycles = await prisma.cycle.findMany({
+      where: { organizationId: orgId },
+      orderBy: [{ startAt: "desc" }],
+      include: { goals: true },
+    });
+    const cycle =
+      (cycleIdParam ? cycles.find((c) => c.id === cycleIdParam) : null) ??
+      cycles.find((c) => c.status === "active") ??
+      cycles[0] ??
+      null;
+
+    const [
+      profile,
+      pdiCount,
+      memberships,
+      memberProfiles,
+      rituals,
+      agreements,
+      delegations,
+      feedbacks,
+      nineBox,
+      closure,
+      causes,
+      okrs,
+      snapshots,
+      radarSnapshots,
+      occurrences,
+    ] = await Promise.all([
+      prisma.leaderProfile.findFirst({ where: { organizationId: orgId, userId } }),
+      prisma.pdi.count({ where: { organizationId: orgId, subjectUserId: userId } }),
+      prisma.membership.count({ where: { organizationId: orgId } }),
+      prisma.teamMemberProfile.count({ where: { organizationId: orgId } }),
+      prisma.ritual.count({ where: { organizationId: orgId, status: "active" } }),
+      prisma.teamAgreement.findMany({ where: { organizationId: orgId } }),
+      prisma.delegation.count({ where: { organizationId: orgId } }),
+      prisma.feedbackRecord.count({ where: { organizationId: orgId } }),
+      cycle
+        ? prisma.nineBoxEntry.findMany({ where: { organizationId: orgId, cycleId: cycle.id } })
+        : Promise.resolve([]),
+      cycle
+        ? prisma.cycleClosure.findUnique({ where: { cycleId: cycle.id } })
+        : Promise.resolve(null),
+      cycle
+        ? prisma.rootCause.count({ where: { organizationId: orgId, cycleId: cycle.id } })
+        : Promise.resolve(0),
+      cycle
+        ? prisma.cycleOkr.count({ where: { organizationId: orgId, cycleId: cycle.id } })
+        : Promise.resolve(0),
+      prisma.pdiSnapshot.count({ where: { organizationId: orgId, subjectUserId: userId } }),
+      prisma.leadershipScoreSnapshot.count({ where: { organizationId: orgId, userId } }),
+      cycle
+        ? prisma.ritualOccurrence.count({
+            where: {
+              status: "done",
+              scheduledAt: { gte: cycle.startAt, lte: cycle.endAt },
+              ritual: { organizationId: orgId },
+            },
+          })
+        : Promise.resolve(0),
+    ]);
+
+    const hsh =
+      profile?.hardSelfScore != null &&
+      profile?.softSelfScore != null &&
+      profile?.heartSelfScore != null;
+    const goalsWithIndicator = (cycle?.goals ?? []).filter((g) => !!g.indicatorId).length;
+    const potentialEntries = nineBox.filter((e) => e.potential != null).length;
+    const performanceEntries = nineBox.filter((e) => e.performance != null).length;
+    const behaviourAgreements = agreements.filter((a) => a.kind === "comportamento").length;
+    const deliveryAgreements = agreements.filter((a) => a.kind === "entrega").length;
+
+    const consciencia: JourneyStep[] = [
+      { key: "disc", label: "Assessment DISC", status: mark(!!profile?.discPrimary), detail: profile?.discPrimary ? `Perfil predominante: ${profile.discPrimary}` : "Ainda não respondido", to: "/app/consciencia/disc" },
+      { key: "sabotadores", label: "Sabotadores", status: mark((profile?.sabotages?.length ?? 0) > 0), detail: (profile?.sabotages?.length ?? 0) > 0 ? `Padrões: ${profile!.sabotages.join(", ")}` : "Ainda não respondido", to: "/app/consciencia/assessment" },
+      { key: "cerebral", label: "Predominância cerebral (4 animais)", status: mark(!!profile?.cerebralPrimary), detail: profile?.cerebralPrimary ? `Predominância: ${profile.cerebralPrimary}` : "Ainda não respondido", to: "/app/consciencia/assessment" },
+      { key: "hsh", label: "Radar Hard · Soft · Heart", status: mark(hsh), detail: hsh ? `Hard ${profile!.hardSelfScore} · Soft ${profile!.softSelfScore} · Heart ${profile!.heartSelfScore}` : "Radar HSH pendente", to: "/app/consciencia" },
+      { key: "cargo", label: "Descrição de cargo e atividades", status: mark(!!(profile?.activityDescription || profile?.activityDocText)), detail: profile?.activityDescription || profile?.activityDocText ? "Descrição registrada" : "Descreva ou envie o documento das suas atividades", to: "/app/consciencia/activity" },
+      { key: "pdi", label: "PDI criado", status: mark(pdiCount > 0), detail: pdiCount > 0 ? `${pdiCount} PDI(s) ativos` : "O PDI nasce do cruzamento Radar + Sabotadores + cargo", to: "/app/consciencia/pdi" },
+    ];
+
+    const organizacao: JourneyStep[] = [
+      { key: "meta", label: "Meta do período com indicador", status: mark(goalsWithIndicator > 0, (cycle?.goals.length ?? 0) > 0), detail: goalsWithIndicator > 0 ? `${goalsWithIndicator} meta(s) vinculada(s) a indicador` : cycle ? "Ciclo criado, mas sem meta ligada a indicador" : "Nenhum ciclo criado", to: "/app/organization/cycles" },
+      { key: "mapa", label: "Mapa do time (liderados e papéis)", status: mark(memberships > 1 && memberProfiles > 0, memberships > 1), detail: memberships > 1 ? `${memberships} pessoas · ${memberProfiles} com papel definido` : "Cadastre os liderados da sua equipe", to: "/app/team" },
+      { key: "rituais", label: "Agenda de rituais combinada", status: mark(rituais_ok(rituals), rituals > 0), detail: rituals > 0 ? `${rituals} ritual(is) ativos` : "Combine 1:1, gestão à vista e reunião de indicadores", to: "/app/organization/rituals" },
+      { key: "ninebox-o", label: "9-Box baseline (potencial)", status: mark(potentialEntries > 0), detail: potentialEntries > 0 ? `${potentialEntries} liderado(s) avaliados em potencial` : "Faça a primeira leitura de potencial do time", to: "/app/ninebox" },
+      { key: "acordos", label: "Acordos de comportamento e entrega", status: mark(behaviourAgreements > 0 && deliveryAgreements > 0, agreements.length > 0), detail: agreements.length > 0 ? `${behaviourAgreements} de comportamento · ${deliveryAgreements} de entrega` : "Registre o que o time não abre mão", to: "/app/organization/agreements" },
+    ];
+
+    const resultado: JourneyStep[] = [
+      { key: "time", label: "Time confirmado em execução", status: mark(memberships > 1), detail: memberships > 1 ? `${memberships - 1} liderado(s) confirmados` : "Confirme o time herdado de Organização", to: "/app/team" },
+      { key: "delegacoes", label: "Meta desmembrada em delegações", status: mark(delegations > 0), detail: delegations > 0 ? `${delegations} delegação(ões) registradas` : "Desmembre a meta por pessoa, com prazo", to: "/app/organization/delegations" },
+      { key: "feedbacks", label: "Feedbacks estruturados", status: mark(feedbacks > 0), detail: feedbacks > 0 ? `${feedbacks} feedback(s) no histórico` : "Registre os primeiros feedbacks do ciclo", to: "/app/feedbacks" },
+      { key: "ninebox-r", label: "9-Box com desempenho real", status: mark(performanceEntries > 0), detail: performanceEntries > 0 ? `${performanceEntries} liderado(s) com desempenho lançado` : "O segundo eixo do 9-box nasce aqui", to: "/app/ninebox" },
+      { key: "rituais-log", label: "Rituais realmente executados", status: mark(occurrences > 0), detail: occurrences > 0 ? `${occurrences} ocorrência(s) concluídas no ciclo` : "Sem execução registrada — a adesão de agenda ficará em 0%", to: "/app/organization/agenda" },
+    ];
+
+    const evolucao: JourneyStep[] = [
+      { key: "resultado", label: "Resultado do período × meta", status: mark(closure?.resultValue != null), detail: closure?.resultValue != null ? `Realizado ${closure.resultValue}${closure.targetValue != null ? ` de ${closure.targetValue}` : ""}` : "Lance o realizado do ciclo", to: "/app/cycle-closure" },
+      { key: "adesao", label: "Adesão de agenda (planejado × realizado)", status: mark(!!closure?.agendaAdherence, occurrences > 0), detail: closure?.agendaAdherence ? "Auditoria de agenda calculada" : "Calculada automaticamente ao salvar o fechamento", to: "/app/cycle-closure" },
+      { key: "causa", label: "Causa raiz (múltiplas causas)", status: mark(causes > 0), detail: causes > 0 ? `${causes} causa(s) mapeadas` : "Aplique os 5 Porquês — pode haver mais de uma causa", to: "/app/cycle-closure" },
+      { key: "recalibrar", label: "Decisão de recalibrar a meta", status: mark(!!closure?.recalibrateReason, !!closure), detail: closure?.recalibrateReason ? (closure.recalibrateGoal ? "Meta recalibrada" : "Meta mantida, com justificativa") : "Decida e justifique", to: "/app/cycle-closure" },
+      { key: "radar-novo", label: "Radar HSH do novo ciclo", status: mark(radarSnapshots > 1, radarSnapshots > 0), detail: radarSnapshots > 1 ? `${radarSnapshots} medições — já há comparação` : "Reaplique o radar para comparar sua evolução", to: "/app/evolution" },
+      { key: "coach", label: "Recomendação da IA Coach respondida", status: mark(!!closure?.coachResponse, !!closure?.coachSuggestion), detail: closure?.coachResponse ? "Você registrou sua resposta à trilha sugerida" : "Leia a sugestão do Coach e diga se concorda", to: "/app/coach" },
+      { key: "okr", label: "OKR dos próximos 90 dias", status: mark(okrs > 0), detail: okrs > 0 ? `${okrs} OKR(s) do ciclo` : "Escreva 1 objetivo com até 3 key results", to: "/app/cycle-closure" },
+      { key: "pdi-v", label: "PDI atualizado (4 frentes, versionado)", status: mark(snapshots > 0), detail: snapshots > 0 ? `${snapshots} versão(ões) no histórico` : "Consolide o PDI ao fechar o ciclo", to: "/app/cycle-closure" },
+    ];
+
+    const stages = [
+      { key: "C", name: "Consciência", subtitle: "Quem eu sou como líder", steps: consciencia },
+      { key: "O", name: "Organização", subtitle: "Estrutura, meta e combinados", steps: organizacao },
+      { key: "R", name: "Resultado", subtitle: "Execução e desempenho real", steps: resultado },
+      { key: "E", name: "Evolução", subtitle: "PDCA, causa raiz e próximo ciclo", steps: evolucao },
+    ].map((s) => {
+      const score = s.steps.reduce((acc, st) => acc + (st.status === "done" ? 1 : st.status === "partial" ? 0.5 : 0), 0);
+      return { ...s, percent: Math.round((score / s.steps.length) * 100) };
+    });
+
+    const nextSteps = stages
+      .flatMap((s) => s.steps.filter((st) => st.status !== "done").map((st) => ({ ...st, stage: s.key, stageName: s.name })))
+      .slice(0, 5);
+
+    const overall = Math.round(stages.reduce((a, s) => a + s.percent, 0) / stages.length);
+
+    res.json({
+      cycle: cycle ? { id: cycle.id, name: cycle.name, status: cycle.status, startAt: cycle.startAt, endAt: cycle.endAt } : null,
+      cycles: cycles.map((c) => ({ id: c.id, name: c.name, status: c.status })),
+      overall,
+      stages,
+      nextSteps,
+    });
+  } catch (err) {
+    console.error("[jornada] progress", err);
+    res.status(500).json({ error: "Não foi possível calcular o progresso da jornada." });
+  }
+});
+
+function rituais_ok(count: number) {
+  return count >= 3;
+}
