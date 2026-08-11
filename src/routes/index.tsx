@@ -17,6 +17,8 @@
  * - Validar isolamento de dados por empresa, perfis de acesso e visibilidade gestor/liderado.
  * - Instrumentar funil: onboarding concluído, diagnóstico iniciado/concluído, abandono, relatório aberto, PDI criado e retorno semanal.
  * - Revisar desktop, tablet e celular; eliminar títulos cortados, rolagem horizontal e CTAs fora da área visível.
+ * - Substituir o Radar Hard–Soft–Heart pelo novo questionário aprovado e registrar versão do instrumento.
+ * - Substituir o teste atual de Sabotadores pelo novo instrumento aprovado. Retirar “(oficial)” se não houver licença/validação que sustente essa alegação.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
