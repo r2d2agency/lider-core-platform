@@ -39,11 +39,13 @@ import { Route as AuthenticatedAppOrganizationRouteImport } from './routes/_auth
 import { Route as AuthenticatedAppOneOnOnesRouteImport } from './routes/_authenticated/app.one-on-ones'
 import { Route as AuthenticatedAppNotificationsRouteImport } from './routes/_authenticated/app.notifications'
 import { Route as AuthenticatedAppNotesRouteImport } from './routes/_authenticated/app.notes'
+import { Route as AuthenticatedAppNineboxRouteImport } from './routes/_authenticated/app.ninebox'
 import { Route as AuthenticatedAppJourneyRouteImport } from './routes/_authenticated/app.journey'
 import { Route as AuthenticatedAppIndicatorsRouteImport } from './routes/_authenticated/app.indicators'
 import { Route as AuthenticatedAppHelpRouteImport } from './routes/_authenticated/app.help'
 import { Route as AuthenticatedAppFeedbacksRouteImport } from './routes/_authenticated/app.feedbacks'
 import { Route as AuthenticatedAppEvolutionRouteImport } from './routes/_authenticated/app.evolution'
+import { Route as AuthenticatedAppCycleClosureRouteImport } from './routes/_authenticated/app.cycle-closure'
 import { Route as AuthenticatedAppConscienciaRouteImport } from './routes/_authenticated/app.consciencia'
 import { Route as AuthenticatedAppCoachRouteImport } from './routes/_authenticated/app.coach'
 import { Route as AuthenticatedAppAiRouteImport } from './routes/_authenticated/app.ai'
@@ -265,6 +267,11 @@ const AuthenticatedAppNotesRoute = AuthenticatedAppNotesRouteImport.update({
   path: '/notes',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppNineboxRoute = AuthenticatedAppNineboxRouteImport.update({
+  id: '/ninebox',
+  path: '/ninebox',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppJourneyRoute = AuthenticatedAppJourneyRouteImport.update({
   id: '/journey',
   path: '/journey',
@@ -291,6 +298,12 @@ const AuthenticatedAppEvolutionRoute =
   AuthenticatedAppEvolutionRouteImport.update({
     id: '/evolution',
     path: '/evolution',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCycleClosureRoute =
+  AuthenticatedAppCycleClosureRouteImport.update({
+    id: '/cycle-closure',
+    path: '/cycle-closure',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppConscienciaRoute =
@@ -669,11 +682,13 @@ export interface FileRoutesByFullPath {
   '/app/ai': typeof AuthenticatedAppAiRoute
   '/app/coach': typeof AuthenticatedAppCoachRoute
   '/app/consciencia': typeof AuthenticatedAppConscienciaRouteWithChildren
+  '/app/cycle-closure': typeof AuthenticatedAppCycleClosureRoute
   '/app/evolution': typeof AuthenticatedAppEvolutionRoute
   '/app/feedbacks': typeof AuthenticatedAppFeedbacksRoute
   '/app/help': typeof AuthenticatedAppHelpRoute
   '/app/indicators': typeof AuthenticatedAppIndicatorsRoute
   '/app/journey': typeof AuthenticatedAppJourneyRoute
+  '/app/ninebox': typeof AuthenticatedAppNineboxRoute
   '/app/notes': typeof AuthenticatedAppNotesRoute
   '/app/notifications': typeof AuthenticatedAppNotificationsRoute
   '/app/one-on-ones': typeof AuthenticatedAppOneOnOnesRoute
@@ -758,11 +773,13 @@ export interface FileRoutesByTo {
   '/app/360': typeof AuthenticatedApp360Route
   '/app/ai': typeof AuthenticatedAppAiRoute
   '/app/coach': typeof AuthenticatedAppCoachRoute
+  '/app/cycle-closure': typeof AuthenticatedAppCycleClosureRoute
   '/app/evolution': typeof AuthenticatedAppEvolutionRoute
   '/app/feedbacks': typeof AuthenticatedAppFeedbacksRoute
   '/app/help': typeof AuthenticatedAppHelpRoute
   '/app/indicators': typeof AuthenticatedAppIndicatorsRoute
   '/app/journey': typeof AuthenticatedAppJourneyRoute
+  '/app/ninebox': typeof AuthenticatedAppNineboxRoute
   '/app/notes': typeof AuthenticatedAppNotesRoute
   '/app/notifications': typeof AuthenticatedAppNotificationsRoute
   '/app/one-on-ones': typeof AuthenticatedAppOneOnOnesRoute
@@ -850,11 +867,13 @@ export interface FileRoutesById {
   '/_authenticated/app/ai': typeof AuthenticatedAppAiRoute
   '/_authenticated/app/coach': typeof AuthenticatedAppCoachRoute
   '/_authenticated/app/consciencia': typeof AuthenticatedAppConscienciaRouteWithChildren
+  '/_authenticated/app/cycle-closure': typeof AuthenticatedAppCycleClosureRoute
   '/_authenticated/app/evolution': typeof AuthenticatedAppEvolutionRoute
   '/_authenticated/app/feedbacks': typeof AuthenticatedAppFeedbacksRoute
   '/_authenticated/app/help': typeof AuthenticatedAppHelpRoute
   '/_authenticated/app/indicators': typeof AuthenticatedAppIndicatorsRoute
   '/_authenticated/app/journey': typeof AuthenticatedAppJourneyRoute
+  '/_authenticated/app/ninebox': typeof AuthenticatedAppNineboxRoute
   '/_authenticated/app/notes': typeof AuthenticatedAppNotesRoute
   '/_authenticated/app/notifications': typeof AuthenticatedAppNotificationsRoute
   '/_authenticated/app/one-on-ones': typeof AuthenticatedAppOneOnOnesRoute
@@ -946,11 +965,13 @@ export interface FileRouteTypes {
     | '/app/ai'
     | '/app/coach'
     | '/app/consciencia'
+    | '/app/cycle-closure'
     | '/app/evolution'
     | '/app/feedbacks'
     | '/app/help'
     | '/app/indicators'
     | '/app/journey'
+    | '/app/ninebox'
     | '/app/notes'
     | '/app/notifications'
     | '/app/one-on-ones'
@@ -1035,11 +1056,13 @@ export interface FileRouteTypes {
     | '/app/360'
     | '/app/ai'
     | '/app/coach'
+    | '/app/cycle-closure'
     | '/app/evolution'
     | '/app/feedbacks'
     | '/app/help'
     | '/app/indicators'
     | '/app/journey'
+    | '/app/ninebox'
     | '/app/notes'
     | '/app/notifications'
     | '/app/one-on-ones'
@@ -1126,11 +1149,13 @@ export interface FileRouteTypes {
     | '/_authenticated/app/ai'
     | '/_authenticated/app/coach'
     | '/_authenticated/app/consciencia'
+    | '/_authenticated/app/cycle-closure'
     | '/_authenticated/app/evolution'
     | '/_authenticated/app/feedbacks'
     | '/_authenticated/app/help'
     | '/_authenticated/app/indicators'
     | '/_authenticated/app/journey'
+    | '/_authenticated/app/ninebox'
     | '/_authenticated/app/notes'
     | '/_authenticated/app/notifications'
     | '/_authenticated/app/one-on-ones'
@@ -1404,6 +1429,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppNotesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/ninebox': {
+      id: '/_authenticated/app/ninebox'
+      path: '/ninebox'
+      fullPath: '/app/ninebox'
+      preLoaderRoute: typeof AuthenticatedAppNineboxRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/journey': {
       id: '/_authenticated/app/journey'
       path: '/journey'
@@ -1437,6 +1469,13 @@ declare module '@tanstack/react-router' {
       path: '/evolution'
       fullPath: '/app/evolution'
       preLoaderRoute: typeof AuthenticatedAppEvolutionRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/cycle-closure': {
+      id: '/_authenticated/app/cycle-closure'
+      path: '/cycle-closure'
+      fullPath: '/app/cycle-closure'
+      preLoaderRoute: typeof AuthenticatedAppCycleClosureRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/app/consciencia': {
@@ -2050,11 +2089,13 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAiRoute: typeof AuthenticatedAppAiRoute
   AuthenticatedAppCoachRoute: typeof AuthenticatedAppCoachRoute
   AuthenticatedAppConscienciaRoute: typeof AuthenticatedAppConscienciaRouteWithChildren
+  AuthenticatedAppCycleClosureRoute: typeof AuthenticatedAppCycleClosureRoute
   AuthenticatedAppEvolutionRoute: typeof AuthenticatedAppEvolutionRoute
   AuthenticatedAppFeedbacksRoute: typeof AuthenticatedAppFeedbacksRoute
   AuthenticatedAppHelpRoute: typeof AuthenticatedAppHelpRoute
   AuthenticatedAppIndicatorsRoute: typeof AuthenticatedAppIndicatorsRoute
   AuthenticatedAppJourneyRoute: typeof AuthenticatedAppJourneyRoute
+  AuthenticatedAppNineboxRoute: typeof AuthenticatedAppNineboxRoute
   AuthenticatedAppNotesRoute: typeof AuthenticatedAppNotesRoute
   AuthenticatedAppNotificationsRoute: typeof AuthenticatedAppNotificationsRoute
   AuthenticatedAppOneOnOnesRoute: typeof AuthenticatedAppOneOnOnesRoute
@@ -2074,11 +2115,13 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppCoachRoute: AuthenticatedAppCoachRoute,
   AuthenticatedAppConscienciaRoute:
     AuthenticatedAppConscienciaRouteWithChildren,
+  AuthenticatedAppCycleClosureRoute: AuthenticatedAppCycleClosureRoute,
   AuthenticatedAppEvolutionRoute: AuthenticatedAppEvolutionRoute,
   AuthenticatedAppFeedbacksRoute: AuthenticatedAppFeedbacksRoute,
   AuthenticatedAppHelpRoute: AuthenticatedAppHelpRoute,
   AuthenticatedAppIndicatorsRoute: AuthenticatedAppIndicatorsRoute,
   AuthenticatedAppJourneyRoute: AuthenticatedAppJourneyRoute,
+  AuthenticatedAppNineboxRoute: AuthenticatedAppNineboxRoute,
   AuthenticatedAppNotesRoute: AuthenticatedAppNotesRoute,
   AuthenticatedAppNotificationsRoute: AuthenticatedAppNotificationsRoute,
   AuthenticatedAppOneOnOnesRoute: AuthenticatedAppOneOnOnesRoute,

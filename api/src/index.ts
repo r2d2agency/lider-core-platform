@@ -34,6 +34,7 @@ import { featureTemplatesRouter, bootstrapFeatureTemplates, resolveUserFeatures 
 import { signupPlansRouter, publicSignupPlansRouter, bootstrapSignupPlans } from "./routes/signup-plans.routes.js";
 import { invitesRouter, publicInvitesRouter } from "./routes/invites.routes.js";
 import { neoRouter } from "./routes/neo.routes.js";
+import { jornadaRouter } from "./routes/jornada.routes.js";
 import { publicAssessmentsRouter } from "./routes/assessments-public.routes.js";
 import { bootstrapCoreAssessments } from "./lib/bootstrap-assessments.js";
 import { meRouter } from "./routes/me.routes.js";
@@ -144,6 +145,7 @@ app.use("/organization", oneOnOnesRouter);
 app.use("/organization", threeSixtyRouter);
 app.use("/organization", pulsesRouter);
 app.use("/organization", cyclesRouter);
+app.use("/organization", jornadaRouter);
 app.use("/organization", kudosRouter);
 app.use("/organization", coachRouter);
 app.use("/organization", calendarRouter);
