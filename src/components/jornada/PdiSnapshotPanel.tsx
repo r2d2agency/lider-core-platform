@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { History, Layers, Loader2, Save } from "lucide-react";
+import { History, Layers, Loader2, Save, TrendingUp } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +14,7 @@ type Snapshot = {
   teamFront: string[];
   ritualsFront: string[];
   goalsFront: string[];
+  radarSnapshot: Record<string, number> | null;
 };
 
 const FRONTS = [
@@ -42,6 +43,12 @@ export function PdiSnapshotPanel({ orgId, cycleId }: { orgId?: string; cycleId?:
 
   const toLines = (v: string) => v.split("\n").map((s) => s.trim()).filter(Boolean);
 
+  const me = useQuery({
+    queryKey: ["consciencia", "me", orgId],
+    enabled: !!orgId,
+    queryFn: () => api<any>(`/organization/${orgId}/consciencia/me`),
+  });
+
   const save = useMutation({
     mutationFn: () =>
       api(`/organization/${orgId}/jornada/pdi-snapshots`, {
@@ -52,6 +59,11 @@ export function PdiSnapshotPanel({ orgId, cycleId }: { orgId?: string; cycleId?:
           teamFront: toLines(draft.teamFront),
           ritualsFront: toLines(draft.ritualsFront),
           goalsFront: toLines(draft.goalsFront),
+          radarSnapshot: {
+            hard: me.data?.profile?.hardSelfScore ?? 0,
+            soft: me.data?.profile?.softSelfScore ?? 0,
+            heart: me.data?.profile?.heartSelfScore ?? 0,
+          },
         },
       }),
     onSuccess: () => {

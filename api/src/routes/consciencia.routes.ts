@@ -60,11 +60,12 @@ conscienciaRouter.param("orgId", async (req, res, next, orgId) => {
 conscienciaRouter.get("/:orgId/consciencia/me", asyncRoute(async (req, res) => {
   const userId = req.userId;
   const orgId = req.params.orgId;
+  const subjectUserId = typeof req.query.subjectUserId === "string" ? req.query.subjectUserId : userId;
   if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
   const [profile, commitments, signals] = await Promise.all([
     prisma.leaderProfile.findUnique({
-      where: { organizationId_userId: { organizationId: orgId, userId } },
+      where: { organizationId_userId: { organizationId: orgId, userId: subjectUserId! } },
       select: {
         id: true,
         declaredRole: true,
