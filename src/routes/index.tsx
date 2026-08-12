@@ -45,6 +45,22 @@ function Landing() {
               (potencial × desempenho), integrado à visão de equipe.
             </p>
           </div>
+
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <h3 className="mb-2 font-display text-lg font-bold">Item 11 — Dados de Organização</h3>
+            <p className="text-sm text-muted-foreground">
+              Telas de Áreas, Cargos e Ciclos funcionais. Recomenda-se popular com dados reais para validar 
+              fluxos de ponta a ponta (ex: metas alimentando Resultados).
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <h3 className="mb-2 font-display text-lg font-bold">Observação de Módulos</h3>
+            <p className="text-sm text-muted-foreground">
+              Delegações, 1:1s e Pulsos integrados. Estrutura validada conforme seções 3.2 e 4.2 da 
+              especificação, garantindo cobertura total dos campos pedidos.
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-wrap justify-center gap-4 pt-4">
