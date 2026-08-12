@@ -655,6 +655,21 @@ function NewPdiDialog({
   const [focus, setFocus] = useState("");
   const [summary, setSummary] = useState("");
   const [reviewAt, setReviewAt] = useState("");
+  const [rootCauses, setRootCauses] = useState<{ category: RootCauseCategory; description: string }[]>([]);
+
+  const addRootCause = () => {
+    setRootCauses([...rootCauses, { category: "outro", description: "" }]);
+  };
+
+  const updateRootCause = (idx: number, field: string, val: any) => {
+    const next = [...rootCauses];
+    next[idx] = { ...next[idx], [field]: val };
+    setRootCauses(next);
+  };
+
+  const removeRootCause = (idx: number) => {
+    setRootCauses(rootCauses.filter((_, i) => i !== idx));
+  };
 
   const create = useMutation({
     mutationFn: () =>
@@ -666,6 +681,7 @@ function NewPdiDialog({
           focus: focus || null,
           summary: summary || null,
           reviewAt: reviewAt ? new Date(reviewAt).toISOString() : null,
+          rootCauses: rootCauses.filter(rc => rc.description.trim()),
         },
       }),
     onSuccess: () => {
@@ -675,49 +691,112 @@ function NewPdiDialog({
     onError: (e) => toast.error(e instanceof Error ? e.message : "Falha ao salvar"),
   });
 
+
   return (
-    <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
+    <DialogContent className="max-h-[95vh] overflow-y-auto sm:max-w-2xl">
       <DialogHeader>
         <DialogTitle>Novo PDI</DialogTitle>
       </DialogHeader>
-      <div className="space-y-4 py-2">
-        <div>
-          <Label>Liderado</Label>
-          <Select value={subjectUserId} onValueChange={setSubjectUserId}>
-            <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
-            <SelectContent>
-              {team.map((t) => (
-                <SelectItem key={t.userId} value={t.userId}>{t.fullName}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="space-y-6 py-2">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label>Liderado</Label>
+            <Select value={subjectUserId} onValueChange={setSubjectUserId}>
+              <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
+              <SelectContent>
+                {team.map((t) => (
+                  <SelectItem key={t.userId} value={t.userId}>{t.fullName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Título do Plano</Label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex.: Aceleração de Resultados" />
+          </div>
         </div>
-        <div>
-          <Label>Título</Label>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex.: Desenvolver comunicação com pares" />
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label>Foco central</Label>
+            <Input value={focus} onChange={(e) => setFocus(e.target.value)} placeholder="Módulo CORE ou Competência" />
+          </div>
+          <div>
+            <Label>Data de revisão</Label>
+            <Input type="date" value={reviewAt} onChange={(e) => setReviewAt(e.target.value)} />
+          </div>
         </div>
-        <div>
-          <Label>Foco central</Label>
-          <Input value={focus} onChange={(e) => setFocus(e.target.value)} placeholder="Competência ou módulo C.O.R.E." />
+
+        <div className="rounded-2xl border border-border bg-secondary/20 p-4">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Análise de Causa Raiz (5 Porquês)</Label>
+            <Button size="sm" variant="ghost" onClick={addRootCause} className="h-7 gap-1 text-[10px] uppercase">
+              <Plus className="h-3 w-3" /> Adicionar Causa
+            </Button>
+          </div>
+          <div className="mt-3 space-y-3">
+            {rootCauses.length === 0 && (
+              <p className="text-[11px] text-muted-foreground italic">
+                Nenhuma causa raiz identificada ainda. Use a técnica dos 5 porquês para chegar na origem do gap.
+              </p>
+            )}
+            {rootCauses.map((rc, idx) => (
+              <div key={idx} className="flex gap-2 items-start rounded-xl border border-border bg-background p-3">
+                <div className="flex-1 space-y-2">
+                  <Select 
+                    value={rc.category} 
+                    onValueChange={(v) => updateRootCause(idx, "category", v as RootCauseCategory)}
+                  >
+                    <SelectTrigger className="h-8 text-[11px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(ROOT_CAUSE_LABELS).map(([k, v]) => (
+                        <SelectItem key={k} value={k}>{v}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input 
+                    value={rc.description} 
+                    onChange={(e) => updateRootCause(idx, "description", e.target.value)}
+                    placeholder="Descrição da causa raiz..."
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <Button 
+                  size="icon" 
+                  variant="ghost" 
+                  onClick={() => removeRootCause(idx)}
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
         </div>
+
         <div>
-          <Label>Resumo</Label>
-          <Textarea value={summary} onChange={(e) => setSummary(e.target.value)} className="min-h-[90px]" />
-        </div>
-        <div>
-          <Label>Data de revisão</Label>
-          <Input type="date" value={reviewAt} onChange={(e) => setReviewAt(e.target.value)} />
+          <Label>Resumo / Contexto Adicional</Label>
+          <Textarea 
+            value={summary} 
+            onChange={(e) => setSummary(e.target.value)} 
+            placeholder="Detalhes sobre o gap de competência ou histórico..."
+            className="min-h-[80px]" 
+          />
         </div>
       </div>
       <DialogFooter>
         <Button
           disabled={create.isPending || !subjectUserId || !title}
           onClick={() => create.mutate()}
+          className="w-full sm:w-auto"
         >
           {create.isPending ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
-          Criar PDI
+          Salvar PDI Completo
         </Button>
       </DialogFooter>
     </DialogContent>
+
   );
 }
