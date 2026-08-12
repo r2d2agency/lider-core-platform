@@ -442,11 +442,11 @@ function CycleClosurePage() {
 
           <PdiSnapshotPanel orgId={orgId} cycleId={activeCycleId} />
 
-          <div className="flex flex-wrap gap-2 pb-4">
+          <div className="flex flex-wrap gap-2 pb-12">
             <Button
               className="gap-2"
               disabled={saveClosure.isPending}
-              onClick={() => saveClosure.mutate(false)}
+              onClick={() => saveClosure.mutate({ closeCycle: false })}
             >
               {saveClosure.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -458,7 +458,7 @@ function CycleClosurePage() {
             <Button
               variant="outline"
               disabled={saveClosure.isPending}
-              onClick={() => saveClosure.mutate(true)}
+              onClick={() => saveClosure.mutate({ closeCycle: true })}
             >
               Encerrar ciclo
             </Button>
