@@ -159,8 +159,9 @@ meRouter.get("/home/attention", async (req, res) => {
       });
     }
 
-    // 2. Status do PDI pessoal
-    if (pdis.length === 0) {
+    // 2. Status do PDI pessoal (consolidado via PdiSnapshot na Jornada CORE)
+    const pdiReady = pdis.length > 0 || snapshots.length > 0;
+    if (!pdiReady) {
       items.push({
         id: "pdi-none",
         title: "Meu PDI",
