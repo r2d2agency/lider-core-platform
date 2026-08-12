@@ -280,7 +280,7 @@ function AppHelpPage() {
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
             Fale com o administrador da sua empresa ou pergunte ao{" "}
-            <Link to="/app/ai" className="font-medium text-accent hover:underline">
+            <Link to="/app/ai" search={{ q: undefined }} className="font-medium text-accent hover:underline">
               IA Coach
             </Link>{" "}
             — ele conhece a metodologia e o seu contexto.

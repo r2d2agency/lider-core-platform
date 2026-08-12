@@ -479,6 +479,7 @@ function IACoachCard({ members }: { members: { m: TeamMember; score: number; sta
       </div>
       <Link
         to="/app/ai"
+        search={{ q: undefined }}
         className="inline-flex items-center gap-1 rounded-full border border-violet-300/70 bg-background px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-100 dark:border-violet-500/40 dark:text-violet-200 dark:hover:bg-violet-500/15"
       >
         Preparar conversa →
