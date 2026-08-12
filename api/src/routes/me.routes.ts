@@ -131,9 +131,10 @@ meRouter.get("/home/attention", async (req, res) => {
         take: 50
       }),
       prisma.pdiSnapshot.findMany({
-        where: { organizationId: orgId },
-        select: { id: true },
-        take: 1
+        where: { organizationId: orgId, subjectUserId: userId },
+        select: { id: true, radarSnapshot: true },
+        orderBy: { version: "desc" },
+        take: 2
       }),
       prisma.ritualOccurrence.findMany({
         where: {
