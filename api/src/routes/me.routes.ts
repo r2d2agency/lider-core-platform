@@ -193,7 +193,7 @@ meRouter.get("/home/attention", async (req, res) => {
     }
 
     // 4. Liderados (Atenção Baseada em Engajamento)
-    for (const m of members) {
+    for (const m of (members as any[])) {
       const name = m.user?.profile?.fullName || m.user?.email || "Liderado";
       // Simulação de lógica: se não tem 1:1 agendada
       items.push({
