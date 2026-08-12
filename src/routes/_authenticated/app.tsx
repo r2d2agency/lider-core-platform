@@ -80,6 +80,7 @@ const mobileNav = [
   { to: "/app/organization/agenda", label: "Agenda", icon: Calendar, module: "organizacao" },
   { to: "/app/team", label: "Equipe", icon: Users, module: "consciencia" },
   { to: "/app/notes", label: "Notas", icon: NotebookPen, module: "*" },
+  { to: "/app/ai", label: "Assistente IA", icon: Sparkles, module: "*" },
   { to: "/app/help", label: "Mais", icon: MoreHorizontal, module: "*" },
 ] as const;
 
@@ -473,13 +474,13 @@ function AppShell() {
         {/* Bottom navigation (mobile) */}
         <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/95 backdrop-blur md:hidden">
           <ul
-            className="mx-auto grid max-w-3xl"
-            style={{ gridTemplateColumns: `repeat(${Math.max(1, visibleMobileNav.length)}, minmax(0, 1fr))` }}
+            className="mx-auto flex max-w-3xl items-center"
+            style={{ width: "100%" }}
           >
             {visibleMobileNav.map(({ to, label, icon: Icon }) => {
               const active = isActiveRoute(to);
               return (
-                <li key={to}>
+                <li key={to} className="flex-1">
                   <Link
                     to={to}
                     className={
