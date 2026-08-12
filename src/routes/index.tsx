@@ -2,13 +2,13 @@
  * LÍDER C.O.R.E. — Sistema Operacional para Liderança
  * "O líder não entra no sistema para preencher formulários. Ele entra para liderar."
  *
- * ESPECIFICAÇÃO MÓDULO C (CONSCIÊNCIA):
- * 1. Escalas 1–5: exibir âncoras semânticas visíveis e tornar pergunta/seleção acessíveis no teclado e mobile.
- * 2. Relatório 1: cruzamento integrado de todos os resultados (Perfil, Sabotadores, HSH, Radar) após conclusão do Módulo C.
- * 3. Relatório 2: cruzamento do Relatório 1 com a Descrição de Cargo (Job Desc) validada para aquele líder.
- * 4. CORE Score: fórmula agregada (Hard/Soft/Heart + Engajamento + Evolução). Exibir score geral e por pilar.
- * 5. PDI & Copiloto: IA sugere ações de desenvolvimento baseada no PDI e nos Relatórios 1 e 2.
- * 6. Ecossistema: Conectar 1:1s, feedbacks e compromissos à Agenda e ao Painel de Atenção.
+ * ESPECIFICAÇÃO JORNADA (CASO MARIANA):
+ * 1. 9-box: histórico por ciclo/estágio (O=Potencial, R=Desempenho, E=Consolidado).
+ * 2. Causa Raiz: múltiplas causas categorizadas (Comportamental, Processo, Dado, Estrutural).
+ * 3. OKR 90 dias: 1 Objetivo + 3 Key Results vinculados à meta do ciclo.
+ * 4. Recalibração: decisão explícita (Sim/Não) + justificativa no fechamento.
+ * 5. Adesão Agenda: cálculo automático Planejado (O) vs Realizado (R).
+ * 6. PDI Snapshot: versão consolidada das 4 frentes (Autodesenv., Equipe, Rituais, Metas).
  * 
  * PADRONIZAÇÃO E QUALIDADE:
  * - Padronizar o nome “Líder C.O.R.E.” em landing page, onboarding, sistema, e-mails e relatórios.
