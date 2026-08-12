@@ -116,7 +116,8 @@ function AICoachPage() {
   async function send(text?: string) {
     const content = (text ?? input).trim();
     if (!content || streaming || !orgId) return;
-    setInput("");
+    if (!text) setInput("");
+    
     const next: ChatMsg[] = [...messages, { role: "user", content }, { role: "assistant", content: "" }];
     setMessages(next);
     setStreaming(true);
@@ -134,12 +135,14 @@ function AICoachPage() {
         body: JSON.stringify({
           messages: next
             .filter((m, i) => !(i === next.length - 1 && m.role === "assistant" && !m.content))
-            .map(({ role, content }) => ({ role, content })),
+            .map(({ role, content }) => ({ role, content }))
+            .slice(-10), // Limit history
         }),
         signal: ac.signal,
       });
       if (!res.ok || !res.body) {
-        throw new Error(`Falha (${res.status})`);
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `Falha (${res.status})`);
       }
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
