@@ -459,14 +459,10 @@ function ConscienciaPage() {
               to="/app/evolution"
               className="text-[11px] font-semibold text-accent hover:underline"
             >
-              Ver detalhes
+              Ver histórico completo
             </Link>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <EvolutionTile label="Hard" value={profile!.hardSelfScore!} />
-            <EvolutionTile label="Soft" value={profile!.softSelfScore!} />
-            <EvolutionTile label="Heart" value={profile!.heartSelfScore!} />
-          </div>
+          <HSHEvolutionGrid profile={profile!} orgId={orgId} />
         </section>
       )}
 
@@ -611,14 +607,33 @@ function JourneyRow({
   );
 }
 
-function EvolutionTile({ label, value }: { label: string; value: number }) {
+function EvolutionTile({
+  label,
+  value,
+  previousValue,
+}: {
+  label: string;
+  value: number;
+  previousValue?: number;
+}) {
+  const diff = previousValue != null ? value - previousValue : 0;
   return (
-    <div className="rounded-2xl border border-border bg-card p-3.5">
+    <div className="rounded-2xl border border-border bg-card p-3.5 shadow-sm">
       <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
         {label}
       </div>
-      <div className="mt-1 font-display text-2xl font-bold leading-none tabular-nums">
-        {value}
+      <div className="mt-1 flex items-baseline gap-1">
+        <div className="font-display text-2xl font-bold leading-none tabular-nums">
+          {value}
+        </div>
+        {diff !== 0 && (
+          <div
+            className={`text-[10px] font-bold ${diff > 0 ? "text-emerald-500" : "text-rose-500"}`}
+          >
+            {diff > 0 ? "↑" : "↓"}
+            {Math.abs(diff)}
+          </div>
+        )}
       </div>
       <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-secondary">
         <div
@@ -936,6 +951,35 @@ function CommitmentDialog({ orgId, onDone }: { orgId: string; onDone: () => void
         </Button>
       </DialogFooter>
     </DialogContent>
+  );
+}
+
+function HSHEvolutionGrid({ profile, orgId }: { profile: Profile; orgId: string }) {
+  const history = useQuery({
+    queryKey: ["hsh-history", orgId],
+    queryFn: () => api<any[]>(`/organization/${orgId}/jornada/hsh-history`),
+  });
+
+  const lastSnapshot = history.data?.[0]?.radarSnapshot;
+
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      <EvolutionTile
+        label="Hard"
+        value={profile.hardSelfScore!}
+        previousValue={lastSnapshot?.hard}
+      />
+      <EvolutionTile
+        label="Soft"
+        value={profile.softSelfScore!}
+        previousValue={lastSnapshot?.soft}
+      />
+      <EvolutionTile
+        label="Heart"
+        value={profile.heartSelfScore!}
+        previousValue={lastSnapshot?.heart}
+      />
+    </div>
   );
 }
 

@@ -2356,6 +2356,7 @@ model CycleClosure {
   recalibrateGoal   Boolean  @default(false) @map("recalibrate_goal")
   recalibrateReason String?  @map("recalibrate_reason")
   agendaAdherence   Json?    @map("agenda_adherence")
+  radarSnapshot     Json?    @map("radar_snapshot")
   learnings         String?
   decision          String?
   coachSuggestion   String?  @map("coach_suggestion")

@@ -168,8 +168,10 @@ meRouter.get("/home/attention", async (req, res) => {
     }
 
     // 2. Status do PDI pessoal (consolidado via PdiSnapshot na Jornada CORE)
-    const pdiReady = pdis.length > 0 || (snapshots && snapshots.length > 0);
-    if (!pdiReady) {
+    const lastSnapshot = snapshots?.[0];
+    const prevSnapshot = snapshots?.[1];
+    
+    if (!lastSnapshot) {
       items.push({
         id: "pdi-none",
         title: "Meu PDI",
@@ -178,6 +180,23 @@ meRouter.get("/home/attention", async (req, res) => {
         kind: "pdi",
         link: "/app/pdis"
       });
+    } else if (prevSnapshot && lastSnapshot.radarSnapshot && prevSnapshot.radarSnapshot) {
+      const cur = lastSnapshot.radarSnapshot as any;
+      const old = prevSnapshot.radarSnapshot as any;
+      const curTotal = (cur.hard || 0) + (cur.soft || 0) + (cur.heart || 0);
+      const oldTotal = (old.hard || 0) + (old.soft || 0) + (old.heart || 0);
+      const diff = curTotal - oldTotal;
+
+      if (diff > 0) {
+        items.push({
+          id: "pdi-evolution",
+          title: "Evolução Positiva",
+          reason: `Seu Radar HSH subiu ${diff} pontos no último ciclo!`,
+          severity: "low",
+          kind: "pdi",
+          link: "/app/pdis"
+        });
+      }
     }
 
     // 3. Agenda/Rituais

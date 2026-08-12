@@ -14,6 +14,7 @@ type Snapshot = {
   teamFront: string[];
   ritualsFront: string[];
   goalsFront: string[];
+  radarSnapshot: Record<string, number> | null;
 };
 
 const FRONTS = [
@@ -42,6 +43,12 @@ export function PdiSnapshotPanel({ orgId, cycleId }: { orgId?: string; cycleId?:
 
   const toLines = (v: string) => v.split("\n").map((s) => s.trim()).filter(Boolean);
 
+  const me = useQuery({
+    queryKey: ["consciencia", "me", orgId],
+    enabled: !!orgId,
+    queryFn: () => api<any>(`/organization/${orgId}/consciencia/me`),
+  });
+
   const save = useMutation({
     mutationFn: () =>
       api(`/organization/${orgId}/jornada/pdi-snapshots`, {
@@ -52,6 +59,11 @@ export function PdiSnapshotPanel({ orgId, cycleId }: { orgId?: string; cycleId?:
           teamFront: toLines(draft.teamFront),
           ritualsFront: toLines(draft.ritualsFront),
           goalsFront: toLines(draft.goalsFront),
+          radarSnapshot: {
+            hard: me.data?.profile?.hardSelfScore ?? 0,
+            soft: me.data?.profile?.softSelfScore ?? 0,
+            heart: me.data?.profile?.heartSelfScore ?? 0,
+          },
         },
       }),
     onSuccess: () => {
@@ -114,24 +126,49 @@ export function PdiSnapshotPanel({ orgId, cycleId }: { orgId?: string; cycleId?:
             Nenhuma versão registrada ainda. A primeira versão nasce ao fechar este ciclo.
           </div>
         )}
-        {(list.data ?? []).map((s) => (
-          <div key={s.id} className="rounded-xl border border-border/70 p-3 text-sm">
-            <div className="mb-1 flex items-center justify-between gap-2">
-              <span className="font-medium">v{s.version}</span>
-              <span className="text-xs text-muted-foreground">
-                {new Date(s.createdAt).toLocaleDateString("pt-BR")}
-              </span>
-            </div>
-            <div className="grid gap-1 text-muted-foreground md:grid-cols-2">
-              {FRONTS.map((f) => (
-                <div key={f.key}>
-                  <span className="text-[11px] uppercase tracking-widest">{f.label}: </span>
-                  {(s[f.key] ?? []).join(" · ") || "—"}
+        {(list.data ?? []).map((s, idx) => {
+          const prev = list.data?.[idx + 1];
+          const hasRadar = s.radarSnapshot && typeof s.radarSnapshot === "object";
+          return (
+            <div key={s.id} className="rounded-xl border border-border/70 p-3 text-sm">
+              <div className="mb-2 flex items-center justify-between gap-2 border-b border-border/50 pb-2">
+                <div className="flex items-center gap-3">
+                  <span className="font-bold">v{s.version}</span>
+                  {hasRadar && (
+                    <div className="flex gap-2">
+                      {["hard", "soft", "heart"].map((k) => {
+                        const val = (s.radarSnapshot as any)[k] ?? 0;
+                        const old = prev?.radarSnapshot ? (prev.radarSnapshot as any)[k] : null;
+                        return (
+                          <div key={k} className="flex items-center gap-1 text-[10px] font-medium">
+                            <span className="uppercase opacity-60">{k[0]}:</span>
+                            <span>{val}</span>
+                            {old != null && old !== val && (
+                              <span className={val > old ? "text-emerald-500" : "text-rose-500"}>
+                                {val > old ? "↑" : "↓"}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              ))}
+                <span className="text-xs text-muted-foreground">
+                  {new Date(s.createdAt).toLocaleDateString("pt-BR")}
+                </span>
+              </div>
+              <div className="grid gap-1 text-muted-foreground md:grid-cols-2">
+                {FRONTS.map((f) => (
+                  <div key={f.key}>
+                    <span className="text-[11px] font-bold uppercase tracking-widest">{f.label}: </span>
+                    {(s[f.key] ?? []).join(" · ") || "—"}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
