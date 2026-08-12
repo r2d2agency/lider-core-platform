@@ -162,12 +162,13 @@ export function PdiSnapshotPanel({ orgId, cycleId }: { orgId?: string; cycleId?:
                 {FRONTS.map((f) => (
                   <div key={f.key}>
                     <span className="text-[11px] font-bold uppercase tracking-widest">{f.label}: </span>
-                  {(s[f.key] ?? []).join(" · ") || "—"}
-                </div>
-              ))}
+                    {(s[f.key] ?? []).join(" · ") || "—"}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
