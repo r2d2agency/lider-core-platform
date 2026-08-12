@@ -85,7 +85,7 @@ function AICoachPage() {
         <div className="mx-auto mb-6 grid h-20 w-20 place-items-center rounded-3xl bg-accent/10 text-accent">
           <Sparkles className="h-10 w-10" />
         </div>
-        <h1 className="font-display text-3xl font-bold">Copiloto IA</h1>
+        <h1 className="font-display text-3xl font-bold">Assistente IA</h1>
         <p className="mt-4 text-muted-foreground">
           O Copiloto IA utiliza seu PDI e diagnósticos como contexto para sugerir
           caminhos de desenvolvimento personalizados.
