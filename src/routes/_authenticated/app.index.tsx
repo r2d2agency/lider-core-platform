@@ -126,7 +126,7 @@ function HomeBriefing() {
         <Tile icon={Brain} label="1. Consciência" desc={!data?.profile?.onboardingCompletedAt ? "Perfil incompleto — clique para finalizar" : "Diagnóstico C.O.R.E. e CORE DNA"} to="/app/consciencia" enabled={hasC} pilar="c" />
         <Tile icon={Compass} label="2. Organização" desc="Agenda sem rituais — organize sua semana" to="/app/organization" enabled={hasC} pilar="o" />
         <Tile icon={Target} label="3. Resultados" desc="Indicadores e metas do time" to="/app/indicators" enabled={hasC} pilar="r" />
-        <Tile icon={Sparkles} label="4. Evolução" desc={pdiPending ? "PDI não iniciado — comece seu crescimento" : "Ciclo em evolução — acompanhe o PDI"} to="/app/pdis" enabled={hasC} pilar="e" />
+        <EvolucaoTile hasC={hasC} pdiPending={pdiPending} />
 
         
         <div className="md:col-span-2 my-4">
@@ -323,4 +323,46 @@ function Tile({
     </div>
   );
   return enabled ? <Link to={to}>{inner}</Link> : <div aria-disabled>{inner}</div>;
+}
+
+function EvolucaoTile({ hasC, pdiPending }: { hasC: boolean; pdiPending: boolean }) {
+  const list = useQuery({
+    queryKey: ["pdi-snapshots-briefing"],
+    enabled: hasC,
+    queryFn: () => api<any[]>("/jornada/hsh-history"),
+  });
+
+  const current = list.data?.[0]?.radarSnapshot;
+  const previous = list.data?.[1]?.radarSnapshot;
+
+  const getDelta = () => {
+    if (!current || !previous) return null;
+    const c = (current.hard || 0) + (current.soft || 0) + (current.heart || 0);
+    const p = (previous.hard || 0) + (previous.soft || 0) + (previous.heart || 0);
+    if (p === 0) return null;
+    const diff = c - p;
+    return {
+      value: Math.abs(diff),
+      isUp: diff > 0,
+      isDown: diff < 0,
+    };
+  };
+
+  const delta = getDelta();
+  const desc = pdiPending
+    ? "PDI não iniciado — comece seu crescimento"
+    : delta
+      ? `Evolução de ${delta.value} pontos no Radar HSH ${delta.isUp ? "↑" : "↓"}`
+      : "Ciclo em evolução — acompanhe o PDI";
+
+  return (
+    <Tile
+      icon={Sparkles}
+      label="4. Evolução"
+      desc={desc}
+      to="/app/pdis"
+      enabled={hasC}
+      pilar="e"
+    />
+  );
 }

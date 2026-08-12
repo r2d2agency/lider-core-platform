@@ -459,14 +459,10 @@ function ConscienciaPage() {
               to="/app/evolution"
               className="text-[11px] font-semibold text-accent hover:underline"
             >
-              Ver detalhes
+              Ver histórico completo
             </Link>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <EvolutionTile label="Hard" value={profile!.hardSelfScore!} />
-            <EvolutionTile label="Soft" value={profile!.softSelfScore!} />
-            <EvolutionTile label="Heart" value={profile!.heartSelfScore!} />
-          </div>
+          <HSHEvolutionGrid profile={profile!} orgId={orgId} />
         </section>
       )}
 
@@ -936,6 +932,35 @@ function CommitmentDialog({ orgId, onDone }: { orgId: string; onDone: () => void
         </Button>
       </DialogFooter>
     </DialogContent>
+  );
+}
+
+function HSHEvolutionGrid({ profile, orgId }: { profile: Profile; orgId: string }) {
+  const history = useQuery({
+    queryKey: ["hsh-history", orgId],
+    queryFn: () => api<any[]>(`/organization/${orgId}/jornada/hsh-history`),
+  });
+
+  const lastSnapshot = history.data?.[0]?.radarSnapshot;
+
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      <EvolutionTile
+        label="Hard"
+        value={profile.hardSelfScore!}
+        previousValue={lastSnapshot?.hard}
+      />
+      <EvolutionTile
+        label="Soft"
+        value={profile.softSelfScore!}
+        previousValue={lastSnapshot?.soft}
+      />
+      <EvolutionTile
+        label="Heart"
+        value={profile.heartSelfScore!}
+        previousValue={lastSnapshot?.heart}
+      />
+    </div>
   );
 }
 
