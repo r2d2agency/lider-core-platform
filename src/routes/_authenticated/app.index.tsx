@@ -73,12 +73,13 @@ function HomeBriefing() {
     queryFn: () => api<Briefing>("/me/home/briefing"),
     refetchInterval: 60_000,
   });
+  const data = q.data;
+
   const progressQ = useQuery({
     queryKey: ["journey-progress-summary"],
     queryFn: () => api<any>(`/organization/${data?.profile ? 'me' : 'null'}/jornada/progress`),
     enabled: !!data,
   });
-  const data = q.data;
   const journeyProgress = progressQ.data;
 
   return (
