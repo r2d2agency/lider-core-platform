@@ -161,6 +161,8 @@ model Profile {
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
 
+  rootCauses            RootCause[]
+
   @@map("profiles")
 }
 
@@ -1480,6 +1482,8 @@ model Pdi {
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
   goals PdiGoal[]
+  rootCauses RootCause[]
+
 
   @@index([organizationId, subjectUserId])
   @@index([status])
@@ -2292,13 +2296,18 @@ enum RootCauseCategory {
 model RootCause {
   id             String            @id @default(uuid()) @db.Uuid
   organizationId String            @map("organization_id") @db.Uuid
-  cycleId        String            @map("cycle_id") @db.Uuid
+  cycleId        String?           @map("cycle_id") @db.Uuid
+  pdiId          String?           @map("pdi_id") @db.Uuid
   category       RootCauseCategory @default(outro)
   description    String
   createdBy      String?           @map("created_by") @db.Uuid
   createdAt      DateTime          @default(now()) @map("created_at")
 
+  pdi Pdi? @relation(fields: [pdiId], references: [id], onDelete: Cascade)
+
   @@index([organizationId, cycleId])
+  @@index([pdiId])
+
   @@map("root_causes")
 }
 

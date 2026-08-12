@@ -42,8 +42,12 @@ pdisRouter.get("/:orgId/pdis", async (req, res) => {
   if (typeof q.status === "string") where.status = q.status;
   const list = await prisma.pdi.findMany({
     where,
-    include: { goals: true },
+    include: { 
+      goals: true,
+      rootCauses: true
+    },
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+
   });
   res.json(list);
 });
@@ -55,7 +59,12 @@ const pdiSchema = z.object({
   summary: z.string().optional().nullable(),
   reviewAt: z.string().datetime().optional().nullable(),
   status: z.enum(["ativo", "concluido", "pausado", "cancelado"]).default("ativo"),
+  rootCauses: z.array(z.object({
+    category: z.enum(["comportamental", "processo", "dado", "estrutural", "outro"]),
+    description: z.string()
+  })).optional(),
 });
+
 
 pdisRouter.post("/:orgId/pdis", async (req, res) => {
   try {
@@ -70,8 +79,17 @@ pdisRouter.post("/:orgId/pdis", async (req, res) => {
         summary: data.summary ?? null,
         reviewAt: data.reviewAt ? new Date(data.reviewAt) : null,
         status: data.status,
+        rootCauses: {
+          create: data.rootCauses?.map(rc => ({
+            organizationId: req.params.orgId,
+            category: rc.category,
+            description: rc.description,
+            createdBy: req.userId!
+          })) || []
+        }
       },
     });
+
     if (created.subjectUserId && created.subjectUserId !== req.userId) {
       void notifyInApp({
         userId: created.subjectUserId,
