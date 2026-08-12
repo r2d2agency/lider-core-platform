@@ -39,6 +39,7 @@ type Closure = {
   targetLabel: string | null;
   recalibrateGoal: boolean;
   recalibrateReason: string | null;
+  radarSnapshot: Record<string, number> | null;
   learnings: string | null;
   decision: string | null;
 } | null;
@@ -85,6 +86,7 @@ function CycleClosurePage() {
     resultValue: "",
     recalibrateGoal: false,
     recalibrateReason: "",
+    radarSnapshot: null as Record<string, number> | null,
     learnings: "",
     decision: "",
   });
@@ -97,13 +99,14 @@ function CycleClosurePage() {
       resultValue: c?.resultValue != null ? String(c.resultValue) : "",
       recalibrateGoal: c?.recalibrateGoal ?? false,
       recalibrateReason: c?.recalibrateReason ?? "",
+      radarSnapshot: (c?.radarSnapshot as Record<string, number>) ?? null,
       learnings: c?.learnings ?? "",
       decision: c?.decision ?? "",
     });
   }, [data.data?.closure]);
 
   const saveClosure = useMutation({
-    mutationFn: (closeCycle: boolean) =>
+    mutationFn: ({ closeCycle, radar }: { closeCycle: boolean; radar?: any }) =>
       api(`/organization/${orgId}/jornada/closure/${activeCycleId}`, {
         method: "PUT",
         body: {
@@ -114,10 +117,11 @@ function CycleClosurePage() {
           recalibrateReason: form.recalibrateReason || null,
           learnings: form.learnings || null,
           decision: form.decision || null,
+          radarSnapshot: radar || form.radarSnapshot,
           closeCycle,
         },
       }),
-    onSuccess: (_d, closeCycle) => {
+    onSuccess: (_d, { closeCycle }) => {
       toast.success(closeCycle ? "Ciclo encerrado." : "Fechamento salvo.");
       qc.invalidateQueries({ queryKey: ["closure", orgId, activeCycleId] });
       qc.invalidateQueries({ queryKey: ["cycles", orgId] });

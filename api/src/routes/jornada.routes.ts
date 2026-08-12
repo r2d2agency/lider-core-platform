@@ -326,6 +326,7 @@ const closureSchema = z.object({
   decision: z.string().optional().nullable(),
   coachSuggestion: z.string().optional().nullable(),
   coachResponse: z.string().optional().nullable(),
+  radarSnapshot: z.record(z.unknown()).optional().nullable(),
   closeCycle: z.boolean().optional(),
 });
 
@@ -347,6 +348,7 @@ jornadaRouter.put("/:orgId/jornada/closure/:cycleId", async (req, res) => {
       decision: data.decision ?? null,
       coachSuggestion: data.coachSuggestion ?? null,
       coachResponse: data.coachResponse ?? null,
+      radarSnapshot: (data.radarSnapshot ?? null) as unknown as object,
       agendaAdherence: adherence as unknown as object,
     };
 
@@ -375,6 +377,17 @@ jornadaRouter.get("/:orgId/jornada/pdi-snapshots", async (req, res) => {
     orderBy: { version: "desc" },
   });
   res.json(rows);
+});
+
+jornadaRouter.get("/:orgId/jornada/hsh-history", async (req, res) => {
+  const subjectUserId =
+    typeof req.query.subjectUserId === "string" ? req.query.subjectUserId : req.userId!;
+  const snapshots = await prisma.pdiSnapshot.findMany({
+    where: { organizationId: req.params.orgId, subjectUserId },
+    orderBy: { version: "desc" },
+    select: { version: true, createdAt: true, radarSnapshot: true },
+  });
+  res.json(snapshots);
 });
 
 jornadaRouter.post("/:orgId/jornada/pdi-snapshots", async (req, res) => {
