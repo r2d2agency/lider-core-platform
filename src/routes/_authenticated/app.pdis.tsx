@@ -65,6 +65,14 @@ export const Route = createFileRoute("/_authenticated/app/pdis")({
 type GoalStatus = "a_fazer" | "em_andamento" | "concluido" | "atrasado";
 type PdiStatus = "ativo" | "concluido" | "pausado" | "cancelado";
 
+type RootCauseCategory = "comportamental" | "processo" | "dado" | "estrutural" | "outro";
+
+type RootCause = {
+  id: string;
+  category: RootCauseCategory;
+  description: string;
+};
+
 type Goal = {
   id: string;
   title: string;
@@ -83,7 +91,9 @@ type Pdi = {
   status: PdiStatus;
   createdAt: string;
   goals: Goal[];
+  rootCauses: RootCause[];
 };
+
 
 type TeamOption = { membershipId: string; userId: string; fullName: string };
 
@@ -114,7 +124,16 @@ const GOAL_STATUS_CLS: Record<GoalStatus, string> = {
   atrasado: "border-destructive/40 bg-destructive/12 text-destructive",
 };
 
+const ROOT_CAUSE_LABELS: Record<RootCauseCategory, string> = {
+  comportamental: "Comportamental/Sabotador",
+  processo: "Processo/Ritual",
+  dado: "Dado/Cultura",
+  estrutural: "Estrutural/Meta",
+  outro: "Outro",
+};
+
 type DateFilter = "todos" | "30d" | "90d" | "ano";
+
 
 function Avatar({ name }: { name?: string }) {
   const initials = (name ?? "Liderado")
@@ -430,7 +449,22 @@ function PdisPage() {
                   )}
                 </div>
 
-                {total > 0 && (
+                  {p.rootCauses.length > 0 && (
+                    <div className="mt-4 space-y-2 border-t border-border pt-4">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Causa Raiz (Análise)</div>
+                      <div className="flex flex-wrap gap-2">
+                        {p.rootCauses.map((rc) => (
+                          <div key={rc.id} className="rounded-lg border border-border bg-secondary/50 p-2 text-xs">
+                            <span className="font-semibold text-accent">{ROOT_CAUSE_LABELS[rc.category]}:</span>{" "}
+                            <span className="text-muted-foreground">{rc.description}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-4 border-t border-border pt-4">
+
                   <div>
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                       <span>{done} de {total} metas concluídas</span>
