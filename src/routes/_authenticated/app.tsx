@@ -485,6 +485,7 @@ function AppShell() {
                 <li key={to} className="flex-1">
                   <Link
                     to={to}
+                    search={{}}
                     className={
                       "flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors " +
                       (active ? "text-accent" : "text-muted-foreground")
