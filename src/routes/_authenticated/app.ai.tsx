@@ -85,9 +85,9 @@ function AICoachPage() {
         <div className="mx-auto mb-6 grid h-20 w-20 place-items-center rounded-3xl bg-accent/10 text-accent">
           <Sparkles className="h-10 w-10" />
         </div>
-        <h1 className="font-display text-3xl font-bold">Copiloto IA</h1>
+        <h1 className="font-display text-3xl font-bold">Assistente IA</h1>
         <p className="mt-4 text-muted-foreground">
-          O Copiloto IA utiliza seu PDI e diagnósticos como contexto para sugerir
+          O Assistente IA utiliza seu PDI e diagnósticos como contexto para sugerir
           caminhos de desenvolvimento personalizados.
         </p>
         <div className="mt-8 rounded-2xl border border-dashed border-border bg-secondary/30 p-6">
@@ -386,14 +386,38 @@ function CoachAvatar() {
 }
 
 function EmptyConversation({ firstName, onPick }: { firstName: string; onPick: (t: string) => void }) {
-  const starters = [
-    `Olá, ${firstName}! 👋\nAqui está o que mais importa agora:`,
-  ];
-  const highlights = [
-    { icon: <AlertTriangle className="h-3.5 w-3.5 text-attention" />, text: "João Pedro está há 42 dias sem feedback." },
-    { icon: <CalendarCheck2 className="h-3.5 w-3.5 text-accent" />, text: "PDI de Lucas Martins está parado há 60 dias." },
-    { icon: <ArrowUpRight className="h-3.5 w-3.5 text-success" />, text: "Maria Clara está evoluindo bem! 👏" },
-  ];
+  const { orgId } = useCurrentOrg();
+  
+  const { data: predictions } = useQuery({
+    queryKey: ["coach-predictions", orgId],
+    enabled: !!orgId,
+    queryFn: () => api<any>(`/organization/${orgId}/coach/predictions`),
+  });
+
+  const highlights = useMemo(() => {
+    const list: { icon: React.ReactNode; text: string }[] = [];
+    
+    if (predictions?.risks) {
+      predictions.risks.slice(0, 3).forEach((r: any) => {
+        list.push({
+          icon: r.dimension === 'heart' ? <AlertTriangle className="h-3.5 w-3.5 text-attention" /> : 
+                r.dimension === 'hard' ? <CalendarCheck2 className="h-3.5 w-3.5 text-accent" /> :
+                <ArrowUpRight className="h-3.5 w-3.5 text-success" />,
+          text: r.title
+        });
+      });
+    }
+
+    if (list.length === 0) {
+      list.push(
+        { icon: <AlertTriangle className="h-3.5 w-3.5 text-attention" />, text: "João Pedro está há 42 dias sem feedback." },
+        { icon: <CalendarCheck2 className="h-3.5 w-3.5 text-accent" />, text: "PDI de Lucas Martins está parado há 60 dias." },
+        { icon: <ArrowUpRight className="h-3.5 w-3.5 text-success" />, text: "Maria Clara está evoluindo bem! 👏" }
+      );
+    }
+    return list;
+  }, [predictions]);
+
   return (
     <div className="space-y-4">
       <div className="text-center text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -402,13 +426,14 @@ function EmptyConversation({ firstName, onPick }: { firstName: string; onPick: (
       <div className="flex items-end gap-2">
         <CoachAvatar />
         <div className="max-w-[85%] rounded-2xl rounded-bl-md border border-border bg-card px-4 py-3 text-sm leading-relaxed text-foreground shadow-sm whitespace-pre-line">
-          {starters[0]}
+          Olá, {firstName}! 👋
+          Aqui está o que mais importa agora:
         </div>
       </div>
       <div className="ml-11 space-y-2">
-        {highlights.map((h) => (
+        {highlights.map((h, i) => (
           <button
-            key={h.text}
+            key={i}
             onClick={() => onPick(`Fale mais sobre: ${h.text}`)}
             className="group flex w-full max-w-[420px] items-center gap-3 rounded-2xl border border-border bg-card px-3 py-2.5 text-left text-sm text-foreground shadow-sm transition-all hover:border-accent/40 hover:shadow-[var(--shadow-accent)]"
           >
