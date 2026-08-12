@@ -374,6 +374,7 @@ Regras:
     });
   } catch (err) {
     const e = err as Error;
+    console.error("[coach/ai-recommendations]", e);
     res.status(400).json({ error: e.message });
   }
 });

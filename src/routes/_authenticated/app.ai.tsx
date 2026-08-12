@@ -43,10 +43,14 @@ const REPLY_CHIPS = [
 type ChatMsg = { role: "user" | "assistant"; content: string };
 
 export const Route = createFileRoute("/_authenticated/app/ai")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    q: typeof search.q === "string" ? search.q : undefined,
+  }),
   component: AICoachPage,
 });
 
 function AICoachPage() {
+  const { q: initialQuery } = Route.useSearch();
   const { orgId } = useCurrentOrg();
   const { user } = useAuth();
   const firstName = (user?.fullName ?? "").trim().split(/\s+/)[0] || "líder";
@@ -74,6 +78,12 @@ function AICoachPage() {
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Falha ao gerar insight"),
   });
+
+  useEffect(() => {
+    if (initialQuery && messages.length === 0 && !streaming) {
+      void send(initialQuery);
+    }
+  }, [initialQuery, orgId]);
 
   useEffect(() => {
     scrollerRef.current?.scrollTo({ top: scrollerRef.current.scrollHeight, behavior: "smooth" });
@@ -106,7 +116,8 @@ function AICoachPage() {
   async function send(text?: string) {
     const content = (text ?? input).trim();
     if (!content || streaming || !orgId) return;
-    setInput("");
+    if (!text) setInput("");
+    
     const next: ChatMsg[] = [...messages, { role: "user", content }, { role: "assistant", content: "" }];
     setMessages(next);
     setStreaming(true);
@@ -124,12 +135,14 @@ function AICoachPage() {
         body: JSON.stringify({
           messages: next
             .filter((m, i) => !(i === next.length - 1 && m.role === "assistant" && !m.content))
-            .map(({ role, content }) => ({ role, content })),
+            .map(({ role, content }) => ({ role, content }))
+            .slice(-10), // Limit history
         }),
         signal: ac.signal,
       });
       if (!res.ok || !res.body) {
-        throw new Error(`Falha (${res.status})`);
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `Falha (${res.status})`);
       }
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
