@@ -607,14 +607,33 @@ function JourneyRow({
   );
 }
 
-function EvolutionTile({ label, value }: { label: string; value: number }) {
+function EvolutionTile({
+  label,
+  value,
+  previousValue,
+}: {
+  label: string;
+  value: number;
+  previousValue?: number;
+}) {
+  const diff = previousValue != null ? value - previousValue : 0;
   return (
-    <div className="rounded-2xl border border-border bg-card p-3.5">
+    <div className="rounded-2xl border border-border bg-card p-3.5 shadow-sm">
       <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
         {label}
       </div>
-      <div className="mt-1 font-display text-2xl font-bold leading-none tabular-nums">
-        {value}
+      <div className="mt-1 flex items-baseline gap-1">
+        <div className="font-display text-2xl font-bold leading-none tabular-nums">
+          {value}
+        </div>
+        {diff !== 0 && (
+          <div
+            className={`text-[10px] font-bold ${diff > 0 ? "text-emerald-500" : "text-rose-500"}`}
+          >
+            {diff > 0 ? "↑" : "↓"}
+            {Math.abs(diff)}
+          </div>
+        )}
       </div>
       <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-secondary">
         <div
