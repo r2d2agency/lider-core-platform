@@ -464,24 +464,25 @@ function PdisPage() {
                   )}
 
                   <div className="mt-4 border-t border-border pt-4">
-
-                  <div>
-                    <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                      <span>{done} de {total} metas concluídas</span>
-                      <span className="font-semibold text-foreground">{pct}%</span>
-                    </div>
-                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
-                      <div
-                        className="h-full rounded-full bg-primary transition-all"
-                        style={{ 
-                          width: `${pct}%`,
-                          backgroundColor: "var(--pilar-e)"
-                        }}
-                      />
-                    </div>
-
+                    {total > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                          <span>{done} de {total} metas concluídas</span>
+                          <span className="font-semibold text-foreground">{pct}%</span>
+                        </div>
+                        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
+                          <div
+                            className="h-full rounded-full bg-primary transition-all"
+                            style={{ 
+                              width: `${pct}%`,
+                              backgroundColor: "var(--pilar-e)"
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+
 
                 <Goals orgId={orgId} pdi={p} />
               </div>
