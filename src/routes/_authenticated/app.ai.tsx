@@ -43,10 +43,14 @@ const REPLY_CHIPS = [
 type ChatMsg = { role: "user" | "assistant"; content: string };
 
 export const Route = createFileRoute("/_authenticated/app/ai")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    q: typeof search.q === "string" ? search.q : undefined,
+  }),
   component: AICoachPage,
 });
 
 function AICoachPage() {
+  const { q: initialQuery } = Route.useSearch();
   const { orgId } = useCurrentOrg();
   const { user } = useAuth();
   const firstName = (user?.fullName ?? "").trim().split(/\s+/)[0] || "líder";
@@ -74,6 +78,12 @@ function AICoachPage() {
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Falha ao gerar insight"),
   });
+
+  useEffect(() => {
+    if (initialQuery && messages.length === 0 && !streaming) {
+      void send(initialQuery);
+    }
+  }, [initialQuery, orgId]);
 
   useEffect(() => {
     scrollerRef.current?.scrollTo({ top: scrollerRef.current.scrollHeight, behavior: "smooth" });

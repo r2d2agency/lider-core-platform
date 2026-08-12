@@ -597,7 +597,13 @@ function IACoachBlock({ member, derived }: { member: MemberDetailData; derived: 
     <div>
       <div className="mb-2 flex items-center justify-between">
         <div className="text-[13px] font-semibold text-foreground">Próxima melhor ação (IA Coach)</div>
-        <Link to="/app/ai" className="text-xs font-medium text-accent hover:underline">Ver todas</Link>
+        <Link 
+          to="/app/ai" 
+          search={{ q: `Analise a saúde de ${first} e sugira as próximas ações baseadas em seus indicadores e PDI.` }}
+          className="text-xs font-medium text-accent hover:underline"
+        >
+          Ver todas
+        </Link>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-accent/25 bg-accent/5 p-4">
         <div className="flex items-start gap-3">
@@ -608,6 +614,7 @@ function IACoachBlock({ member, derived }: { member: MemberDetailData; derived: 
         </div>
         <Link
           to="/app/ai"
+          search={{ q: msg }}
           className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-background px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/10"
         >
           Preparar conversa →
