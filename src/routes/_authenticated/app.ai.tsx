@@ -87,7 +87,7 @@ function AICoachPage() {
         </div>
         <h1 className="font-display text-3xl font-bold">Assistente IA</h1>
         <p className="mt-4 text-muted-foreground">
-          O Copiloto IA utiliza seu PDI e diagnósticos como contexto para sugerir
+          O Assistente IA utiliza seu PDI e diagnósticos como contexto para sugerir
           caminhos de desenvolvimento personalizados.
         </p>
         <div className="mt-8 rounded-2xl border border-dashed border-border bg-secondary/30 p-6">
