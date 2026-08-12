@@ -311,6 +311,7 @@ function AppShell() {
                     <li key={to}>
                       <Link
                         to={to}
+                        search={{}}
                         title={collapsed ? label : undefined}
                         style={{
                           color: active ? pilarColor : undefined,

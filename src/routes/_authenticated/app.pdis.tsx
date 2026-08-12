@@ -39,6 +39,10 @@ import {
 } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/app/pdis")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    subjectUserId: typeof search.subjectUserId === "string" ? search.subjectUserId : undefined,
+    status: typeof search.status === "string" ? search.status : undefined,
+  }),
   component: PdisPage,
   head: () => ({
     meta: [
