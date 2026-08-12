@@ -45,10 +45,15 @@ function JourneyPage() {
 
       {q.isLoading && <p className="text-sm text-muted-foreground">Carregando jornada…</p>}
       {!q.isLoading && !q.data?.journey && (
-        <div className="rounded-2xl border border-dashed border-border p-6 text-sm text-muted-foreground">
-          Nenhuma jornada inicial publicada pelo administrador ainda.
+        <div className="rounded-2xl border border-dashed border-border bg-secondary/20 p-12 text-center">
+          <Compass className="mx-auto h-12 w-12 text-muted-foreground/30" />
+          <h3 className="mt-4 text-lg font-medium">Sua jornada está sendo preparada</h3>
+          <p className="mt-2 text-sm text-muted-foreground mx-auto max-w-sm">
+            Nenhuma jornada inicial publicada pelo administrador ainda. Fale com seu consultor Neo para ativar seu roteiro de desenvolvimento.
+          </p>
         </div>
       )}
+
 
       {q.data?.journey && (
         <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
