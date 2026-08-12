@@ -113,7 +113,7 @@ meRouter.get("/home/attention", async (req, res) => {
     }
     const orgId = membership.organizationId;
 
-    const [profile, pdis, snapshots, members, occurrences, snapshot] = await Promise.all([
+    const [profile, pdis, members, snapshots, occurrences, snapshot] = await Promise.all([
       prisma.profile.findUnique({
         where: { id: userId },
         select: { onboardingSteps: true, onboardingCompletedAt: true }
