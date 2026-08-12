@@ -104,6 +104,7 @@ const conscienciaOnlyMobileNav = [
   { to: "/app/consciencia", label: "Perfil", icon: Brain, module: "consciencia" },
   { to: "/app/team", label: "Equipe", icon: Users, module: "consciencia" },
   { to: "/app/notes", label: "Notas", icon: NotebookPen, module: "*" },
+  { to: "/app/ai", label: "IA", icon: Sparkles, module: "*" },
 ] as const;
 
 type ShellNavItem = {
