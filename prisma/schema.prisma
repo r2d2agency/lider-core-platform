@@ -161,7 +161,7 @@ model Profile {
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
 
-  rootCauses            RootCause[]
+  rootCauses            RootCause[] @relation("ProfileRootCauses")
 
   @@map("profiles")
 }
@@ -2303,6 +2303,7 @@ model RootCause {
   createdBy      String?           @map("created_by") @db.Uuid
   createdAt      DateTime          @default(now()) @map("created_at")
 
+  profile Profile? @relation("ProfileRootCauses", fields: [createdBy], references: [id], onDelete: SetNull)
   pdi Pdi? @relation(fields: [pdiId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, cycleId])
