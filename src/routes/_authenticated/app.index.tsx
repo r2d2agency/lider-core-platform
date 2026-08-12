@@ -75,6 +75,13 @@ function HomeBriefing() {
   });
   const data = q.data;
 
+  const progressQ = useQuery({
+    queryKey: ["journey-progress-summary"],
+    queryFn: () => api<any>(`/organization/${data?.profile ? 'me' : 'null'}/jornada/progress`),
+    enabled: !!data,
+  });
+  const journeyProgress = progressQ.data;
+
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <header>
@@ -119,7 +126,7 @@ function HomeBriefing() {
         <Tile icon={Brain} label="1. Consciência" desc={!data?.profile?.onboardingCompletedAt ? "Perfil incompleto — clique para finalizar" : "Diagnóstico C.O.R.E. e CORE DNA"} to="/app/consciencia" enabled={hasC} pilar="c" />
         <Tile icon={Compass} label="2. Organização" desc="Agenda sem rituais — organize sua semana" to="/app/organization" enabled={hasC} pilar="o" />
         <Tile icon={Target} label="3. Resultados" desc="Indicadores e metas do time" to="/app/indicators" enabled={hasC} pilar="r" />
-        <Tile icon={Sparkles} label="4. Evolução" desc="PDI não iniciado — comece seu crescimento" to="/app/pdis" enabled={hasC} pilar="e" />
+        <Tile icon={Sparkles} label="4. Evolução" desc={journeyProgress?.stages?.find((s: any) => s.key === "E")?.percent > 0 ? "Ciclo em evolução — acompanhe o PDI" : "PDI não iniciado — comece seu crescimento"} to="/app/pdis" enabled={hasC} pilar="e" />
 
         
         <div className="md:col-span-2 my-4">

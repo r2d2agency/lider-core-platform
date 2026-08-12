@@ -106,7 +106,7 @@ function AICoachPage() {
             Registre seu primeiro PDI para liberar o Coach.
           </p>
           <Button asChild className="mt-4 bg-accent hover:bg-accent/90" size="sm">
-            <Link to="/app/pdis">Criar meu PDI</Link>
+            <Link to="/app/pdis" search={{ subjectUserId: undefined, status: undefined }}>Criar meu PDI</Link>
           </Button>
         </div>
       </div>

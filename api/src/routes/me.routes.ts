@@ -113,7 +113,7 @@ meRouter.get("/home/attention", async (req, res) => {
     }
     const orgId = membership.organizationId;
 
-    const [profile, pdis, members, occurrences, snapshot] = await Promise.all([
+    const [profile, pdis, snapshots, members, occurrences, snapshot] = await Promise.all([
       prisma.profile.findUnique({
         where: { id: userId },
         select: { onboardingSteps: true, onboardingCompletedAt: true }
@@ -126,6 +126,10 @@ meRouter.get("/home/attention", async (req, res) => {
         where: { organizationId: orgId, userId: { not: userId } },
         include: { user: { include: { profile: true } } },
         take: 50
+      }),
+      prisma.pdiSnapshot.findMany({
+        where: { organizationId: orgId, subjectUserId: userId },
+        take: 1
       }),
       prisma.ritualOccurrence.findMany({
         where: {
@@ -159,8 +163,9 @@ meRouter.get("/home/attention", async (req, res) => {
       });
     }
 
-    // 2. Status do PDI pessoal
-    if (pdis.length === 0) {
+    // 2. Status do PDI pessoal (consolidado via PdiSnapshot na Jornada CORE)
+    const pdiReady = pdis.length > 0 || (snapshots && snapshots.length > 0);
+    if (!pdiReady) {
       items.push({
         id: "pdi-none",
         title: "Meu PDI",

@@ -274,7 +274,7 @@ function MemberDetail() {
               <QuickAction icon={CalendarPlus}     label="Agendar 1:1"     to="/app/one-on-ones" />
               <QuickAction icon={ClipboardPlus}    label="Criar delegação" to="/app/organization/delegations" />
               <QuickAction icon={Pencil}           label="Editar PDI"      to="/app/pdis" />
-              <QuickAction icon={Sparkles}         label="Abrir IA Coach"  to="/app/ai" tint="violet" />
+              <QuickAction icon={Sparkles}         label="Abrir IA Coach"  to="/app/ai" search={{ q: `Como está a saúde e o engajamento de ${m.fullName}?` }} tint="violet" />
             </div>
           </div>
         </>
@@ -634,12 +634,12 @@ function MiniStat({ value, label, hint }: { value: number | string; label: strin
   );
 }
 
-function QuickAction({ icon: Icon, label, to, tint = "accent" }: { icon: typeof MessageSquare; label: string; to: string; tint?: "accent" | "violet" }) {
+function QuickAction({ icon: Icon, label, to, search, tint = "accent" }: { icon: typeof MessageSquare; label: string; to: string; search?: Record<string, any>; tint?: "accent" | "violet" }) {
   const cls = tint === "violet"
     ? "bg-violet-50 text-violet-600 dark:bg-violet-500/15 dark:text-violet-300"
     : "bg-accent/10 text-accent";
   return (
-    <Link to={to} className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3 text-center hover:bg-secondary">
+    <Link to={to} search={search || {}} className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3 text-center hover:bg-secondary">
       <span className={"grid h-10 w-10 place-items-center rounded-xl " + cls}>
         <Icon className="h-5 w-5" strokeWidth={1.75} />
       </span>
