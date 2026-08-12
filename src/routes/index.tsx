@@ -9,6 +9,8 @@
  * 4. Recalibração: decisão explícita (Sim/Não) + justificativa no fechamento.
  * 5. Adesão Agenda: cálculo automático Planejado (O) vs Realizado (R).
  * 6. PDI Snapshot: versão consolidada das 4 frentes (Autodesenv., Equipe, Rituais, Metas).
+ * 7. Radar HSH: versionamento por ciclo com comparação de evolução (ex: Heart 48 → 61).
+ * 8. PDI Histórico: snapshot versionado a cada ciclo (PDI nunca é recriado).
  * 
  * PADRONIZAÇÃO E QUALIDADE:
  * - Padronizar o nome “Líder C.O.R.E.” em landing page, onboarding, sistema, e-mails e relatórios.
