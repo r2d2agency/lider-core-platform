@@ -65,7 +65,15 @@ async function openaiComplete(cfg: ResolvedAIConfig, messages: ChatMessage[]): P
     },
     body: JSON.stringify({ model: cfg.model, messages, temperature: cfg.temperature }),
   });
-  if (!res.ok) throw new Error(`OpenAI ${res.status}: ${await res.text()}`);
+  if (!res.ok) {
+    const text = await res.text();
+    let msg = text;
+    try {
+      const j = JSON.parse(text);
+      if (j.error?.message) msg = j.error.message;
+    } catch { /* ignore */ }
+    throw new Error(`OpenAI ${res.status}: ${msg}`);
+  }
   const json = (await res.json()) as { choices: Array<{ message: { content: string } }> };
   return json.choices?.[0]?.message?.content ?? "";
 }

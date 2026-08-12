@@ -151,7 +151,7 @@ aiRouter.post("/:orgId/ai/coach/insight", async (req, res) => {
     const text = await completeChat({
       messages: [
         { role: "system", content: systemPrompt() },
-      await neoContextMessage(),
+        await neoContextMessage(),
         contextMessage(ctx),
         {
           role: "user",
@@ -166,7 +166,8 @@ aiRouter.post("/:orgId/ai/coach/insight", async (req, res) => {
     res.json({ insight: text, generatedAt: new Date().toISOString() });
   } catch (err) {
     console.error("[ai/insight]", err);
-    res.status(500).json({ error: err instanceof Error ? err.message : "Falha ao gerar insight" });
+    const message = err instanceof Error ? err.message : "Falha ao gerar insight";
+    res.status(500).json({ error: message });
   }
 });
 
