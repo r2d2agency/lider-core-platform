@@ -274,7 +274,7 @@ function MemberDetail() {
               <QuickAction icon={CalendarPlus}     label="Agendar 1:1"     to="/app/one-on-ones" />
               <QuickAction icon={ClipboardPlus}    label="Criar delegação" to="/app/organization/delegations" />
               <QuickAction icon={Pencil}           label="Editar PDI"      to="/app/pdis" />
-              <QuickAction icon={Sparkles}         label="Abrir IA Coach"  to="/app/ai" tint="violet" />
+              <QuickAction icon={Sparkles}         label="Abrir IA Coach"  to="/app/ai" search={{ q: `Como está a saúde e o engajamento de ${m.fullName}?` }} tint="violet" />
             </div>
           </div>
         </>
