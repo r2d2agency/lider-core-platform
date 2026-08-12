@@ -113,14 +113,17 @@ meRouter.get("/home/attention", async (req, res) => {
     }
     const orgId = membership.organizationId;
 
-    const [profile, pdis, snapshots, members, occurrences, snapshot] = await Promise.all([
+    const [profile, pdis, members, snapshots, occurrences, snapshot] = await Promise.all([
       prisma.profile.findUnique({
         where: { id: userId },
         select: { onboardingSteps: true, onboardingCompletedAt: true }
       }),
       prisma.pdi.findMany({
-        where: { organizationId: orgId, subjectUserId: userId },
-        include: { goals: true }
+        where: {
+          organizationId: orgId,
+          OR: [{ subjectUserId: userId }, { authorId: userId }],
+        },
+        select: { id: true },
       }),
       prisma.membership.findMany({
         where: { organizationId: orgId, userId: { not: userId } },
@@ -128,7 +131,8 @@ meRouter.get("/home/attention", async (req, res) => {
         take: 50
       }),
       prisma.pdiSnapshot.findMany({
-        where: { organizationId: orgId, subjectUserId: userId },
+        where: { organizationId: orgId },
+        select: { id: true },
         take: 1
       }),
       prisma.ritualOccurrence.findMany({
