@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CalendarRange, Loader2, Plus, Sparkles, Target, Trash2 } from "lucide-react";
+import { CalendarRange, Loader2, Plus, Sparkles, Target, Trash2, Grid3X3, BookOpen } from "lucide-react";
 import { api } from "@/lib/api";
 import { useCurrentOrg } from "@/lib/use-current-org";
 import { Button } from "@/components/ui/button";
@@ -320,8 +320,9 @@ type Retro = {
 const STEPS = [
   { key: "wentWell",  title: "O que funcionou?",     hint: "Conquistas, decisões acertadas, quem brilhou." },
   { key: "toImprove", title: "O que travou?",        hint: "Gargalos, atrasos, falhas de comunicação." },
+  { key: "causes",    title: "Análise de Causa Raiz", hint: "Vincule o que travou às causas do PDI (5 Porquês)." },
   { key: "learnings", title: "O que aprendemos?",    hint: "Insights, padrões, hipóteses validadas." },
-  { key: "nextSteps", title: "Próximos passos",      hint: "Ações concretas para o próximo ciclo." },
+  { key: "nextSteps", title: "Próximos passos",      hint: "3 prioridades estruturadas para o PDI." },
   { key: "confidence",title: "Confiança no próximo", hint: "0 a 10 — quão confiantes estamos no próximo ciclo?" },
 ] as const;
 
@@ -331,7 +332,20 @@ function RetroDialog({ cycle, onClose }: { cycle: Cycle; onClose: () => void }) 
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({
     wentWell: "", toImprove: "", learnings: "", nextSteps: "", confidence: 7,
+    causes: [] as Array<{ category: string; description: string }>,
   });
+
+  const { data: closure } = useQuery({
+    queryKey: ["closure", orgId, cycle.id],
+    enabled: !!orgId && !!cycle.id,
+    queryFn: () => api<any>(`/organization/${orgId}/jornada/closure/${cycle.id}`),
+  });
+
+  useEffect(() => {
+    if (closure?.causes) {
+      setForm(f => ({ ...f, causes: closure.causes }));
+    }
+  }, [closure]);
 
   const { data: retros = [] } = useQuery({
     queryKey: ["retros", cycle.id],
@@ -390,12 +404,35 @@ function RetroDialog({ cycle, onClose }: { cycle: Cycle; onClose: () => void }) 
             />
             <div className="text-center font-display text-3xl">{form.confidence}<span className="text-sm text-muted-foreground">/10</span></div>
           </div>
+        ) : current.key === "causes" ? (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground italic">Causas importadas da análise de fechamento (E10):</p>
+            {form.causes.length === 0 ? (
+              <div className="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">
+                Nenhuma causa raiz vinculada. Defina no fechamento de ciclo.
+              </div>
+            ) : (
+              <div className="grid gap-2">
+                {form.causes.map((c, i) => (
+                  <div key={i} className="rounded-lg border bg-muted/30 p-3 text-sm">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-primary">{c.category}</div>
+                    <div>{c.description}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <Link to="/app/cycle-closure" search={{ cycleId: cycle.id }}>
+              <Button variant="link" size="sm" className="h-auto p-0 text-xs">
+                Ajustar causas no Fechamento de Ciclo →
+              </Button>
+            </Link>
+          </div>
         ) : (
           <Textarea
             rows={5}
             value={form[current.key as "wentWell" | "toImprove" | "learnings" | "nextSteps"]}
             onChange={(e) => setForm((f) => ({ ...f, [current.key]: e.target.value }))}
-            placeholder="Escreva livremente..."
+            placeholder={current.key === "nextSteps" ? "Prioridade 1: ...\nPrioridade 2: ...\nPrioridade 3: ..." : "Escreva livremente..."}
           />
         )}
 

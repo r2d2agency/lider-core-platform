@@ -177,7 +177,7 @@ function Landing() {
                   <div className="rounded-xl border bg-card p-4 shadow-sm border-emerald-200 bg-emerald-50/30">
                     <h4 className="font-bold text-sm mb-2">E5 ao E10 — Evolução e Causa Raiz</h4>
                     <p className="text-xs text-muted-foreground">
-                      Planos de 90 dias, OKRs, IA Coach Estruturado (Concordo/Ajustar), Radar HSH Integrado e Análise de Causa Raiz.
+                      Planos de 90 dias, OKRs, IA Coach Estruturado, Radar HSH Integrado e Retrô com Análise de Causa Raiz.
                     </p>
                   </div>
                 </div>
