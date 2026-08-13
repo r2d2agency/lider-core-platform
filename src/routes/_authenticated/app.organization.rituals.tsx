@@ -179,7 +179,7 @@ function RitualDetail({ id, orgId }: { id: string; orgId: string }) {
       <SheetHeader><SheetTitle>{r.name}</SheetTitle></SheetHeader>
       <div className="mt-4 space-y-4 text-sm">
         <div><div className="text-[10px] uppercase tracking-widest text-muted-foreground">Objetivo</div><div className="mt-1">{r.objective ?? "—"}</div></div>
-        <div><div className="text-[10px] uppercase tracking-widest text-muted-foreground">Cadência</div><div className="mt-1">{labelCadence(r.cadence)} · {r.durationMin} min</div></div>
+        <div><div className="text-[10px] uppercase tracking-widest text-muted-foreground">Cadência</div><div className="mt-1">{labelCadence(r.cadence)} {r.weekDay ? `(${r.weekDay})` : ""} · {r.durationMin} min</div></div>
         {r.agendaTemplate && (
           <div>
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Pauta</div>
