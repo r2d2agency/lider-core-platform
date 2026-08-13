@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CheckCircle2, Gauge, Loader2, Plus, Target, Trash2 } from "lucide-react";
+import { CheckCircle2, Gauge, Grid3X3, Loader2, Plus, Target, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useCurrentOrg } from "@/lib/use-current-org";
 import { Button } from "@/components/ui/button";
@@ -51,7 +51,15 @@ type Okr = {
   keyResults: Array<{ id: string; title: string; targetValue: number | null; done: boolean }>;
 };
 type Adherence = { ritualId: string; title: string; planned: number; done: number; percent: number };
-type Payload = { cycle: Cycle; closure: Closure; causes: Cause[]; okrs: Okr[]; adherence: Adherence[] };
+type NineBoxEntry = { id: string; potential: string; performance: string; stage: string; subjectLabel?: string };
+type Payload = {
+  cycle: Cycle;
+  closure: Closure;
+  causes: Cause[];
+  okrs: Okr[];
+  adherence: Adherence[];
+  nineBox: NineBoxEntry[];
+};
 
 const CATEGORIES = [
   { key: "comportamental", label: "Comportamental / sabotador" },
@@ -338,6 +346,61 @@ function CycleClosurePage() {
               >
                 <Plus className="h-4 w-4" /> Adicionar
               </Button>
+            </div>
+          </section>
+
+          <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
+            <h2 className="font-display text-xl">Snapshot 9-Box (E)</h2>
+            <p className="text-xs text-muted-foreground">
+              A matriz consolidada deste ciclo. Os dados de Potencial (O) e Desempenho (R) são travados como registro histórico.
+            </p>
+            <div className="grid gap-2 md:grid-cols-3">
+              {(["alto", "medio", "baixo"] as const).map((pot: string) =>
+                (["baixo", "medio", "alto"] as const).map((perf: string) => {
+                  const entries = data.data?.nineBox ?? [];
+                  const cellEntries = entries.filter(
+                    (e) =>
+                      e.stage === "evolucao" && e.potential === pot && e.performance === perf,
+                  );
+                  const risk = pot === "alto" && perf === "baixo";
+                  return (
+                    <div
+                      key={`${pot}-${perf}`}
+                      className="min-h-[80px] rounded-xl border border-border bg-card p-3"
+                      style={
+                        risk && cellEntries.length > 0
+                          ? {
+                              borderColor: "var(--pilar-r)",
+                              backgroundColor: "color-mix(in oklab, var(--pilar-r) 8%, transparent)",
+                            }
+                          : undefined
+                      }
+                    >
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                        {pot[0].toUpperCase()}
+                        {perf[0].toUpperCase()}
+                      </div>
+                      <div className="mt-1 space-y-0.5">
+                        {cellEntries.map((e) => (
+                          <div key={e.id} className="text-[11px] font-medium leading-tight">
+                            {e.subjectLabel || "Liderado"}
+                          </div>
+                        ))}
+                        {cellEntries.length === 0 && (
+                          <span className="text-[10px] text-muted-foreground opacity-50">—</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }),
+              )}
+            </div>
+            <div className="flex justify-end">
+              <Link to="/app/ninebox" search={{ cycleId: activeCycleId }}>
+                <Button variant="ghost" size="sm" className="text-xs gap-2">
+                  <Grid3X3 className="h-3.5 w-3.5" /> Ajustar 9-Box no estágio Evolução
+                </Button>
+              </Link>
             </div>
           </section>
 
