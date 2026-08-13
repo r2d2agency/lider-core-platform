@@ -355,10 +355,13 @@ function CycleClosurePage() {
               A matriz consolidada deste ciclo. Os dados de Potencial (O) e Desempenho (R) são travados como registro histórico.
             </p>
             <div className="grid gap-2 md:grid-cols-3">
-              {(["baixo", "medio", "alto"] as const).reverse().map((pot) =>
-                (["baixo", "medio", "alto"] as const).map((perf) => {
+              {(["alto", "medio", "baixo"] as const).map((pot: string) =>
+                (["baixo", "medio", "alto"] as const).map((perf: string) => {
                   const entries = data.data?.nineBox ?? [];
-                  const cellEntries = entries.filter(e => e.stage === 'evolucao' && e.potential === pot && e.performance === perf);
+                  const cellEntries = entries.filter(
+                    (e) =>
+                      e.stage === "evolucao" && e.potential === pot && e.performance === perf,
+                  );
                   const risk = pot === "alto" && perf === "baixo";
                   return (
                     <div
@@ -374,7 +377,8 @@ function CycleClosurePage() {
                       }
                     >
                       <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                        {pot[0].toUpperCase()}{perf[0].toUpperCase()}
+                        {pot[0].toUpperCase()}
+                        {perf[0].toUpperCase()}
                       </div>
                       <div className="mt-1 space-y-0.5">
                         {cellEntries.map((e) => (
@@ -388,7 +392,7 @@ function CycleClosurePage() {
                       </div>
                     </div>
                   );
-                })
+                }),
               )}
             </div>
             <div className="flex justify-end">
