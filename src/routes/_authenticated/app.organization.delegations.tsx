@@ -176,26 +176,49 @@ function DelegationsPage() {
 
       <Sheet open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader><SheetTitle>{editing?.title}</SheetTitle></SheetHeader>
+          <SheetHeader>
+            <SheetTitle>{editing?.title}</SheetTitle>
+          </SheetHeader>
           {editing && (
             <div className="mt-4 space-y-4 text-sm">
-              <div><div className="text-[10px] uppercase tracking-widest text-muted-foreground">Descrição</div><div className="mt-1">{editing.description ?? "—"}</div></div>
-              <div><div className="text-[10px] uppercase tracking-widest text-muted-foreground">Critério de concluído</div><div className="mt-1">{editing.doneCriteria ?? "—"}</div></div>
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Responsável</div>
+                <div className="mt-1 font-medium">
+                  {/* Se tivermos os membros carregados poderíamos mostrar o nome, 
+                      por enquanto mostramos o status do responsável */}
+                  {editing.assigneeId ? "Liderado atribuído" : "Sem responsável"}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Descrição</div>
+                <div className="mt-1">{editing.description ?? "—"}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Critério de concluído</div>
+                <div className="mt-1">{editing.doneCriteria ?? "—"}</div>
+              </div>
               <div>
                 <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Status</div>
                 <select
                   value={editing.status}
-                  onChange={(e) => { patch.mutate({ id: editing.id, body: { status: e.target.value } }); setEditing({ ...editing, status: e.target.value as Delegation["status"] }); }}
+                  onChange={(e) => {
+                    patch.mutate({ id: editing.id, body: { status: e.target.value } });
+                    setEditing({ ...editing, status: e.target.value as Delegation["status"] });
+                  }}
                   className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                 >
-                  {COLUMNS.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
+                  {COLUMNS.map((c) => (
+                    <option key={c.key} value={c.key}>
+                      {c.label}
+                    </option>
+                  ))}
                   <option value="canceled">Cancelada</option>
                 </select>
               </div>
               <Button
                 variant="outline"
-                className="gap-2"
-                disabled={nudge.isPending || editing.status === "done" || editing.status === "canceled"}
+                className="w-full gap-2"
+                disabled={nudge.isPending || editing.status === "done" || editing.status === "canceled" || !editing.assigneeId}
                 onClick={() => nudge.mutate({ id: editing.id })}
               >
                 <BellRing className="h-4 w-4" /> Cobrar responsável
@@ -214,31 +237,88 @@ function PriorityDot({ p }: { p: Delegation["priority"] }) {
 }
 
 function CreateForm({ onSave, saving }: { onSave: (v: Record<string, unknown>) => void; saving: boolean }) {
+  const { orgId } = useCurrentOrg();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueAt, setDueAt] = useState("");
   const [priority, setPriority] = useState<Delegation["priority"]>("medium");
   const [doneCriteria, setDoneCriteria] = useState("");
+  const [assigneeId, setAssigneeId] = useState("");
+
+  const members = useQuery({
+    queryKey: ["org", "members", orgId],
+    queryFn: () => api<any[]>(`/organization/${orgId}/members`),
+    enabled: !!orgId,
+  });
+
   return (
     <div className="space-y-4">
-      <DialogHeader><DialogTitle>Nova delegação</DialogTitle></DialogHeader>
-      <div className="space-y-1.5"><Label>Título</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} /></div>
-      <div className="space-y-1.5"><Label>Descrição</Label><Textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} /></div>
+      <DialogHeader>
+        <DialogTitle>Nova delegação</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-1.5">
+        <Label>Título</Label>
+        <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="O que precisa ser feito?" />
+      </div>
+      <div className="space-y-1.5">
+        <Label>Responsável (Liderado)</Label>
+        <select
+          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+          value={assigneeId}
+          onChange={(e) => setAssigneeId(e.target.value)}
+          required
+        >
+          <option value="">Selecione um responsável...</option>
+          {members.data?.map((m) => (
+            <option key={m.userId} value={m.userId}>
+              {m.profile.fullName}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="space-y-1.5">
+        <Label>Descrição</Label>
+        <Textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Instruções e contexto..." />
+      </div>
       <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5"><Label>Prazo</Label><Input type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} /></div>
-        <div className="space-y-1.5"><Label>Prioridade</Label>
-          <select className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={priority} onChange={(e) => setPriority(e.target.value as Delegation["priority"])}>
-            <option value="low">Baixa</option><option value="medium">Média</option><option value="high">Alta</option><option value="critical">Crítica</option>
+        <div className="space-y-1.5">
+          <Label>Prazo</Label>
+          <Input type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Prioridade</Label>
+          <select
+            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            value={priority}
+            onChange={(e) => setPriority(e.target.value as Delegation["priority"])}
+          >
+            <option value="low">Baixa</option>
+            <option value="medium">Média</option>
+            <option value="high">Alta</option>
+            <option value="critical">Crítica</option>
           </select>
         </div>
       </div>
-      <div className="space-y-1.5"><Label>Critério de concluído</Label><Textarea rows={2} value={doneCriteria} onChange={(e) => setDoneCriteria(e.target.value)} /></div>
+      <div className="space-y-1.5">
+        <Label>Critério de concluído</Label>
+        <Textarea rows={2} value={doneCriteria} onChange={(e) => setDoneCriteria(e.target.value)} placeholder="O que define esta tarefa como pronta?" />
+      </div>
       <DialogFooter>
-        <Button disabled={!title || saving} onClick={() => onSave({
-          title, description: description || null, priority,
-          dueAt: dueAt ? new Date(dueAt).toISOString() : null,
-          doneCriteria: doneCriteria || null,
-        })}>{saving ? "Salvando…" : "Criar"}</Button>
+        <Button
+          disabled={!title || !assigneeId || saving}
+          onClick={() =>
+            onSave({
+              title,
+              description: description || null,
+              priority,
+              dueAt: dueAt ? new Date(dueAt).toISOString() : null,
+              doneCriteria: doneCriteria || null,
+              assigneeId: assigneeId || null,
+            })
+          }
+        >
+          {saving ? "Salvando…" : "Criar"}
+        </Button>
       </DialogFooter>
     </div>
   );
