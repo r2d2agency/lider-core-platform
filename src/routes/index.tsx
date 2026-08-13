@@ -167,17 +167,17 @@ function Landing() {
               </div>
               <div className="relative rounded-2xl border bg-muted/50 p-6 overflow-hidden shadow-2xl">
                 <div className="space-y-4">
-                  <div className="rounded-xl border bg-card p-4 shadow-sm">
-                    <h4 className="font-bold text-sm mb-2">E3 — Adesão de Agenda Automática</h4>
+                  <div className="rounded-xl border bg-card p-4 shadow-sm border-emerald-200 bg-emerald-50/30">
+                    <h4 className="font-bold text-sm mb-2">E5 — Plano de 90 Dias Estruturado</h4>
                     <p className="text-xs text-muted-foreground">
-                      Cálculo integrado no Fechamento de Ciclo cruzando rituais agendados vs. realizados.
+                      Prioridades estruturadas (O quê, Por quê, Quem, Prazo e Indicador) integradas ao fechamento.
                     </p>
                   </div>
                   
-                  <div className="rounded-xl border bg-card p-4 shadow-sm">
-                    <h4 className="font-bold text-sm mb-2">E4 — Recalibração de Meta</h4>
+                  <div className="rounded-xl border bg-card p-4 shadow-sm border-emerald-200 bg-emerald-50/30">
+                    <h4 className="font-bold text-sm mb-2">E6 — OKR no Fechamento do Ciclo</h4>
                     <p className="text-xs text-muted-foreground">
-                      Fluxo de decisão estratégica com justificativa obrigatória adicionado ao processo de Retrô.
+                      Definição de Objetivo e Key Results para o próximo ciclo diretamente no fluxo de Evolução.
                     </p>
                   </div>
                 </div>
