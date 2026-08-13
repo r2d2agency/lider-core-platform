@@ -321,9 +321,9 @@ function CycleClosurePage() {
           </section>
 
           <section className="space-y-3 rounded-2xl border border-border bg-card p-6">
-            <h2 className="font-display text-xl">Adesão de agenda</h2>
+            <h2 className="font-display text-xl">Adesão de agenda (E3)</h2>
             <p className="text-xs text-muted-foreground">
-              Planejado (Organização) × realizado (Resultado), calculado automaticamente.
+              Calculado automaticamente: rituais agendados no ciclo × rituais com feedback/ocorrência.
             </p>
             {(data.data?.adherence ?? []).length === 0 && (
               <p className="text-sm text-muted-foreground">
@@ -668,6 +668,47 @@ function CycleClosurePage() {
               </div>
             )}
           </section>
+
+          <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
+            <h2 className="font-display text-xl">Recalibração de meta (E4)</h2>
+            <p className="text-xs text-muted-foreground">
+              Com base no desvio e nas causas identificadas, o objetivo do próximo ciclo deve ser ajustado?
+            </p>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                <Button
+                  type="button"
+                  variant={form.recalibrateGoal ? "default" : "outline"}
+                  onClick={() => setForm((f) => ({ ...f, recalibrateGoal: true }))}
+                  className="flex-1 rounded-xl"
+                >
+                  Sim, recalibrar
+                </Button>
+                <Button
+                  type="button"
+                  variant={!form.recalibrateGoal ? "default" : "outline"}
+                  onClick={() => setForm((f) => ({ ...f, recalibrateGoal: false }))}
+                  className="flex-1 rounded-xl"
+                >
+                  Não, manter trilha
+                </Button>
+              </div>
+              {form.recalibrateGoal && (
+                <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Justificativa obrigatória
+                  </label>
+                  <Textarea
+                    placeholder="Descreva o novo alvo ou por que a meta anterior se tornou irrealista..."
+                    value={form.recalibrateReason}
+                    onChange={(e) => setForm((f) => ({ ...f, recalibrateReason: e.target.value }))}
+                    className="min-h-[100px] rounded-xl"
+                  />
+                </div>
+              )}
+            </div>
+          </section>
+
 
           <section className="space-y-6 rounded-2xl border border-border bg-card p-6">
             <div className="flex items-center gap-2 text-primary">
