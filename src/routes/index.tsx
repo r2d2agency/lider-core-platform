@@ -115,26 +115,6 @@ function Landing() {
           </div>
         </section>
 
-        {/* Spec Section (Temporary Info for Dev/Review) */}
-        <section className="container mx-auto py-12 px-4 md:px-6">
-          <div className="rounded-3xl border border-dashed border-border p-8 bg-card/50">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-6">Especificações Técnicas (Modo Review)</h2>
-            <div className="grid gap-8 text-sm">
-              <div className="space-y-2">
-                <h3 className="font-bold text-primary">E7 — Recomendação da IA Coach</h3>
-                <p className="text-muted-foreground">No fechamento de ciclo E, exibimos a recomendação da IA Coach e capturamos a resposta do líder (Concordo/Ajustar/Discordo).</p>
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-bold text-primary">E8 — Radar HSH Integrado</h3>
-                <p className="text-muted-foreground">O reteste do Radar Hard·Soft·Heart agora é parte do fluxo de fechamento, registrando o novo score associado ao ciclo.</p>
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-bold text-primary">E10 — Retrô com Causa Raiz Unificada</h3>
-                <p className="text-muted-foreground">Unificação do fluxo de fechamento: a Análise de Causa Raiz (5 Porquês) agora é alimentada diretamente no Retrô do ciclo, integrando diagnóstico e PDI num único loop.</p>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       {/* Footer */}
