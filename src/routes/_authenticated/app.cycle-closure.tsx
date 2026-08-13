@@ -558,7 +558,7 @@ function CycleClosurePage() {
                 <Gauge className="h-5 w-5" />
                 <h2 className="font-display text-xl">Radar HSH (Evolução)</h2>
               </div>
-              <Link to="/app/consciencia/assessment" search={{ step: 'hsh' }}>
+              <Link to="/app/consciencia/assessment" search={{ step: 'hsh', showResults: false }}>
                 <Button variant="outline" size="sm" className="gap-2">
                   Realizar Reteste
                 </Button>
