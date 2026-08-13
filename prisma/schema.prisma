@@ -904,6 +904,8 @@ enum FeedbackType {
   conflito
   desligamento
   reconhecimento
+  estruturado
+  informal
 }
 
 enum FeedbackStatus {

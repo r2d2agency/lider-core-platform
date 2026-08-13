@@ -27,6 +27,7 @@ type Goal = {
   achievable: string | null; relevant: string | null; timeBound: string | null;
   ownerUserId: string | null; indicatorId: string | null; targetValue: number | null;
   status: GoalStatus;
+  indicatorLinkedId?: string | null;
 };
 type Cycle = {
   id: string; name: string; startAt: string; endAt: string;
@@ -244,15 +245,25 @@ function GoalDialog({ cycleId, onClose }: { cycleId: string; onClose: () => void
   const { orgId } = useCurrentOrg();
   const qc = useQueryClient();
   const [title, setTitle] = useState("");
+  const [indicatorLinkedId, setIndicatorLinkedId] = useState("");
+  const [targetValue, setTargetValue] = useState("");
   const [S, setS] = useState(""); const [M, setM] = useState("");
   const [A, setA] = useState(""); const [R, setR] = useState("");
   const [T, setT] = useState("");
+
+  const { data: indicators = [] } = useQuery({
+    queryKey: ["indicators", orgId],
+    enabled: !!orgId,
+    queryFn: () => api<any[]>(`/organization/${orgId}/indicators`),
+  });
 
   const save = useMutation({
     mutationFn: () => api(`/organization/${orgId}/cycles/${cycleId}/goals`, {
       method: "POST",
       body: {
         title,
+        indicatorId: indicatorLinkedId || null,
+        targetValue: targetValue ? Number(targetValue.replace(",", ".")) : null,
         specific: S || null, measurable: M || null, achievable: A || null,
         relevant: R || null, timeBound: T || null,
       },
@@ -270,6 +281,20 @@ function GoalDialog({ cycleId, onClose }: { cycleId: string; onClose: () => void
       <DialogHeader><DialogTitle>Nova meta SMART</DialogTitle></DialogHeader>
       <div className="space-y-3">
         <div><Label>Título</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Fechar 12 novos contratos até setembro" /></div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label>Indicador vinculado</Label>
+            <Select value={indicatorLinkedId} onValueChange={setIndicatorLinkedId}>
+              <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+              <SelectContent>
+                {indicators.map((i) => (
+                  <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div><Label>Valor-alvo</Label><Input value={targetValue} onChange={(e) => setTargetValue(e.target.value)} placeholder="Ex: 95" /></div>
+        </div>
         <div><Label>S · Específica</Label><Textarea rows={2} value={S} onChange={(e) => setS(e.target.value)} placeholder="O que exatamente?" /></div>
         <div><Label>M · Mensurável</Label><Input value={M} onChange={(e) => setM(e.target.value)} placeholder="Ex.: 12 contratos, R$ 300k MRR" /></div>
         <div><Label>A · Atingível</Label><Input value={A} onChange={(e) => setA(e.target.value)} placeholder="Recursos, capacidade" /></div>

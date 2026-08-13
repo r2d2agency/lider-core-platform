@@ -36,7 +36,9 @@ type FeedbackType =
   | "cobranca"
   | "conflito"
   | "desligamento"
-  | "reconhecimento";
+  | "reconhecimento"
+  | "estruturado"
+  | "informal";
 
 type FeedbackStatus = "registrado" | "em_acompanhamento" | "concluido" | "reaberto";
 
@@ -73,6 +75,8 @@ const TYPE_LABEL: Record<FeedbackType, string> = {
   conflito: "Conflito",
   desligamento: "Desligamento",
   reconhecimento: "Reconhecimento",
+  estruturado: "Estruturado",
+  informal: "Informal",
 };
 
 const STATUS_LABEL: Record<FeedbackStatus, string> = {

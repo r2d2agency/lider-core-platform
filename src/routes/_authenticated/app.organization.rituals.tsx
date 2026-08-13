@@ -121,6 +121,7 @@ function CreateForm({ onSave, saving }: { onSave: (v: Record<string, unknown>) =
   const [cadence, setCadence] = useState("");
   const [durationMin, setDurationMin] = useState(30);
   const [agenda, setAgenda] = useState("");
+  const [weekDay, setWeekDay] = useState("");
   return (
     <div className="space-y-4">
       <DialogHeader><DialogTitle>Novo ritual</DialogTitle></DialogHeader>
@@ -131,15 +132,29 @@ function CreateForm({ onSave, saving }: { onSave: (v: Record<string, unknown>) =
             {TYPES.map((t) => <option key={t.v} value={t.v}>{t.l}</option>)}
           </select>
         </div>
+        <div className="space-y-1.5"><Label>Dia da semana (opcional)</Label>
+          <select value={weekDay} onChange={(e) => setWeekDay(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+            <option value="">Selecione...</option>
+            <option value="segunda">Segunda-feira</option>
+            <option value="terca">Terça-feira</option>
+            <option value="quarta">Quarta-feira</option>
+            <option value="quinta">Quinta-feira</option>
+            <option value="sexta">Sexta-feira</option>
+            <option value="sabado">Sábado</option>
+            <option value="domingo">Domingo</option>
+          </select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5"><Label>Duração (min)</Label><Input type="number" value={durationMin} onChange={(e) => setDurationMin(Number(e.target.value))} /></div>
+        <div className="space-y-1.5"><Label>Cadência (ex: diária, semanal)</Label><Input value={cadence} onChange={(e) => setCadence(e.target.value)} /></div>
       </div>
       <div className="space-y-1.5"><Label>Objetivo</Label><Textarea rows={2} value={objective} onChange={(e) => setObjective(e.target.value)} /></div>
-      <div className="space-y-1.5"><Label>Cadência (ex: diária, semanal, quinzenal)</Label><Input value={cadence} onChange={(e) => setCadence(e.target.value)} /></div>
       <div className="space-y-1.5"><Label>Pauta padrão (Markdown)</Label><Textarea rows={4} value={agenda} onChange={(e) => setAgenda(e.target.value)} /></div>
       <DialogFooter>
         <Button disabled={!name || saving} onClick={() => onSave({
           name, type, objective: objective || null, cadence: cadence || null, durationMin,
-          agendaTemplate: agenda || null, scope: "org", scopeId: null,
+          agendaTemplate: agenda || null, weekDay: weekDay || null, scope: "org", scopeId: null,
         })}>{saving ? "Salvando…" : "Criar"}</Button>
       </DialogFooter>
     </div>
