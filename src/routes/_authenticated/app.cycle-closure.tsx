@@ -342,6 +342,57 @@ function CycleClosurePage() {
           </section>
 
           <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
+            <h2 className="font-display text-xl">Snapshot 9-Box (E)</h2>
+            <p className="text-xs text-muted-foreground">
+              A matriz consolidada deste ciclo. Os dados de Potencial (O) e Desempenho (R) são travados como registro histórico.
+            </p>
+            <div className="grid gap-2 md:grid-cols-3">
+              {(["baixo", "medio", "alto"] as const).reverse().map((pot) =>
+                (["baixo", "medio", "alto"] as const).map((perf) => {
+                  const entries = data.data?.nineBox ?? [];
+                  const cellEntries = entries.filter(e => e.stage === 'evolucao' && e.potential === pot && e.performance === perf);
+                  const risk = pot === "alto" && perf === "baixo";
+                  return (
+                    <div
+                      key={`${pot}-${perf}`}
+                      className="min-h-[80px] rounded-xl border border-border bg-card p-3"
+                      style={
+                        risk && cellEntries.length > 0
+                          ? {
+                              borderColor: "var(--pilar-r)",
+                              backgroundColor: "color-mix(in oklab, var(--pilar-r) 8%, transparent)",
+                            }
+                          : undefined
+                      }
+                    >
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                        {pot[0].toUpperCase()}{perf[0].toUpperCase()}
+                      </div>
+                      <div className="mt-1 space-y-0.5">
+                        {cellEntries.map((e) => (
+                          <div key={e.id} className="text-[11px] font-medium leading-tight">
+                            {e.subjectLabel || "Liderado"}
+                          </div>
+                        ))}
+                        {cellEntries.length === 0 && (
+                          <span className="text-[10px] text-muted-foreground opacity-50">—</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+            <div className="flex justify-end">
+              <Link to="/app/ninebox" search={{ cycleId: activeCycleId }}>
+                <Button variant="ghost" size="sm" className="text-xs gap-2">
+                  <Grid3X3 className="h-3.5 w-3.5" /> Ajustar 9-Box no estágio Evolução
+                </Button>
+              </Link>
+            </div>
+          </section>
+
+          <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
             <h2 className="font-display text-xl">Recalibrar a meta?</h2>
             <div className="flex gap-2">
               {[
