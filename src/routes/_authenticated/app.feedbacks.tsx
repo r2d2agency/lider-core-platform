@@ -274,6 +274,7 @@ function FeedbackDialog({
   onDone: () => void;
 }) {
   const [type, setType] = useState<FeedbackType>("alinhamento");
+  const [structured, setStructured] = useState<"estruturado" | "informal">("estruturado");
   const [subjectLabel, setSubjectLabel] = useState("");
   const [fact, setFact] = useState("");
   const [impact, setImpact] = useState("");
@@ -297,6 +298,7 @@ function FeedbackDialog({
         method: "POST",
         body: {
           type,
+          structured,
           subjectLabel: subjectLabel || null,
           fact,
           impact,
@@ -334,6 +336,19 @@ function FeedbackDialog({
                 {(Object.keys(TYPE_LABEL) as FeedbackType[]).map((t) => (
                   <SelectItem key={t} value={t}>{TYPE_LABEL[t]}</SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Formato</Label>
+            <Select
+              value={structured}
+              onValueChange={(v) => setStructured(v as "estruturado" | "informal")}
+            >
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="estruturado">Estruturado</SelectItem>
+                <SelectItem value="informal">Informal</SelectItem>
               </SelectContent>
             </Select>
           </div>

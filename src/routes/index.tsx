@@ -168,9 +168,9 @@ function Landing() {
               <div className="relative rounded-2xl border bg-muted/50 p-6 overflow-hidden shadow-2xl">
                 <div className="space-y-4">
                   <div className="rounded-xl border bg-card p-4 shadow-sm border-emerald-200 bg-emerald-50/30">
-                    <h4 className="font-bold text-sm mb-2">E1 ao E4 — Performance e Agenda</h4>
+                    <h4 className="font-bold text-sm mb-2">R2 — Feedback Estruturado vs Informal</h4>
                     <p className="text-xs text-muted-foreground">
-                      Resultado × Meta, Snapshot 9-Box, Adesão de Agenda automática e Recalibração estratégica integrados.
+                      Campo de classificação implementado nos fluxos de registro de feedback para diferenciar conversas formais de alinhamentos rápidos.
                     </p>
                   </div>
                   
