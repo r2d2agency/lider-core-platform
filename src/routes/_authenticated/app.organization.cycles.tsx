@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CalendarRange, Loader2, Plus, Sparkles, Target, Trash2 } from "lucide-react";
+import { CalendarRange, Loader2, Plus, Sparkles, Target, Trash2, Grid3X3, BookOpen } from "lucide-react";
 import { api } from "@/lib/api";
 import { useCurrentOrg } from "@/lib/use-current-org";
 import { Button } from "@/components/ui/button";
