@@ -321,9 +321,9 @@ function CycleClosurePage() {
           </section>
 
           <section className="space-y-3 rounded-2xl border border-border bg-card p-6">
-            <h2 className="font-display text-xl">Adesão de agenda</h2>
+            <h2 className="font-display text-xl">Adesão de agenda (E3)</h2>
             <p className="text-xs text-muted-foreground">
-              Planejado (Organização) × realizado (Resultado), calculado automaticamente.
+              Calculado automaticamente: rituais agendados no ciclo × rituais com feedback/ocorrência.
             </p>
             {(data.data?.adherence ?? []).length === 0 && (
               <p className="text-sm text-muted-foreground">
