@@ -591,50 +591,63 @@ function CycleClosurePage() {
           <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
             <div className="flex items-center gap-2 text-accent">
               <BookOpen className="h-5 w-5" />
-              <h2 className="font-display text-xl">Recomendação da IA Coach</h2>
-            </div>
-            <div className="rounded-xl bg-accent/5 p-4 border border-accent/10">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-accent/80">Recomendação do Coach C.O.R.E. para este ciclo</label>
-              <Textarea
-                value={form.coachSuggestion}
-                onChange={(e) => setForm((f) => ({ ...f, coachSuggestion: e.target.value }))}
-                placeholder="IA Coach analisando dados..."
-                className="mt-2 bg-background/50"
-              />
+              <h2 className="font-display text-xl">Coach C.O.R.E. (E7)</h2>
             </div>
             
-            <div className="space-y-3">
-              <label className="text-xs font-semibold">Qual a sua resposta para a recomendação acima?</label>
-              <div className="flex flex-wrap gap-2">
-                {["Concordo", "Vou ajustar", "Discordo"].map((opt) => (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() => {
-                      const current = form.coachResponse.split(":")[0];
-                      const comment = form.coachResponse.includes(":") ? form.coachResponse.split(":")[1] : "";
-                      setForm(f => ({ ...f, coachResponse: `${opt}${comment ? ":" + comment : ""}` }));
-                    }}
-                    className={cn(
-                      "rounded-lg border px-3 py-1.5 text-xs font-medium transition-all",
-                      form.coachResponse.startsWith(opt)
-                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                        : "border-border bg-secondary/50 hover:bg-secondary"
-                    )}
-                  >
-                    {opt}
-                  </button>
-                ))}
+            <div className="space-y-4">
+              <div className="rounded-xl bg-accent/5 p-4 border border-accent/10">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-accent/80">Recomendação da IA Coach</label>
+                <div className="mt-2 text-sm leading-relaxed whitespace-pre-wrap">
+                  {form.coachSuggestion || "Analisando seu desempenho, radar HSH e adesão de agenda para gerar recomendações personalizadas..."}
+                </div>
               </div>
-              <Textarea
-                value={form.coachResponse.includes(":") ? form.coachResponse.split(":")[1].trim() : ""}
-                onChange={(e) => {
-                  const prefix = form.coachResponse.split(":")[0] || "Concordo";
-                  setForm(f => ({ ...f, coachResponse: `${prefix}: ${e.target.value}` }));
-                }}
-                placeholder="Comentário opcional sobre sua decisão..."
-                className="text-sm"
-              />
+
+              <div className="grid gap-4 md:grid-cols-3">
+                {["Concordo", "Vou ajustar", "Discordo"].map((opt) => {
+                  const isActive = form.coachResponse.startsWith(opt);
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => {
+                        const comment = form.coachResponse.includes(":") ? form.coachResponse.split(":")[1] : "";
+                        setForm(f => ({ ...f, coachResponse: `${opt}${comment ? ":" + comment : ""}` }));
+                      }}
+                      className={cn(
+                        "flex flex-col items-center gap-2 rounded-xl border p-4 transition-all text-center",
+                        isActive
+                          ? "border-primary bg-primary/10 text-primary ring-1 ring-primary"
+                          : "border-border bg-card hover:bg-muted/50"
+                      )}
+                    >
+                      <div className={cn(
+                        "flex h-8 w-8 items-center justify-center rounded-full border-2",
+                        isActive ? "border-primary bg-primary text-white" : "border-muted-foreground/30"
+                      )}>
+                        {isActive && <CheckCircle2 className="h-5 w-5" />}
+                      </div>
+                      <span className="text-sm font-semibold">{opt}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {(form.coachResponse.startsWith("Vou ajustar") || form.coachResponse.startsWith("Discordo")) && (
+                <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    {form.coachResponse.startsWith("Vou ajustar") ? "Como você pretende ajustar?" : "Por que você discorda?"}
+                  </label>
+                  <Textarea
+                    value={form.coachResponse.includes(":") ? form.coachResponse.split(":")[1].trim() : ""}
+                    onChange={(e) => {
+                      const prefix = form.coachResponse.split(":")[0];
+                      setForm(f => ({ ...f, coachResponse: `${prefix}: ${e.target.value}` }));
+                    }}
+                    placeholder="Sua perspectiva ajuda a calibrar as próximas recomendações..."
+                    className="text-sm rounded-xl"
+                  />
+                </div>
+              )}
             </div>
           </section>
 

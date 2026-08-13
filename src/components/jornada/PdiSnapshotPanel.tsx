@@ -82,7 +82,7 @@ export function PdiSnapshotPanel({ orgId, cycleId }: { orgId?: string; cycleId?:
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 font-display text-xl">
           <Layers className="h-5 w-5" style={{ color: "var(--pilar-e)" }} />
-          PDI atualizado — 4 frentes
+          PDI Estruturado — 4 frentes (E9)
         </h2>
         {last && (
           <span className="rounded-full border border-border px-3 py-1 text-[11px] text-muted-foreground">
