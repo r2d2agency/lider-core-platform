@@ -129,8 +129,8 @@ function Landing() {
                 <p className="text-muted-foreground">O reteste do Radar Hard·Soft·Heart agora é parte do fluxo de fechamento, registrando o novo score associado ao ciclo.</p>
               </div>
               <div className="space-y-2">
-                <h3 className="font-bold text-primary">E9 — PDI em 4 Frentes</h3>
-                <p className="text-muted-foreground">Reorganização do formulário de PDI nas 4 frentes: Autodesenvolvimento, Equipe, Rituais e Metas.</p>
+                <h3 className="font-bold text-primary">E10 — Retrô com Causa Raiz Unificada</h3>
+                <p className="text-muted-foreground">Unificação do fluxo de fechamento: a Análise de Causa Raiz (5 Porquês) agora é alimentada diretamente no Retrô do ciclo, conectando diagnóstico e PDI num único loop.</p>
               </div>
             </div>
           </div>

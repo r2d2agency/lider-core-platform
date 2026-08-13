@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CheckCircle2, Gauge, Grid3X3, Loader2, Plus, Target, Trash2, BookOpen } from "lucide-react";
+import { CheckCircle2, Gauge, Grid3X3, Loader2, Plus, Target, Trash2, BookOpen, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { useCurrentOrg } from "@/lib/use-current-org";
@@ -10,6 +10,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PdiSnapshotPanel } from "@/components/jornada/PdiSnapshotPanel";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const ROOT_CAUSE_LABELS = {
+  comportamental: "Comportamental / Sabotador",
+  processo: "Processo / Ritual",
+  dados: "Dado / Cultura",
+  estrutural: "Estrutural / Meta",
+  outro: "Outro",
+};
+
+type RootCauseCategory = keyof typeof ROOT_CAUSE_LABELS;
 
 export const Route = createFileRoute("/_authenticated/app/cycle-closure")({
   ssr: false,
@@ -46,7 +57,7 @@ type Closure = {
   coachSuggestion: string | null;
   coachResponse: string | null;
 } | null;
-type Cause = { id: string; category: string; description: string };
+type Cause = { id?: string; category: RootCauseCategory; description: string };
 type Okr = {
   id: string;
   objective: string;
@@ -110,6 +121,7 @@ function CycleClosurePage() {
     decision: "",
     coachSuggestion: "",
     coachResponse: "",
+    causes: [] as Cause[],
   });
 
   useEffect(() => {
@@ -125,6 +137,7 @@ function CycleClosurePage() {
       decision: c?.decision ?? "",
       coachSuggestion: c?.coachSuggestion ?? "",
       coachResponse: c?.coachResponse ?? "",
+      causes: (c as any)?.causes || [],
     });
   }, [data.data?.closure]);
 
@@ -351,7 +364,7 @@ function CycleClosurePage() {
                     </div>
                     <div className="text-sm">{c.description}</div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => delCause.mutate(c.id)}>
+                  <Button variant="ghost" size="icon" onClick={() => c.id && delCause.mutate(c.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -478,6 +491,78 @@ function CycleClosurePage() {
               </div>
             )}
           </section>
+
+          <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-primary">
+                <Target className="h-5 w-5" />
+                <h2 className="font-display text-xl">Análise de Causa Raiz (5 Porquês)</h2>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setForm({ ...form, causes: [...form.causes, { category: 'outro', description: '' }] })}
+                className="gap-1 text-[10px] uppercase"
+              >
+                <Plus className="h-3 w-3" /> Adicionar Causa
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Identifique o que impediu o resultado ou o que o alavancou para replicar ou corrigir.
+            </p>
+            
+            <div className="space-y-3">
+              {form.causes.length === 0 && (
+                <p className="text-sm text-muted-foreground italic text-center py-4 border border-dashed rounded-xl">
+                  Nenhuma causa raiz registrada para este fechamento.
+                </p>
+              )}
+              {form.causes.map((rc, idx) => (
+                <div key={idx} className="flex gap-2 items-start rounded-xl border border-border bg-muted/30 p-3">
+                  <div className="flex-1 space-y-2">
+                    <Select 
+                      value={rc.category} 
+                      onValueChange={(v) => {
+                        const next = [...form.causes];
+                        next[idx].category = v as RootCauseCategory;
+                        setForm({ ...form, causes: next });
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-[11px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(ROOT_CAUSE_LABELS).map(([k, v]) => (
+                          <SelectItem key={k} value={k}>{v}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input 
+                      value={rc.description} 
+                      onChange={(e) => {
+                        const next = [...form.causes];
+                        next[idx].description = e.target.value;
+                        setForm({ ...form, causes: next });
+                      }}
+                      placeholder="Descrição da causa raiz (5 porquês)..."
+                      className="h-8 text-sm bg-background"
+                    />
+                  </div>
+                  <Button 
+                    size="icon" 
+                    variant="ghost" 
+                    onClick={() => {
+                      setForm({ ...form, causes: form.causes.filter((_, i) => i !== idx) });
+                    }}
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </section>
+
           <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
             <h2 className="font-display text-xl">Conclusão e Decisão</h2>
             <div className="grid gap-3 md:grid-cols-2">
@@ -499,6 +584,77 @@ function CycleClosurePage() {
                   placeholder="Qual a decisão estratégica?"
                 />
               </div>
+            </div>
+          </section>
+
+          <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-primary">
+                <Target className="h-5 w-5" />
+                <h2 className="font-display text-xl">Análise de Causa Raiz (5 Porquês)</h2>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setForm({ ...form, causes: [...form.causes, { category: 'outro', description: '' }] })}
+                className="gap-1 text-[10px] uppercase"
+              >
+                <Plus className="h-3 w-3" /> Adicionar Causa
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Identifique o que impediu o resultado ou o que o alavancou para replicar ou corrigir.
+            </p>
+            
+            <div className="space-y-3">
+              {form.causes.length === 0 && (
+                <p className="text-sm text-muted-foreground italic text-center py-4 border border-dashed rounded-xl">
+                  Nenhuma causa raiz registrada para este fechamento.
+                </p>
+              )}
+              {form.causes.map((rc, idx) => (
+                <div key={idx} className="flex gap-2 items-start rounded-xl border border-border bg-muted/30 p-3">
+                  <div className="flex-1 space-y-2">
+                    <Select 
+                      value={rc.category} 
+                      onValueChange={(v) => {
+                        const next = [...form.causes];
+                        next[idx].category = v as RootCauseCategory;
+                        setForm({ ...form, causes: next });
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-[11px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(ROOT_CAUSE_LABELS).map(([k, v]) => (
+                          <SelectItem key={k} value={k}>{v}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input 
+                      value={rc.description} 
+                      onChange={(e) => {
+                        const next = [...form.causes];
+                        next[idx].description = e.target.value;
+                        setForm({ ...form, causes: next });
+                      }}
+                      placeholder="Descrição da causa raiz (5 porquês)..."
+                      className="h-8 text-sm bg-background"
+                    />
+                  </div>
+                  <Button 
+                    size="icon" 
+                    variant="ghost" 
+                    onClick={() => {
+                      setForm({ ...form, causes: form.causes.filter((_, i) => i !== idx) });
+                    }}
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
             </div>
           </section>
 
