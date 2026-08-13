@@ -405,7 +405,10 @@ function CycleClosurePage() {
           </section>
 
           <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
-            <h2 className="font-display text-xl">Recalibrar a meta?</h2>
+            <h2 className="font-display text-xl">Recalibração de meta</h2>
+            <p className="text-xs text-muted-foreground">
+              Decisão formal sobre manter ou ajustar a meta para o ciclo seguinte.
+            </p>
             <div className="flex gap-2">
               {[
                 { v: false, label: "Não — a meta continua válida" },
@@ -426,9 +429,20 @@ function CycleClosurePage() {
                 </button>
               ))}
             </div>
-            <Textarea
-              value={form.recalibrateReason}
-              onChange={(e) => setForm((f) => ({ ...f, recalibrateReason: e.target.value }))}
+            {form.recalibrateGoal && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Justificativa da recalibração
+                </label>
+                <Textarea
+                  value={form.recalibrateReason}
+                  onChange={(e) => setForm((f) => ({ ...f, recalibrateReason: e.target.value }))}
+                  placeholder="Explique por que a meta precisa ser ajustada..."
+                  className="min-h-[100px]"
+                />
+              </div>
+            )}
+          </section>
               placeholder="Justificativa da decisão"
               rows={2}
             />
