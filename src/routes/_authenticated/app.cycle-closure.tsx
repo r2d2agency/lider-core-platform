@@ -156,6 +156,7 @@ function CycleClosurePage() {
           coachSuggestion: form.coachSuggestion || null,
           coachResponse: form.coachResponse || null,
           radarSnapshot: radar || form.radarSnapshot,
+          causes: form.causes,
           closeCycle,
         },
       }),
