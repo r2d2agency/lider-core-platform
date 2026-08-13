@@ -443,6 +443,7 @@ function CycleClosurePage() {
               </div>
             )}
           </section>
+          <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
             <h2 className="font-display text-xl">Conclusão e Decisão</h2>
             <div className="grid gap-3 md:grid-cols-2">
               <div>
