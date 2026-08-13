@@ -41,7 +41,7 @@ function Landing() {
             <Link to="/auth">
               <Button variant="ghost" size="sm">Entrar</Button>
             </Link>
-            <Link to="/auth" search={{ signup: true }}>
+            <Link to="/auth" search={{ mode: "signup" }}>
               <Button size="sm">Começar Agora</Button>
             </Link>
           </div>
