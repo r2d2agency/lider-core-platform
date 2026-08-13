@@ -493,53 +493,111 @@ function CycleClosurePage() {
             </div>
           </section>
 
-          <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
-            <h2 className="font-display text-xl">OKR dos próximos 90 dias</h2>
-            {(data.data?.okrs ?? []).map((o) => (
-              <div key={o.id} className="rounded-xl border border-border/70 p-3">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Target className="h-4 w-4" style={{ color: "var(--pilar-e)" }} />
-                  {o.objective}
+          <section className="space-y-6 rounded-2xl border border-border bg-card p-6">
+            <div className="flex items-center gap-2 text-primary">
+              <Target className="h-5 w-5" />
+              <h2 className="font-display text-xl">Plano de 90 Dias e OKR</h2>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Plano de Ação Estruturado (Prioridades)
+              </h3>
+              {priorities.map((p, i) => (
+                <div key={i} className="space-y-3 rounded-xl border border-border/50 p-4 bg-muted/30">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-primary">PRIORIDADE #{i + 1}</span>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="md:col-span-2">
+                      <label className="text-[10px] uppercase font-bold text-muted-foreground">O quê? (Ação)</label>
+                      <Input
+                        value={p.what}
+                        onChange={(e) => updatePriority(i, "what", e.target.value)}
+                        placeholder="Ex: Implementar novo CRM de vendas"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-bold text-muted-foreground">Por quê? (Motivo/Impacto)</label>
+                      <Input
+                        value={p.why}
+                        onChange={(e) => updatePriority(i, "why", e.target.value)}
+                        placeholder="Centralizar dados e reduzir churn"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-bold text-muted-foreground">Quem? (Responsável)</label>
+                      <Input
+                        value={p.who}
+                        onChange={(e) => updatePriority(i, "who", e.target.value)}
+                        placeholder="Time de TI + Vendas"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-bold text-muted-foreground">Prazo</label>
+                      <Input
+                        type="date"
+                        value={p.deadline}
+                        onChange={(e) => updatePriority(i, "deadline", e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-bold text-muted-foreground">Indicador de Sucesso</label>
+                      <Input
+                        value={p.successIndicator}
+                        onChange={(e) => updatePriority(i, "successIndicator", e.target.value)}
+                        placeholder="Adesão de 95% do time"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <ul className="mt-2 space-y-1 pl-6 text-sm text-muted-foreground">
-                  {o.keyResults.map((k) => (
-                    <li key={k.id} className="list-disc">
-                      {k.title}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-            <div className="space-y-2">
-              <Input
-                value={okr.objective}
-                onChange={(e) => setOkr((o) => ({ ...o, objective: e.target.value }))}
-                placeholder="Objetivo — ex: recuperar os -12% em 90 dias"
-              />
-              <div className="grid gap-2 md:grid-cols-3">
-                <Input
-                  value={okr.kr1}
-                  onChange={(e) => setOkr((o) => ({ ...o, kr1: e.target.value }))}
-                  placeholder="Key result 1"
-                />
-                <Input
-                  value={okr.kr2}
-                  onChange={(e) => setOkr((o) => ({ ...o, kr2: e.target.value }))}
-                  placeholder="Key result 2"
-                />
-                <Input
-                  value={okr.kr3}
-                  onChange={(e) => setOkr((o) => ({ ...o, kr3: e.target.value }))}
-                  placeholder="Key result 3"
-                />
+              ))}
+              {priorities.length < 3 && (
+                <Button variant="outline" size="sm" className="w-full gap-2 border-dashed" onClick={addPriority}>
+                  <Plus className="h-4 w-4" /> Adicionar Prioridade
+                </Button>
+              )}
+            </div>
+
+            <div className="space-y-4 pt-4 border-t border-border">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                OKR do Próximo Ciclo (Objetivo + KRs)
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-muted-foreground">Objetivo Principal</label>
+                  <Input
+                    value={okr.objective}
+                    onChange={(e) => setOkr((o) => ({ ...o, objective: e.target.value }))}
+                    placeholder="Ser a referência em atendimento no setor"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <label className="text-[10px] uppercase font-bold text-muted-foreground">Key Results (Resultados-Chave)</label>
+                  <Input
+                    value={okr.kr1}
+                    onChange={(e) => setOkr((o) => ({ ...o, kr1: e.target.value }))}
+                    placeholder="KR 1: NPS acima de 75"
+                  />
+                  <Input
+                    value={okr.kr2}
+                    onChange={(e) => setOkr((o) => ({ ...o, kr2: e.target.value }))}
+                    placeholder="KR 2: Reduzir tempo de resposta para < 2h"
+                  />
+                  <Input
+                    value={okr.kr3}
+                    onChange={(e) => setOkr((o) => ({ ...o, kr3: e.target.value }))}
+                    placeholder="KR 3: Taxa de resolução no primeiro contato > 80%"
+                  />
+                </div>
               </div>
               <Button
-                variant="outline"
-                className="gap-2"
-                disabled={okr.objective.trim().length < 3 || addOkr.isPending}
+                className="w-full gap-2"
+                disabled={!okr.objective || addOkr.isPending}
                 onClick={() => addOkr.mutate()}
               >
-                <Plus className="h-4 w-4" /> Criar OKR
+                {addOkr.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Target className="h-4 w-4" />}
+                Salvar Planejamento de 90 Dias
               </Button>
             </div>
           </section>
