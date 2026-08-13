@@ -114,6 +114,27 @@ function Landing() {
             </div>
           </div>
         </section>
+        
+        {/* Spec Review Section */}
+        <section className="container mx-auto py-12 px-4 md:px-6">
+          <div className="rounded-3xl border border-dashed border-border p-8 bg-card/50">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-6">Ajustes Módulos R e O (Modo Review)</h2>
+            <div className="grid gap-8 text-sm">
+              <div className="space-y-2">
+                <h3 className="font-bold text-primary">R2 — Feedback Estruturado vs Informal</h3>
+                <p className="text-muted-foreground">Adicionada a classificação de tipo (Estruturado/Informal) ao registro de feedbacks no Módulo Resultado.</p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-bold text-primary">O1 — Metas com Indicadores Estruturados</h3>
+                <p className="text-muted-foreground">Implementado o vínculo direto de metas a indicadores cadastrados e campo numérico de valor-alvo separado do texto SMART.</p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-bold text-primary">O2 — Rituais com Dia da Semana</h3>
+                <p className="text-muted-foreground">Adicionado campo de "Dia da semana" ao cadastro de rituais, consolidando a frequência e o agendamento num único registro.</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
       </main>
 
