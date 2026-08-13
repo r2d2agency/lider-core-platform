@@ -51,7 +51,15 @@ type Okr = {
   keyResults: Array<{ id: string; title: string; targetValue: number | null; done: boolean }>;
 };
 type Adherence = { ritualId: string; title: string; planned: number; done: number; percent: number };
-type Payload = { cycle: Cycle; closure: Closure; causes: Cause[]; okrs: Okr[]; adherence: Adherence[] };
+type NineBoxEntry = { id: string; potential: string; performance: string; stage: string; subjectLabel?: string };
+type Payload = {
+  cycle: Cycle;
+  closure: Closure;
+  causes: Cause[];
+  okrs: Okr[];
+  adherence: Adherence[];
+  nineBox: NineBoxEntry[];
+};
 
 const CATEGORIES = [
   { key: "comportamental", label: "Comportamental / sabotador" },
