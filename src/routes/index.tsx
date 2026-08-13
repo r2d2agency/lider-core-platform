@@ -168,16 +168,16 @@ function Landing() {
               <div className="relative rounded-2xl border bg-muted/50 p-6 overflow-hidden shadow-2xl">
                 <div className="space-y-4">
                   <div className="rounded-xl border bg-card p-4 shadow-sm border-emerald-200 bg-emerald-50/30">
-                    <h4 className="font-bold text-sm mb-2">E1 & E2 — Resultado e 9-Box consolidado</h4>
+                    <h4 className="font-bold text-sm mb-2">E1 ao E4 — Performance e Agenda</h4>
                     <p className="text-xs text-muted-foreground">
-                      Captura automática do desvio meta × realizado e snapshot histórico da matriz 9-Box no fechamento.
+                      Resultado × Meta, Snapshot 9-Box, Adesão de Agenda automática e Recalibração estratégica integrados.
                     </p>
                   </div>
                   
                   <div className="rounded-xl border bg-card p-4 shadow-sm border-emerald-200 bg-emerald-50/30">
-                    <h4 className="font-bold text-sm mb-2">E5 & E6 — Planejamento de 90 dias e OKR</h4>
+                    <h4 className="font-bold text-sm mb-2">E5 ao E10 — Evolução e Causa Raiz</h4>
                     <p className="text-xs text-muted-foreground">
-                      Prioridades estruturadas e definição de novos objetivos integrados ao fluxo de Evolução.
+                      Planos de 90 dias, OKRs, IA Coach, Radar HSH e Análise de Causa Raiz unificados no fechamento.
                     </p>
                   </div>
                 </div>
