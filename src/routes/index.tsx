@@ -130,7 +130,7 @@ function Landing() {
               </div>
               <div className="space-y-2">
                 <h3 className="font-bold text-primary">E10 — Retrô com Causa Raiz Unificada</h3>
-                <p className="text-muted-foreground">Unificação do fluxo de fechamento: a Análise de Causa Raiz (5 Porquês) agora é alimentada diretamente no Retrô do ciclo, conectando diagnóstico e PDI num único loop.</p>
+                <p className="text-muted-foreground">Unificação do fluxo de fechamento: a Análise de Causa Raiz (5 Porquês) agora é alimentada diretamente no Retrô do ciclo, integrando diagnóstico e PDI num único loop.</p>
               </div>
             </div>
           </div>
