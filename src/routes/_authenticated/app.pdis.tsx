@@ -747,8 +747,6 @@ function NewPdiDialog({
           </div>
         </div>
 
-        </div>
-
         <div className="space-y-4">
           <Label className="text-xs font-bold uppercase tracking-widest text-primary">Estrutura das 4 Frentes (Spec)</Label>
           
