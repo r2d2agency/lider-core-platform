@@ -165,10 +165,27 @@ function Landing() {
                   </div>
                 </div>
               </div>
-              <div className="relative rounded-2xl border bg-muted/50 p-2 overflow-hidden aspect-video shadow-2xl">
-                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/20 pointer-events-none" />
-                 <div className="flex h-full w-full items-center justify-center text-muted-foreground italic">
-                   Visualização do Sistema Líder C.O.R.E.
+              <div className="relative rounded-2xl border bg-muted/50 p-6 overflow-hidden shadow-2xl">
+                 <div className="space-y-4">
+                   <div className="rounded-xl border bg-card p-4 shadow-sm">
+                     <h4 className="font-bold text-sm mb-2">E3 — Adesão de agenda não é calculada automaticamente</h4>
+                     <div className="flex items-center gap-2 mb-2">
+                       <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-100 text-amber-700">Status: PENDENTE</span>
+                     </div>
+                     <p className="text-xs text-muted-foreground">
+                       O que ainda falta: Nenhum indicador cruzando planejado × realizado foi encontrado em Agenda do líder nem no fechamento de ciclo.
+                     </p>
+                   </div>
+                   
+                   <div className="rounded-xl border bg-card p-4 shadow-sm">
+                     <h4 className="font-bold text-sm mb-2">E4 — Recalibração de meta não existe</h4>
+                     <div className="flex items-center gap-2 mb-2">
+                       <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-100 text-amber-700">Status: PENDENTE</span>
+                     </div>
+                     <p className="text-xs text-muted-foreground">
+                       O que ainda falta: O Retrô (Organização → Ciclos & metas → Retrô) continua com os mesmos 5 passos de antes, sem decisão de recalibração.
+                     </p>
+                   </div>
                  </div>
               </div>
             </div>
