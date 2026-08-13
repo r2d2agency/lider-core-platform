@@ -17,7 +17,8 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>) => ({
     invite: typeof search.invite === "string" ? search.invite : undefined,
-  }) as { invite?: string },
+    mode: (search.mode === "signup" || search.mode === "signin") ? search.mode : undefined,
+  }) as { invite?: string; mode?: "signup" | "signin" },
   head: () => ({
     meta: [
       { title: "Entrar — LÍDER C.O.R.E." },
@@ -30,9 +31,9 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { invite: inviteToken } = Route.useSearch();
+  const { invite: inviteToken, mode: searchMode } = Route.useSearch();
   const { user, signIn, signUp } = useAuth();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">(searchMode || "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
