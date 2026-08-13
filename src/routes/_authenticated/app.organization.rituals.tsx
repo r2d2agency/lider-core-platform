@@ -49,6 +49,7 @@ type Ritual = {
   id: string; name: string; type: string; objective: string | null;
   cadence: string | null; durationMin: number; status: string;
   agendaTemplate: string | null; checklist: string[] | null;
+  weekDay: string | null;
   _count: { participants: number; occurrences: number };
   occurrences: Array<{ id: string; scheduledAt: string; status: string }>;
 };
