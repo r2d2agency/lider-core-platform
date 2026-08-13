@@ -203,6 +203,7 @@ jornadaRouter.post("/:orgId/jornada/okrs", async (req, res) => {
         objective: z.string().min(3),
         linkedGoalId: z.string().uuid().optional().nullable(),
         horizonDays: z.number().int().min(7).max(365).default(90),
+        plan90: z.array(z.record(z.unknown())).optional().nullable(),
         keyResults: z
           .array(
             z.object({
@@ -220,6 +221,7 @@ jornadaRouter.post("/:orgId/jornada/okrs", async (req, res) => {
         organizationId: req.params.orgId,
         cycleId: data.cycleId,
         objective: data.objective,
+        plan90: (data.plan90 ?? null) as unknown as object,
         linkedGoalId: data.linkedGoalId ?? null,
         horizonDays: data.horizonDays,
         createdBy: req.userId!,

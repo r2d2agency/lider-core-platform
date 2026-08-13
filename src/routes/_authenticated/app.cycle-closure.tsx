@@ -50,6 +50,14 @@ type Okr = {
   horizonDays: number;
   keyResults: Array<{ id: string; title: string; targetValue: number | null; done: boolean }>;
 };
+
+type Priority90 = {
+  what: string;
+  why: string;
+  who: string;
+  deadline: string;
+  successIndicator: string;
+};
 type Adherence = { ritualId: string; title: string; planned: number; done: number; percent: number };
 type NineBoxEntry = { id: string; potential: string; performance: string; stage: string; subjectLabel?: string };
 type Payload = {
@@ -157,6 +165,22 @@ function CycleClosurePage() {
   });
 
   const [okr, setOkr] = useState({ objective: "", kr1: "", kr2: "", kr3: "" });
+  const [priorities, setPriorities] = useState<Priority90[]>([
+    { what: "", why: "", who: "", deadline: "", successIndicator: "" },
+  ]);
+
+  const addPriority = () => {
+    if (priorities.length < 3) {
+      setPriorities([...priorities, { what: "", why: "", who: "", deadline: "", successIndicator: "" }]);
+    }
+  };
+
+  const updatePriority = (index: number, field: keyof Priority90, value: string) => {
+    const newP = [...priorities];
+    newP[index] = { ...newP[index], [field]: value };
+    setPriorities(newP);
+  };
+
   const addOkr = useMutation({
     mutationFn: () =>
       api(`/organization/${orgId}/jornada/okrs`, {
@@ -168,14 +192,16 @@ function CycleClosurePage() {
           keyResults: [okr.kr1, okr.kr2, okr.kr3]
             .filter((t) => t.trim().length > 1)
             .map((title) => ({ title })),
+          plan90: priorities.filter((p) => p.what.trim().length > 2),
         },
       }),
     onSuccess: () => {
       setOkr({ objective: "", kr1: "", kr2: "", kr3: "" });
-      toast.success("OKR de 90 dias criado.");
+      setPriorities([{ what: "", why: "", who: "", deadline: "", successIndicator: "" }]);
+      toast.success("OKR e Plano de 90 dias criados.");
       qc.invalidateQueries({ queryKey: ["closure", orgId, activeCycleId] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Falha ao criar OKR"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Falha ao criar planejamento"),
   });
 
   if (!orgId) return null;

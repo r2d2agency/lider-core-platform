@@ -2316,7 +2316,8 @@ model CycleOkr {
   id             String   @id @default(uuid()) @db.Uuid
   organizationId String   @map("organization_id") @db.Uuid
   cycleId        String   @map("cycle_id") @db.Uuid
-  objective      String
+   objective      String
+  plan90         Json?    @map("plan_90")
   linkedGoalId   String?  @map("linked_goal_id") @db.Uuid
   horizonDays    Int      @default(90) @map("horizon_days")
   createdBy      String?  @map("created_by") @db.Uuid
