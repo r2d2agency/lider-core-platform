@@ -168,16 +168,16 @@ function Landing() {
               <div className="relative rounded-2xl border bg-muted/50 p-6 overflow-hidden shadow-2xl">
                 <div className="space-y-4">
                   <div className="rounded-xl border bg-card p-4 shadow-sm border-emerald-200 bg-emerald-50/30">
-                    <h4 className="font-bold text-sm mb-2">E5 — Plano de 90 Dias Estruturado</h4>
+                    <h4 className="font-bold text-sm mb-2">E1 & E2 — Resultado e 9-Box consolidado</h4>
                     <p className="text-xs text-muted-foreground">
-                      Prioridades estruturadas (O quê, Por quê, Quem, Prazo e Indicador) integradas ao fechamento.
+                      Captura automática do desvio meta × realizado e snapshot histórico da matriz 9-Box no fechamento.
                     </p>
                   </div>
                   
                   <div className="rounded-xl border bg-card p-4 shadow-sm border-emerald-200 bg-emerald-50/30">
-                    <h4 className="font-bold text-sm mb-2">E6 — OKR no Fechamento do Ciclo</h4>
+                    <h4 className="font-bold text-sm mb-2">E5 & E6 — Planejamento de 90 dias e OKR</h4>
                     <p className="text-xs text-muted-foreground">
-                      Definição de Objetivo e Key Results para o próximo ciclo diretamente no fluxo de Evolução.
+                      Prioridades estruturadas e definição de novos objetivos integrados ao fluxo de Evolução.
                     </p>
                   </div>
                 </div>
