@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CheckCircle2, Gauge, Grid3X3, Loader2, Plus, Target, Trash2 } from "lucide-react";
+import { CheckCircle2, Gauge, Grid3X3, Loader2, Plus, Target, Trash2, BookOpen } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { useCurrentOrg } from "@/lib/use-current-org";
 import { Button } from "@/components/ui/button";
@@ -557,7 +558,7 @@ function CycleClosurePage() {
                 <Gauge className="h-5 w-5" />
                 <h2 className="font-display text-xl">Radar HSH (Evolução)</h2>
               </div>
-              <Link to="/app/consciencia/radar" search={{ cycleId: activeCycleId }}>
+              <Link to="/app/consciencia/assessment" search={{ type: 'hsh' }}>
                 <Button variant="outline" size="sm" className="gap-2">
                   Realizar Reteste
                 </Button>
