@@ -442,10 +442,8 @@ function CycleClosurePage() {
                 />
               </div>
             )}
-          </section>
-              placeholder="Justificativa da decisão"
-              rows={2}
-            />
+          <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
+            <h2 className="font-display text-xl">Conclusão e Decisão</h2>
             <div className="grid gap-3 md:grid-cols-2">
               <div>
                 <label className="text-xs text-muted-foreground">Aprendizados</label>
@@ -453,6 +451,7 @@ function CycleClosurePage() {
                   value={form.learnings}
                   onChange={(e) => setForm((f) => ({ ...f, learnings: e.target.value }))}
                   rows={3}
+                  placeholder="O que aprendemos neste ciclo?"
                 />
               </div>
               <div>
@@ -461,6 +460,7 @@ function CycleClosurePage() {
                   value={form.decision}
                   onChange={(e) => setForm((f) => ({ ...f, decision: e.target.value }))}
                   rows={3}
+                  placeholder="Qual a decisão estratégica?"
                 />
               </div>
             </div>
