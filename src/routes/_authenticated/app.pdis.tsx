@@ -656,6 +656,22 @@ function NewPdiDialog({
   const [summary, setSummary] = useState("");
   const [reviewAt, setReviewAt] = useState("");
   const [rootCauses, setRootCauses] = useState<{ category: RootCauseCategory; description: string }[]>([]);
+  const [fronts, setFronts] = useState({
+    selfDevelopment: [""],
+    teamFront: [""],
+    ritualsFront: [""],
+    goalsFront: [""],
+  });
+
+  const updateFront = (key: keyof typeof fronts, idx: number, val: string) => {
+    const next = [...fronts[key]];
+    next[idx] = val;
+    setFronts({ ...fronts, [key]: next });
+  };
+
+  const addFrontItem = (key: keyof typeof fronts) => {
+    setFronts({ ...fronts, [key]: [...fronts[key], ""] });
+  };
 
   const addRootCause = () => {
     setRootCauses([...rootCauses, { category: "outro", description: "" }]);
@@ -682,6 +698,10 @@ function NewPdiDialog({
           summary: summary || null,
           reviewAt: reviewAt ? new Date(reviewAt).toISOString() : null,
           rootCauses: rootCauses.filter(rc => rc.description.trim()),
+          selfDevelopment: fronts.selfDevelopment.filter(i => i.trim()),
+          teamFront: fronts.teamFront.filter(i => i.trim()),
+          ritualsFront: fronts.ritualsFront.filter(i => i.trim()),
+          goalsFront: fronts.goalsFront.filter(i => i.trim()),
         },
       }),
     onSuccess: () => {
@@ -724,6 +744,37 @@ function NewPdiDialog({
           <div>
             <Label>Data de revisão</Label>
             <Input type="date" value={reviewAt} onChange={(e) => setReviewAt(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <Label className="text-xs font-bold uppercase tracking-widest text-primary">Estrutura das 4 Frentes (Spec)</Label>
+          
+          <div className="grid gap-4 sm:grid-cols-2">
+            {[
+              { key: "selfDevelopment", label: "Autodesenvolvimento", placeholder: "Livros, cursos, habilidades hard/soft" },
+              { key: "teamFront", label: "Equipe", placeholder: "Feedbacks, delegações, desenvolvimento de liderados" },
+              { key: "ritualsFront", label: "Rituais", placeholder: "Melhoria na execução de 1:1, Daily, Retro" },
+              { key: "goalsFront", label: "Metas/Resultados", placeholder: "Ações focadas no batimento da meta do ciclo" }
+            ].map((front) => (
+              <div key={front.key} className="rounded-xl border border-border bg-secondary/10 p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">{front.label}</Label>
+                  <Button size="icon" variant="ghost" className="h-5 w-5" onClick={() => addFrontItem(front.key as any)}>
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+                {fronts[front.key as keyof typeof fronts].map((val, idx) => (
+                  <Input 
+                    key={idx}
+                    value={val}
+                    onChange={(e) => updateFront(front.key as any, idx, e.target.value)}
+                    placeholder={front.placeholder}
+                    className="h-8 text-xs bg-background"
+                  />
+                ))}
+              </div>
+            ))}
           </div>
         </div>
 

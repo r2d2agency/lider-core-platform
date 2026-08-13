@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CheckCircle2, Gauge, Grid3X3, Loader2, Plus, Target, Trash2 } from "lucide-react";
+import { CheckCircle2, Gauge, Grid3X3, Loader2, Plus, Target, Trash2, BookOpen } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { useCurrentOrg } from "@/lib/use-current-org";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,8 @@ type Closure = {
   radarSnapshot: Record<string, number> | null;
   learnings: string | null;
   decision: string | null;
+  coachSuggestion: string | null;
+  coachResponse: string | null;
 } | null;
 type Cause = { id: string; category: string; description: string };
 type Okr = {
@@ -105,6 +108,8 @@ function CycleClosurePage() {
     radarSnapshot: null as Record<string, number> | null,
     learnings: "",
     decision: "",
+    coachSuggestion: "",
+    coachResponse: "",
   });
 
   useEffect(() => {
@@ -118,6 +123,8 @@ function CycleClosurePage() {
       radarSnapshot: (c?.radarSnapshot as Record<string, number>) ?? null,
       learnings: c?.learnings ?? "",
       decision: c?.decision ?? "",
+      coachSuggestion: c?.coachSuggestion ?? "",
+      coachResponse: c?.coachResponse ?? "",
     });
   }, [data.data?.closure]);
 
@@ -133,6 +140,8 @@ function CycleClosurePage() {
           recalibrateReason: form.recalibrateReason || null,
           learnings: form.learnings || null,
           decision: form.decision || null,
+          coachSuggestion: form.coachSuggestion || null,
+          coachResponse: form.coachResponse || null,
           radarSnapshot: radar || form.radarSnapshot,
           closeCycle,
         },
@@ -491,6 +500,87 @@ function CycleClosurePage() {
                 />
               </div>
             </div>
+          </section>
+
+          <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
+            <div className="flex items-center gap-2 text-accent">
+              <BookOpen className="h-5 w-5" />
+              <h2 className="font-display text-xl">Recomendação da IA Coach</h2>
+            </div>
+            <div className="rounded-xl bg-accent/5 p-4 border border-accent/10">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-accent/80">Recomendação do Coach C.O.R.E. para este ciclo</label>
+              <Textarea
+                value={form.coachSuggestion}
+                onChange={(e) => setForm((f) => ({ ...f, coachSuggestion: e.target.value }))}
+                placeholder="IA Coach analisando dados..."
+                className="mt-2 bg-background/50"
+              />
+            </div>
+            
+            <div className="space-y-3">
+              <label className="text-xs font-semibold">Qual a sua resposta para a recomendação acima?</label>
+              <div className="flex flex-wrap gap-2">
+                {["Concordo", "Vou ajustar", "Discordo"].map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => {
+                      const current = form.coachResponse.split(":")[0];
+                      const comment = form.coachResponse.includes(":") ? form.coachResponse.split(":")[1] : "";
+                      setForm(f => ({ ...f, coachResponse: `${opt}${comment ? ":" + comment : ""}` }));
+                    }}
+                    className={cn(
+                      "rounded-lg border px-3 py-1.5 text-xs font-medium transition-all",
+                      form.coachResponse.startsWith(opt)
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "border-border bg-secondary/50 hover:bg-secondary"
+                    )}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+              <Textarea
+                value={form.coachResponse.includes(":") ? form.coachResponse.split(":")[1].trim() : ""}
+                onChange={(e) => {
+                  const prefix = form.coachResponse.split(":")[0] || "Concordo";
+                  setForm(f => ({ ...f, coachResponse: `${prefix}: ${e.target.value}` }));
+                }}
+                placeholder="Comentário opcional sobre sua decisão..."
+                className="text-sm"
+              />
+            </div>
+          </section>
+
+          <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-primary">
+                <Gauge className="h-5 w-5" />
+                <h2 className="font-display text-xl">Radar HSH (Evolução)</h2>
+              </div>
+              <Link to="/app/consciencia/assessment" search={{ step: 'hsh', showResults: false }}>
+                <Button variant="outline" size="sm" className="gap-2">
+                  Realizar Reteste
+                </Button>
+              </Link>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              O reteste do Radar Hard·Soft·Heart deve ser feito ao fim de cada ciclo para registrar a evolução do score.
+            </p>
+            {form.radarSnapshot ? (
+              <div className="grid grid-cols-3 gap-2 text-center">
+                {Object.entries(form.radarSnapshot).map(([k, v]) => (
+                  <div key={k} className="rounded-xl border border-border p-3">
+                    <div className="text-[10px] uppercase font-bold text-muted-foreground">{k}</div>
+                    <div className="text-xl font-display">{Number(v)}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+                Nenhum snapshot do radar registrado para este ciclo.
+              </div>
+            )}
           </section>
 
           <section className="space-y-6 rounded-2xl border border-border bg-card p-6">
