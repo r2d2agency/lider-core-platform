@@ -67,7 +67,7 @@ function Landing() {
               Uma plataforma que continua útil depois do treinamento.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link to="/auth" search={{ signup: true }}>
+              <Link to="/auth" search={{ mode: "signup" }}>
                 <Button size="lg" className="h-12 px-8 text-base">
                   Começar Jornada <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
