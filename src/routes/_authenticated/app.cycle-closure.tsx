@@ -655,7 +655,7 @@ function CycleClosurePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-primary">
                 <Gauge className="h-5 w-5" />
-                <h2 className="font-display text-xl">Radar HSH (Evolução)</h2>
+                <h2 className="font-display text-xl">Radar HSH (E8)</h2>
               </div>
               <Link to="/app/consciencia/assessment" search={{ step: 'hsh', showResults: false }}>
                 <Button variant="outline" size="sm" className="gap-2">
@@ -667,17 +667,32 @@ function CycleClosurePage() {
               O reteste do Radar Hard·Soft·Heart deve ser feito ao fim de cada ciclo para registrar a evolução do score.
             </p>
             {form.radarSnapshot ? (
-              <div className="grid grid-cols-3 gap-2 text-center">
-                {Object.entries(form.radarSnapshot).map(([k, v]) => (
-                  <div key={k} className="rounded-xl border border-border p-3">
-                    <div className="text-[10px] uppercase font-bold text-muted-foreground">{k}</div>
-                    <div className="text-xl font-display">{Number(v)}</div>
-                  </div>
-                ))}
+              <div className="rounded-xl border border-border bg-secondary/30 p-4">
+                <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Snapshot atual do ciclo
+                </div>
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  {Object.entries(form.radarSnapshot).map(([k, v]) => (
+                    <div key={k}>
+                      <div className="text-2xl font-bold" style={{ color: `var(--pilar-${k[0].toLowerCase()})` }}>
+                        {Number(v)}
+                      </div>
+                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{k}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : (
-              <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
-                Nenhum snapshot do radar registrado para este ciclo.
+              <div className="rounded-xl border border-dashed border-border p-8 text-center">
+                <p className="text-sm text-muted-foreground">Nenhum snapshot de Radar encontrado para este ciclo.</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-3 gap-2"
+                  onClick={() => window.open("/app/consciencia/assessment?step=hsh", "_blank")}
+                >
+                  Abrir Radar HSH
+                </Button>
               </div>
             )}
           </section>
