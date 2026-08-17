@@ -61,18 +61,18 @@ const DISC = [
   { key: "C" as const, title: "Cauteloso",  desc: "Analítico, metódico, valoriza precisão." },
 ];
 
-// 10 pilares oficiais (Positive Intelligence + Módulo C v2)
+// 10 pilares oficiais (Radar de Autogestão e Performance Mental)
 const SABOTAGE_PILLARS = [
-  { id: "Juiz interno",       q: "Costumo julgar duramente a mim, aos outros ou às circunstâncias." },
-  { id: "Agradador",          q: "Foco em agradar e evito criar desconforto mesmo quando preciso." },
-  { id: "Hiper-realizador",   q: "Meu valor depende do quanto entrego. É difícil parar." },
-  { id: "Hiper-racional",     q: "Racionalizo tudo. Emoção do outro me incomoda." },
-  { id: "Vítima",             q: "Percebo que sofro mais do que os outros nas mesmas situações." },
-  { id: "Evasivo",            q: "Evito conflitos e conversas difíceis, mesmo caras." },
-  { id: "Controlador",        q: "Preciso ter tudo sob controle, custe o que custar." },
-  { id: "Reservado",          q: "Guardo o que sinto e mantenho distância emocional." },
-  { id: "Inquieto",           q: "Fico entediado rápido. Preciso de estímulos novos." },
-  { id: "Perfeccionista",     q: "Retenho entregas até que estejam impecáveis." },
+  { id: "Crítico Interno",     q: "Percebo primeiro o que está errado, mesmo quando o resultado geral é bom." },
+  { id: "Controlador",        q: "Fico tenso quando decisões importantes são tomadas sem minha participação." },
+  { id: "Perfeccionista",     q: "Adio uma entrega quando acredito que ela ainda não atingiu o padrão ideal." },
+  { id: "Agradador",          q: "Digo sim para evitar decepcionar alguém, mesmo quando deveria dizer não." },
+  { id: "Hiper-realizador",   q: "Meu valor pessoal fica muito ligado ao que produzo ou conquisto." },
+  { id: "Alerta",             q: "Imagino com frequência o que pode dar errado antes de considerar o que pode dar certo." },
+  { id: "Esquivo",            q: "Adio conversas difíceis na esperança de que o problema se resolva sozinho." },
+  { id: "Vitimia",            q: "Quando me sinto incompreendido, permaneço preso a essa sensação por bastante tempo." },
+  { id: "Inquieto",           q: "Perco o interesse quando uma atividade deixa de oferecer novidade ou estímulo." },
+  { id: "Hiperanalítico",     q: "Confio mais na lógica do que em sinais emocionais ou relacionais." },
 ] as const;
 
 const RISKS = [

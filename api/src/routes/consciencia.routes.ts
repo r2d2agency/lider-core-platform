@@ -376,7 +376,7 @@ export async function computeCrossSignals(orgId: string, userId?: string) {
           kind: "ritual_drop_control",
           severity: "high",
           title: "Adesão a rituais caiu — cuidado com o padrão de controle",
-          detail: `Últimos 14d: ${Math.round(rec * 100)}% de rituais no prazo (vs ${Math.round(prev * 100)}% nas 2 semanas anteriores). Perfil sinaliza tendência de controle; quando a cadência cai, o time perde referência.`,
+          detail: `Últimos 14d: ${Math.round(rec * 100)}% de rituais no prazo (vs ${Math.round(prev * 100)}% nas 2 semanas anteriores). O Radar de Autogestão sinaliza tendência de controle; quando a cadência cai, o time perde referência.`,
         });
         created.push("ritual_drop_control");
       }

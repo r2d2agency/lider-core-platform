@@ -109,15 +109,16 @@ const RISK_OPTIONS = [
 ];
 
 const SABOTAGE_OPTIONS = [
-  "Juiz interno",
+  "Crítico Interno",
   "Agradador",
   "Hiper-realizador",
   "Hiper-racional",
-  "Vítima",
-  "Evasivo",
+  "Vitimia",
+  "Esquivo",
   "Controlador",
-  "Reservado",
+  "Alerta",
   "Inquieto",
+  "Hiperanalítico",
 ];
 
 function ConscienciaPage() {
