@@ -414,7 +414,7 @@ function AssessmentWizard() {
     if (step === 0) return declaredRole.trim().length > 3;
     if (step === 1) return !!discPrimary;
     if (step === 2) return Object.keys(sabAns).length >= 10;
-    if (step === 3) return Object.keys(cerAns).length >= 6;
+    if (step === 3) return Object.keys(cerAns).length >= 8;
     if (step === 5) return hard.length >= 10 && soft.length >= 10 && heart.length >= 10;
     return true;
   };
@@ -424,7 +424,7 @@ function AssessmentWizard() {
     if (step === 0) return "Escreva seu papel declarado para continuar.";
     if (step === 1) return "Selecione seu estilo DISC predominante para continuar.";
     if (step === 2) return `Responda todas as 10 afirmações para continuar. Faltam ${Math.max(0, 10 - sabAnswered)}.`;
-    if (step === 3) return `Responda pelo menos 6 blocos de predominância cerebral. Faltam ${Math.max(0, 6 - cerAnswered)}.`;
+    if (step === 3) return `Responda todas as 8 afirmações para continuar. Faltam ${Math.max(0, 8 - cerAnswered)}.`;
     if (step === 5) return "Responda todas as 30 afirmações do radar para concluir.";
     return "Complete esta etapa para continuar.";
   };
@@ -601,7 +601,7 @@ function AssessmentWizard() {
               Para cada afirmação, escolha o quanto ela te descreve (1 = nada · 5 = totalmente).
             </p>
             <div className="rounded-xl border border-accent/25 bg-accent/5 px-3 py-2 text-xs font-medium text-foreground">
-              Respondidas: {sabAnswered}/10 · o botão Próximo libera com 8 respostas.
+              Respondidas: {sabAnswered}/10.
             </div>
             <ul className="space-y-4">
               {SABOTAGE_PILLARS.map((p) => (
@@ -640,7 +640,7 @@ function AssessmentWizard() {
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">Em cada bloco, escolha a frase que MAIS te representa hoje.</p>
             <div className="rounded-xl border border-accent/25 bg-accent/5 px-3 py-2 text-xs font-medium text-foreground">
-              Respondidas: {cerAnswered}/8 · o botão Próximo libera com 6 respostas.
+              Respondidas: {cerAnswered}/8.
             </div>
             <ul className="space-y-4">
               {CEREBRAL.map((b) => (
@@ -668,7 +668,7 @@ function AssessmentWizard() {
                 </li>
               ))}
             </ul>
-            {Object.keys(cerAns).length >= 6 && (
+            {Object.keys(cerAns).length >= 8 && (
               <div className="rounded-xl border border-border bg-secondary/40 p-3">
                 <div className="text-xs uppercase tracking-widest text-muted-foreground">Predominância parcial</div>
                 <div className="mt-1 font-display text-lg">{CEREBRAL_LABEL[cerebralProfile.primary]}</div>
