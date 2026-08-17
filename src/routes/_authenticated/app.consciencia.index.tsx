@@ -336,7 +336,7 @@ function ConscienciaPage() {
             </div>
             <div className="mt-1 text-[12px] text-muted-foreground">
               {missingCount > 0 
-                ? `Faltam ${missingCount} etapa${missingCount > 1 ? "s" : ""}: ${missingSteps[0].title}` 
+                ? `Faltam ${missingCount} etapa${missingCount > 1 ? "s" : ""}: ${missingSteps[0].title === "Sabotadores" ? "Limitadores" : missingSteps[0].title}` 
                 : "Perfil completo"}
             </div>
           </div>
