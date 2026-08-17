@@ -26,14 +26,15 @@ export const Route = createFileRoute("/_authenticated/app/consciencia/assessment
   validateSearch: (search: Record<string, unknown>) => ({
     step: isAssessmentStepKey(search.step) ? search.step : undefined,
     showResults: search.showResults === true || search.showResults === "true",
+    reset: search.reset === true || search.reset === "true",
   }),
   component: AssessmentWizard,
   head: () => ({
     meta: [
       { title: "Assessment guiado · Consciência · LíderCore" },
-      { name: "description", content: "Complete seu perfil comportamental, sabotadores e radar Hard Soft Heart." },
+      { name: "description", content: "Complete seu perfil comportamental, limitadores e radar Hard Soft Heart." },
       { property: "og:title", content: "Assessment guiado · Consciência · LíderCore" },
-      { property: "og:description", content: "Complete seu perfil comportamental, sabotadores e radar Hard Soft Heart." },
+      { property: "og:description", content: "Complete seu perfil comportamental, limitadores e radar Hard Soft Heart." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -224,7 +225,7 @@ function AssessmentWizard() {
   const queryClient = useQueryClient();
   const search = Route.useSearch();
   const stepParam: unknown = search.step;
-  const showResults = !!search.showResults;
+  const showResults = !!search.showResults && !search.reset;
   const requestedStep: number = isAssessmentStepKey(stepParam) ? STEP_INDEX[stepParam] : 0;
   const { data, isLoading } = useQuery({
     queryKey: ["consciencia", "me", orgId],
@@ -303,9 +304,10 @@ function AssessmentWizard() {
 
   // hidrata quando dados chegam
   useEffect(() => {
+    // Se reset for true, ignoramos hidratação inicial para começar limpo
+    if (search.reset) return;
+    
     // Se o usuário já concluiu ou se estamos visualizando resultados, hidratamos do perfil.
-    // Mas a pedido do usuário: "nenhum teste deve vir com respostas selecionadas" ao refazer.
-    // O requestedStep > 0 indica que o usuário escolheu uma etapa específica para (re)fazer.
     if (!initial) return;
 
     setDeclaredRole(initial.declaredRole ?? "");
@@ -403,7 +405,7 @@ function AssessmentWizard() {
   const steps = [
     { title: "Papel",      hint: "Pra que sua liderança existe." },
     { title: "Perfil",         hint: "DISC · MBTI · Papel." },
-    { title: "Sabotadores", hint: "Os 10 pilares da inteligência positiva." },
+    { title: "Limitadores", hint: "Identifique padrões que travam sua execução." },
     { title: "Predominância cerebral", hint: "Águia · Lobo · Gato · Tubarão." },
     { title: "Riscos",              hint: "Padrões que aparecem sob pressão." },
     { title: "Hard · Soft · Heart", hint: "30 afirmações oficiais (10 por dimensão)." },
@@ -421,7 +423,7 @@ function AssessmentWizard() {
   const nextBlockedMessage = () => {
     if (step === 0) return "Escreva seu papel declarado para continuar.";
     if (step === 1) return "Selecione seu estilo DISC predominante para continuar.";
-    if (step === 2) return `Responda pelo menos 8 sabotadores. Faltam ${Math.max(0, 8 - sabAnswered)}.`;
+    if (step === 2) return `Responda pelo menos 8 limitadores. Faltam ${Math.max(0, 8 - sabAnswered)}.`;
     if (step === 3) return `Responda pelo menos 6 blocos de predominância cerebral. Faltam ${Math.max(0, 6 - cerAnswered)}.`;
     if (step === 5) return "Responda todas as 30 afirmações do radar para concluir.";
     return "Complete esta etapa para continuar.";
@@ -464,7 +466,7 @@ function AssessmentWizard() {
             
             {stepParam === "sabotages" && (
               <div className="rounded-xl bg-card p-4 border border-border">
-                <div className="text-xs font-semibold uppercase tracking-wider text-accent">Seus Principais Sabotadores</div>
+                <div className="text-xs font-semibold uppercase tracking-wider text-accent">Seus Principais Limitadores</div>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {initial?.sabotages?.map(s => (
                     <span key={s} className="rounded-full bg-accent/10 px-3 py-1 text-sm font-bold text-accent border border-accent/20">{s}</span>
@@ -497,8 +499,17 @@ function AssessmentWizard() {
             </Button>
             <Button variant="outline" className="flex-1" onClick={() => {
               localStorage.removeItem(`assessment_draft_${orgId}`);
-              navigate({ to: "/app/consciencia/assessment", search: { step: stepParam as any, showResults: false } });
-              window.location.reload(); // Garante que o estado seja resetado
+              // Limpamos o estado local para garantir que a UI reflita o reset
+              setSabAns({});
+              setCerAns({});
+              setHard([]);
+              setSoft([]);
+              setHeart([]);
+              // Navegamos com a flag reset=true para forçar o reinício
+              navigate({ 
+                to: "/app/consciencia/assessment", 
+                search: { step: stepParam as any, showResults: false, reset: true } 
+              });
             }}>
               Refazer Avaliação
             </Button>

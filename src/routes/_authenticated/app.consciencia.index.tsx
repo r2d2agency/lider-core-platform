@@ -183,11 +183,11 @@ function ConscienciaPage() {
     {
       key: "sabotages",
       icon: Zap,
-      title: "Sabotadores",
+      title: "Limitadores de Performance",
       subtitle:
         (profile?.sabotages?.length ?? 0) > 0
           ? `${profile!.sabotages.slice(0, 2).join(", ")}${profile!.sabotages.length > 2 ? "..." : ""}`
-          : "Identifique os principais",
+          : "Identifique padrões que travam sua execução",
       minutes: 6,
       done: (profile?.sabotages?.length ?? 0) >= 3,
       weight: 15,
