@@ -413,7 +413,7 @@ function AssessmentWizard() {
   const canNext = () => {
     if (step === 0) return declaredRole.trim().length > 3;
     if (step === 1) return !!discPrimary;
-    if (step === 2) return Object.keys(sabAns).length >= 8;
+    if (step === 2) return Object.keys(sabAns).length >= 10;
     if (step === 3) return Object.keys(cerAns).length >= 6;
     if (step === 5) return hard.length >= 10 && soft.length >= 10 && heart.length >= 10;
     return true;
@@ -423,7 +423,7 @@ function AssessmentWizard() {
   const nextBlockedMessage = () => {
     if (step === 0) return "Escreva seu papel declarado para continuar.";
     if (step === 1) return "Selecione seu estilo DISC predominante para continuar.";
-    if (step === 2) return `Responda pelo menos 8 limitadores. Faltam ${Math.max(0, 8 - sabAnswered)}.`;
+    if (step === 2) return `Responda todas as 10 afirmações para continuar. Faltam ${Math.max(0, 10 - sabAnswered)}.`;
     if (step === 3) return `Responda pelo menos 6 blocos de predominância cerebral. Faltam ${Math.max(0, 6 - cerAnswered)}.`;
     if (step === 5) return "Responda todas as 30 afirmações do radar para concluir.";
     return "Complete esta etapa para continuar.";
