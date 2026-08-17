@@ -282,7 +282,7 @@ function ConscienciaPage() {
     const sList = profile.sabotages.join(", ");
     timeline.push({ 
       when: relativeDay(profile.assessmentAt ?? profile.updatedAt), 
-      label: `Sabotadores identificados: ${sList}` 
+      label: `Limitadores identificados: ${sList}` 
     });
   }
   if (profile?.updatedAt) timeline.push({ when: relativeDay(profile.updatedAt), label: "Perfil atualizado" });
