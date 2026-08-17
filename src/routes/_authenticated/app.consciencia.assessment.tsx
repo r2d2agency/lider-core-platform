@@ -246,9 +246,9 @@ function AssessmentWizard() {
   const [heart, setHeart] = useState<number[]>([]);
   const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    setStep(requestedStep);
-  }, [requestedStep]);
+  // Removemos o useEffect que sobrescrevia o step sempre que a URL mudava
+  // para deixar a lógica de inicialização centralizada no useEffect de draft/requestedStep
+
 
   // Salvamento automático: persiste estado local a cada mudança
   useEffect(() => {
