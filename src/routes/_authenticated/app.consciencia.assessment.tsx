@@ -485,16 +485,16 @@ function AssessmentWizard() {
             {stepParam === "hsh" && (
               <div className="grid grid-cols-3 gap-3">
                 <div className="rounded-xl bg-card p-3 border border-border text-center">
-                  <div className="text-[10px] font-bold uppercase text-primary">Hard</div>
-                  <div className="text-xl font-bold">{initial?.hardSelfScore ?? "—"}</div>
+                  <div className="text-[10px] font-bold uppercase text-primary">Autopercepção</div>
+                  <div className="text-xl font-bold">{initial?.hardSelfScore ?? "—"}%</div>
                 </div>
                 <div className="rounded-xl bg-card p-3 border border-border text-center">
-                  <div className="text-[10px] font-bold uppercase text-accent">Soft</div>
-                  <div className="text-xl font-bold">{initial?.softSelfScore ?? "—"}</div>
+                  <div className="text-[10px] font-bold uppercase text-accent">Autorregulação</div>
+                  <div className="text-xl font-bold">{initial?.softSelfScore ?? "—"}%</div>
                 </div>
                 <div className="rounded-xl bg-card p-3 border border-border text-center">
-                  <div className="text-[10px] font-bold uppercase text-success">Heart</div>
-                  <div className="text-xl font-bold">{initial?.heartSelfScore ?? "—"}</div>
+                  <div className="text-[10px] font-bold uppercase text-success">Escolha</div>
+                  <div className="text-xl font-bold">{initial?.heartSelfScore ?? "—"}%</div>
                 </div>
               </div>
             )}
@@ -745,9 +745,9 @@ function AssessmentWizard() {
                 <Sparkles className="h-3.5 w-3.5" /> Resultado inicial
               </div>
               <div className="mt-2 grid grid-cols-3 gap-3 text-center">
-                <ResultTile label="Hard"  value={hardScore} />
-                <ResultTile label="Soft"  value={softScore} />
-                <ResultTile label="Heart" value={heartScore} />
+                <ResultTile label="Autopercepção"  value={hardScore} />
+                <ResultTile label="Autorregulação"  value={softScore} />
+                <ResultTile label="Escolha" value={heartScore} />
               </div>
             </div>
           </div>
