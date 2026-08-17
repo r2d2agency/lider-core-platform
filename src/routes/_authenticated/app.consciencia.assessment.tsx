@@ -378,6 +378,7 @@ function AssessmentWizard() {
         },
       }),
     onSuccess: async (data: any) => {
+      localStorage.removeItem(`assessment_draft_${orgId}`);
       await queryClient.invalidateQueries({ queryKey: ["consciencia", "me", orgId] });
       toast.success("Assessment oficial concluído.");
       // Redireciona para os resultados dentro do assessment com o parâmetro showResults
