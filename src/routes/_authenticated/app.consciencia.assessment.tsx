@@ -24,7 +24,7 @@ function isAssessmentStepKey(value: unknown): value is AssessmentStepKey {
 
 export const Route = createFileRoute("/_authenticated/app/consciencia/assessment")({
   validateSearch: (search: Record<string, unknown>) => ({
-    step: isAssessmentStepKey(search.step) ? search.step : undefined,
+    step: (search.step as AssessmentStepKey) || undefined,
     showResults: search.showResults === true || search.showResults === "true",
     reset: search.reset === true || search.reset === "true",
   }),
@@ -393,7 +393,7 @@ function AssessmentWizard() {
       // Redireciona para os resultados dentro do assessment com o parâmetro showResults
       navigate({ 
         to: "/app/consciencia/assessment", 
-        search: { step: stepParam as any, showResults: true } 
+        search: { step: stepParam as any, showResults: true, reset: false } 
       });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Falha ao salvar"),
