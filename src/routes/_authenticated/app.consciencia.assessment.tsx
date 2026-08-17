@@ -327,10 +327,17 @@ function AssessmentWizard() {
     }
   }, [initial, requestedStep]);
 
-  const avg = (arr: number[]) => Math.round((arr.reduce((s, v) => s + v, 0) / arr.length) * 20); // 1..5 → 20..100
-  const hardScore = avg(hard);
-  const softScore = avg(soft);
-  const heartScore = avg(heart);
+  const avg = (arr: number[]) => Math.round((arr.reduce((s, v) => s + v, 0) / (arr.length * 4)) * 100); // 0..4 total → 0..100%
+  // Como as questões são respondidas de 1 a 5, subtraímos 1 para alinhar com a escala 0-4 do PDF
+  const calculateIpm = (arr: number[]) => {
+    if (arr.length === 0) return 0;
+    const sum = arr.reduce((s, v) => s + (v - 1), 0);
+    return Math.round((sum / (arr.length * 4)) * 100);
+  };
+  
+  const hardScore = calculateIpm(hard);
+  const softScore = calculateIpm(soft);
+  const heartScore = calculateIpm(heart);
 
   // Scores derivados
   const sabotageScores: Record<string, number> = useMemo(() => {
@@ -408,7 +415,7 @@ function AssessmentWizard() {
     { title: "Limitadores", hint: "Identifique padrões que travam sua execução." },
     { title: "Predominância cerebral", hint: "Águia · Lobo · Gato · Tubarão." },
     { title: "Riscos",              hint: "Padrões que aparecem sob pressão." },
-    { title: "Hard · Soft · Heart", hint: "30 afirmações oficiais (10 por dimensão)." },
+    { title: "Radar de Autogestão (IPM)", hint: "30 afirmações oficiais (10 por dimensão)." },
   ];
   const canNext = () => {
     if (step === 0) return declaredRole.trim().length > 3;
@@ -729,10 +736,10 @@ function AssessmentWizard() {
 
         {step === 5 && (
           <div className="space-y-6">
-            <p className="text-sm text-muted-foreground">30 afirmações oficiais — 10 por dimensão. Escolha de 1 (discordo) a 5 (concordo).</p>
-            <HshBlock title="Hard — saber fazer" color="bg-primary" values={hard} setValues={setHard} questions={HSH_QUESTIONS.hard} />
-            <HshBlock title="Soft — saber agir"  color="bg-accent"  values={soft} setValues={setSoft} questions={HSH_QUESTIONS.soft} />
-            <HshBlock title="Heart — saber ser"  color="bg-success" values={heart} setValues={setHeart} questions={HSH_QUESTIONS.heart} />
+            <p className="text-sm text-muted-foreground">30 afirmações oficiais — 10 por dimensão. O IPM mede sua capacidade de resposta consciente vs padrão automático.</p>
+            <HshBlock title="Autopercepção (Hard)" color="bg-primary" values={hard} setValues={setHard} questions={HSH_QUESTIONS.hard} />
+            <HshBlock title="Autorregulação (Soft)"  color="bg-accent"  values={soft} setValues={setSoft} questions={HSH_QUESTIONS.soft} />
+            <HshBlock title="Escolha Consciente (Heart)"  color="bg-success" values={heart} setValues={setHeart} questions={HSH_QUESTIONS.heart} />
             <div className="rounded-xl border border-border bg-secondary/40 p-4">
               <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
                 <Sparkles className="h-3.5 w-3.5" /> Resultado inicial

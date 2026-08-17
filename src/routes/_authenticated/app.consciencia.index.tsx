@@ -198,8 +198,8 @@ function ConscienciaPage() {
     {
       key: "hsh",
       icon: Activity,
-      title: "Radar Hard · Soft · Heart",
-      subtitle: "Autoavaliação nas 3 dimensões",
+      title: "Radar de Autogestão (IPM)",
+      subtitle: "Capacidade de resposta consciente",
       minutes: 4,
       done: !!hshFilled,
       weight: 15,
