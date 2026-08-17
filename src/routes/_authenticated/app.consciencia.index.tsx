@@ -337,7 +337,7 @@ function ConscienciaPage() {
             </div>
             <div className="mt-1 text-[12px] text-muted-foreground">
               {missingCount > 0 
-                ? `Faltam ${missingCount} etapa${missingCount > 1 ? "s" : ""}: ${missingSteps[0].title === "Sabotadores" ? "Limitadores" : missingSteps[0].title}` 
+                ? `Faltam ${missingCount} etapa${missingCount > 1 ? "s" : ""}: ${missingSteps[0].title}` 
                 : "Perfil completo"}
             </div>
           </div>
@@ -423,7 +423,7 @@ function ConscienciaPage() {
             to="/app/consciencia/agenda"
             className="rounded-2xl border border-border bg-card p-4 transition-colors hover:bg-secondary/50"
           >
-            <Mic className="h-4 w-4 text-accent" />
+            <Mic className="h-4 w-4 text-pilar-c" />
             <div className="mt-2 text-[13px] font-semibold leading-tight">Agenda de voz</div>
             <div className="mt-0.5 text-[11px] text-muted-foreground">
               Fale sua agenda e vire tarefas
@@ -433,7 +433,7 @@ function ConscienciaPage() {
             to="/app/consciencia/liderados"
             className="rounded-2xl border border-border bg-card p-4 transition-colors hover:bg-secondary/50"
           >
-            <Users className="h-4 w-4 text-accent" />
+            <Users className="h-4 w-4 text-pilar-c" />
             <div className="mt-2 text-[13px] font-semibold leading-tight">Mapa dos liderados</div>
             <div className="mt-0.5 text-[11px] text-muted-foreground">
               Perfis e trilhas do time
@@ -443,9 +443,9 @@ function ConscienciaPage() {
             to="/app/consciencia/disc"
             className="rounded-2xl border border-border bg-card p-4 transition-colors hover:bg-secondary/50"
           >
-            <Brain className="h-4 w-4 text-accent" />
+            <Brain className="h-4 w-4 text-pilar-c" />
             <div className="mt-2 text-[13px] font-semibold leading-tight">
-              {profile?.discPrimary ? "Refazer teste DISC" : "Fazer teste DISC"}
+              {profile?.discPrimary ? "Refazer teste comportamental" : "Fazer teste comportamental"}
             </div>
             <div className="mt-0.5 text-[11px] text-muted-foreground">
               20 questões · resultado na hora

@@ -130,7 +130,7 @@ function EvolutionPageInner() {
     <div className="mx-auto max-w-6xl space-y-8">
       <FadeIn>
         <SectionHeader
-          eyebrow="Módulo E — Evolução"
+          eyebrow="Módulo E · Evolução"
           title="Score de sustentação"
           description="35% cadência dos rituais · 35% delegações no prazo · 30% indicadores dentro da meta. O número é consequência dos fatos."
           right={
