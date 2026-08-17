@@ -488,7 +488,11 @@ function AssessmentWizard() {
             <Button className="flex-1" onClick={() => navigate({ to: "/app/consciencia" })}>
               Voltar para a Jornada
             </Button>
-            <Button variant="outline" className="flex-1" onClick={() => navigate({ to: "/app/consciencia/assessment", search: { step: stepParam as any, showResults: false } })}>
+            <Button variant="outline" className="flex-1" onClick={() => {
+              localStorage.removeItem(`assessment_draft_${orgId}`);
+              navigate({ to: "/app/consciencia/assessment", search: { step: stepParam as any, showResults: false } });
+              window.location.reload(); // Garante que o estado seja resetado
+            }}>
               Refazer Avaliação
             </Button>
           </div>
