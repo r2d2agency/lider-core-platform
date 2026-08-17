@@ -181,17 +181,6 @@ function ConscienciaPage() {
       search: { step: "behavioral" },
     },
     {
-      key: "hsh",
-      icon: Activity,
-      title: "Radar Hard · Soft · Heart",
-      subtitle: "Autoavaliação nas 3 dimensões",
-      minutes: 4,
-      done: !!hshFilled,
-      weight: 15,
-      to: "/app/consciencia/assessment",
-      search: { step: "hsh" },
-    },
-    {
       key: "sabotages",
       icon: Zap,
       title: "Sabotadores",
@@ -204,6 +193,17 @@ function ConscienciaPage() {
       weight: 15,
       to: "/app/consciencia/assessment",
       search: { step: "sabotages" },
+    },
+    {
+      key: "hsh",
+      icon: Activity,
+      title: "Radar Hard · Soft · Heart",
+      subtitle: "Autoavaliação nas 3 dimensões",
+      minutes: 4,
+      done: !!hshFilled,
+      weight: 15,
+      to: "/app/consciencia/assessment",
+      search: { step: "hsh" },
     },
     {
       key: "activity",
@@ -255,7 +255,8 @@ function ConscienciaPage() {
   const progressPct = Math.round((completedWeight / totalWeight) * 100);
   const completed = steps.filter((s) => s.done).length;
   const total = steps.length;
-  const missing = total - completed;
+  const missingSteps = steps.filter((s) => !s.done);
+  const missingCount = missingSteps.length;
   const currentIdx = steps.findIndex((s) => !s.done);
   const current = currentIdx >= 0 ? steps[currentIdx] : null;
   const next = currentIdx >= 0 ? steps[currentIdx + 1] ?? null : null;
@@ -334,7 +335,9 @@ function ConscienciaPage() {
               <span className="text-lg font-semibold text-muted-foreground">%</span>
             </div>
             <div className="mt-1 text-[12px] text-muted-foreground">
-              {missing > 0 ? `Faltam ${missing} etapa${missing > 1 ? "s" : ""}` : "Perfil completo"}
+              {missingCount > 0 
+                ? `Faltam ${missingCount} etapa${missingCount > 1 ? "s" : ""}: ${missingSteps[0].title}` 
+                : "Perfil completo"}
             </div>
           </div>
           {current && (

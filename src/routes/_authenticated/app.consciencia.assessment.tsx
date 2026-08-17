@@ -264,16 +264,16 @@ function AssessmentWizard() {
       hard,
       soft,
       heart,
-      step
+      step: requestedStep || step
     };
     localStorage.setItem(`assessment_draft_${orgId}`, JSON.stringify(state));
-  }, [orgId, declaredRole, notMine, discPrimary, mbtiType, riskFlags, sabAns, cerAns, hard, soft, heart, step]);
+  }, [orgId, declaredRole, notMine, discPrimary, mbtiType, riskFlags, sabAns, cerAns, hard, soft, heart, step, requestedStep]);
 
   // Retomada: tenta carregar draft do localStorage
   useEffect(() => {
     if (!orgId) return;
     const draft = localStorage.getItem(`assessment_draft_${orgId}`);
-    if (draft && !initial) {
+    if (draft) {
       try {
         const s = JSON.parse(draft);
         if (s.declaredRole) setDeclaredRole(s.declaredRole);
