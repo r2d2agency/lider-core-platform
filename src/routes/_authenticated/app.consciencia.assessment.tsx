@@ -299,7 +299,7 @@ function AssessmentWizard() {
     // Se o usuário já concluiu ou se estamos visualizando resultados, hidratamos do perfil.
     // Mas a pedido do usuário: "nenhum teste deve vir com respostas selecionadas" ao refazer.
     // O requestedStep > 0 indica que o usuário escolheu uma etapa específica para (re)fazer.
-    if (!initial || requestedStep > 0) return;
+    if (!initial) return;
 
     setDeclaredRole(initial.declaredRole ?? "");
     setNotMine(initial.notMine ?? "");
