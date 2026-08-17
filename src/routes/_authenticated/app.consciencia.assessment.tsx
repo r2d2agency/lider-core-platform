@@ -269,7 +269,6 @@ function AssessmentWizard() {
     localStorage.setItem(`assessment_draft_${orgId}`, JSON.stringify(state));
   }, [orgId, declaredRole, notMine, discPrimary, mbtiType, riskFlags, sabAns, cerAns, hard, soft, heart, step, requestedStep]);
 
-  // Retomada: tenta carregar draft do localStorage
   useEffect(() => {
     if (!orgId) return;
     const draft = localStorage.getItem(`assessment_draft_${orgId}`);
@@ -286,13 +285,21 @@ function AssessmentWizard() {
         if (s.hard) setHard(s.hard);
         if (s.soft) setSoft(s.soft);
         if (s.heart) setHeart(s.heart);
-        // Não forçamos o step se vier via URL, mas se não vier, retomamos
-        if (requestedStep === 0 && s.step) setStep(s.step);
+        
+        // Prioridade 1: Step na URL (se for válido e não for 0)
+        // Prioridade 2: Step no draft
+        if (requestedStep !== 0) {
+          setStep(requestedStep);
+        } else if (s.step !== undefined) {
+          setStep(s.step);
+        }
       } catch (e) {
         console.error("Erro ao carregar draft", e);
       }
+    } else if (requestedStep !== 0) {
+      setStep(requestedStep);
     }
-  }, [orgId, initial, requestedStep]);
+  }, [orgId, requestedStep]);
 
   // hidrata quando dados chegam
   useEffect(() => {
