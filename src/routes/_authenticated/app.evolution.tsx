@@ -130,7 +130,7 @@ function EvolutionPageInner() {
     <div className="mx-auto max-w-6xl space-y-8">
       <FadeIn>
         <SectionHeader
-          eyebrow="Módulo E — Evolução"
+          eyebrow="Módulo E · Evolução"
           title="Score de sustentação"
           description="35% cadência dos rituais · 35% delegações no prazo · 30% indicadores dentro da meta. O número é consequência dos fatos."
           right={
@@ -228,16 +228,16 @@ function EvolutionPageInner() {
               <div className="mb-3 flex items-end justify-between">
                 <div>
                   <div className="eyebrow">Sustentação por dimensão</div>
-                  <h3 className="mt-1 font-display text-xl">Hard · Soft · Heart</h3>
+                  <h3 className="mt-1 font-display text-xl">Radar de Autogestão (IPM)</h3>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Cada dimensão é calculada dos fatos — nunca autoavaliação.
+                  O IPM mede sua capacidade de resposta consciente vs padrão automático.
                 </div>
               </div>
               <div className="grid gap-4 md:grid-cols-3">
-                <DimensionCard icon={<Building2 className="h-4 w-4" />} label="Hard · Estrutura" tone="text-sky-500" dim={current.hard} />
-                <DimensionCard icon={<Users2 className="h-4 w-4" />} label="Soft · Execução" tone="text-emerald-500" dim={current.soft} />
-                <DimensionCard icon={<Heart className="h-4 w-4" />} label="Heart · Cultura" tone="text-rose-500" dim={current.heart} />
+                <DimensionCard icon={<Building2 className="h-4 w-4" />} label="Autopercepção" tone="text-sky-500" dim={current.hard} />
+                <DimensionCard icon={<Users2 className="h-4 w-4" />} label="Autorregulação" tone="text-emerald-500" dim={current.soft} />
+                <DimensionCard icon={<Heart className="h-4 w-4" />} label="Escolha Consciente" tone="text-rose-500" dim={current.heart} />
               </div>
             </section>
           </FadeIn>

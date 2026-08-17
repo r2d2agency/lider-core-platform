@@ -57,7 +57,7 @@ export const AUTOGESTAO_PATTERNS: Record<
     items: [3, 13, 23, 33, 43],
   },
   prestativo: {
-    name: "Prestativo",
+    name: "Agradador",
     mechanism: "Busca pertencimento tornando-se necessário e evitando desagradar.",
     strength: "Empatia, colaboração e cuidado.",
     cost: "Limites frágeis, ressentimento e conversas evitadas.",
@@ -65,7 +65,7 @@ export const AUTOGESTAO_PATTERNS: Record<
     items: [4, 14, 24, 34, 44],
   },
   hiper_realizador: {
-    name: "Hiper Realizador",
+    name: "Hiper-realizador",
     mechanism: "Associa valor pessoal a produtividade, status e conquista.",
     strength: "Ambição, energia e orientação a resultados.",
     cost: "Exaustão, relações instrumentalizadas e meta sem sentido.",
@@ -73,7 +73,7 @@ export const AUTOGESTAO_PATTERNS: Record<
     items: [5, 15, 25, 35, 45],
   },
   hiper_vigilante: {
-    name: "Hiper Vigilante",
+    name: "Alerta",
     mechanism: "Antecipar ameaças parece a forma mais segura de não ser surpreendido.",
     strength: "Gestão de risco e preparação.",
     cost: "Ansiedade, lentidão e contágio emocional.",

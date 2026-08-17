@@ -161,7 +161,7 @@ meRouter.get("/home/attention", async (req, res) => {
       items.push({
         id: "profile-incomplete",
         title: "Meu Perfil",
-        reason: `Perfil incompleto — ${pct}%`,
+        reason: `Perfil incompleto — ${pct}% (Limitadores pendentes)`,
         severity: "high",
         kind: "onboarding",
         link: "/app/profile"
@@ -192,7 +192,7 @@ meRouter.get("/home/attention", async (req, res) => {
         items.push({
           id: "pdi-evolution",
           title: "Evolução Positiva",
-          reason: `Seu Radar HSH subiu ${diff} pontos no último ciclo!`,
+          reason: `Seu Radar de Autogestão subiu ${diff} pontos no último ciclo!`,
           severity: "low",
           kind: "pdi",
           link: "/app/pdis"

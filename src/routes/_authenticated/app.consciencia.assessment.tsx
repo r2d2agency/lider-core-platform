@@ -61,18 +61,18 @@ const DISC = [
   { key: "C" as const, title: "Cauteloso",  desc: "Analítico, metódico, valoriza precisão." },
 ];
 
-// 10 pilares oficiais (Positive Intelligence + Módulo C v2)
+// 10 pilares oficiais (Radar de Autogestão e Performance Mental)
 const SABOTAGE_PILLARS = [
-  { id: "Juiz interno",       q: "Costumo julgar duramente a mim, aos outros ou às circunstâncias." },
-  { id: "Agradador",          q: "Foco em agradar e evito criar desconforto mesmo quando preciso." },
-  { id: "Hiper-realizador",   q: "Meu valor depende do quanto entrego. É difícil parar." },
-  { id: "Hiper-racional",     q: "Racionalizo tudo. Emoção do outro me incomoda." },
-  { id: "Vítima",             q: "Percebo que sofro mais do que os outros nas mesmas situações." },
-  { id: "Evasivo",            q: "Evito conflitos e conversas difíceis, mesmo caras." },
-  { id: "Controlador",        q: "Preciso ter tudo sob controle, custe o que custar." },
-  { id: "Reservado",          q: "Guardo o que sinto e mantenho distância emocional." },
-  { id: "Inquieto",           q: "Fico entediado rápido. Preciso de estímulos novos." },
-  { id: "Perfeccionista",     q: "Retenho entregas até que estejam impecáveis." },
+  { id: "Crítico Interno",     q: "Percebo primeiro o que está errado, mesmo quando o resultado geral é bom." },
+  { id: "Controlador",        q: "Fico tenso quando decisões importantes são tomadas sem minha participação." },
+  { id: "Perfeccionista",     q: "Adio uma entrega quando acredito que ela ainda não atingiu o padrão ideal." },
+  { id: "Agradador",          q: "Digo sim para evitar decepcionar alguém, mesmo quando deveria dizer não." },
+  { id: "Hiper-realizador",   q: "Meu valor pessoal fica muito ligado ao que produzo ou conquisto." },
+  { id: "Alerta",             q: "Imagino com frequência o que pode dar errado antes de considerar o que pode dar certo." },
+  { id: "Esquivo",            q: "Adio conversas difíceis na esperança de que o problema se resolva sozinho." },
+  { id: "Vitimia",            q: "Quando me sinto incompreendido, permaneço preso a essa sensação por bastante tempo." },
+  { id: "Inquieto",           q: "Perco o interesse quando uma atividade deixa de oferecer novidade ou estímulo." },
+  { id: "Hiperanalítico",     q: "Confio mais na lógica do que em sinais emocionais ou relacionais." },
 ] as const;
 
 const RISKS = [
@@ -123,40 +123,40 @@ const RISKS = [
 // 30 perguntas oficiais Hard·Soft·Heart (10 por dimensão)
 const HSH_QUESTIONS = {
   hard: [
-    "Sei traduzir a estratégia em indicadores claros para meu time.",
-    "Planejo semana e trimestre com método (não no improviso).",
-    "Sei ler dados e mudar rota quando o número muda.",
-    "Documento processos e não dependo de memória.",
-    "Estabeleço critérios claros de aceite antes de pedir entrega.",
-    "Priorizo com base em impacto e esforço, não em urgência.",
-    "Uso agenda como ferramenta estratégica, não caixa de recados.",
-    "Faço revisão semanal do que planejei versus o que entreguei.",
-    "Sei diferenciar KPI de rota (leading) de KPI de saída (lagging).",
-    "Fecho ciclo com relatório objetivo, sem narrativa.",
+    "Consigo perceber um pensamento automático antes de transformá-lo em ação.",
+    "Observo o que sinto sem ser dominado pela emoção do momento.",
+    "Percebo a tensão no meu corpo quando estou sob pressão.",
+    "Identifico quando meu Crítico Interno começa a me sabotar.",
+    "Consigo pausar antes de reagir a um comentário difícil.",
+    "Observo meus julgamentos sobre os outros sem validá-los como verdade absoluta.",
+    "Percebo quando estou acelerando o ritmo apenas por ansiedade.",
+    "Identifico a necessidade de controle quando as coisas saem do plano.",
+    "Consigo dar um nome ao que estou sentindo no momento.",
+    "Observo quando minha mente foge do presente para o futuro ou passado.",
   ],
   soft: [
-    "Delego com clareza e acompanho sem sufocar.",
-    "Dou feedback direto, no tempo certo, sem rodeio.",
-    "Conduzo decisões difíceis mesmo sob pressão.",
-    "Corrijo em público quando o padrão precisa se tornar comum.",
-    "Digo \"não\" sem culpar terceiros.",
-    "Marco 1:1 mesmo quando não há incêndio.",
-    "Trato conflito como sinal, não como problema a evitar.",
-    "Reconheço em público e critico em particular.",
-    "Faço perguntas em vez de dar respostas prontas.",
-    "Fecho reunião com decisão + responsável + prazo.",
+    "Respiro conscientemente para retornar ao equilíbrio em situações de conflito.",
+    "Consigo mudar meu estado mental quando percebo que estou sendo improdutivo.",
+    "Mantenho o foco no que é essencial, mesmo com muitas distrações.",
+    "Consigo relaxar voluntariamente após um período de alta exigência.",
+    "Transformo o estresse em energia focada para a solução.",
+    "Mudo minha resposta habitual quando ela não é útil para o resultado.",
+    "Consigo me manter presente e calmo em conversas difíceis.",
+    "Acesso um estado de clareza mental quando o ambiente está caótico.",
+    "Consigo desativar a preocupação excessiva para focar na ação.",
+    "Mantenho a qualidade da presença mesmo em dias cansativos.",
   ],
   heart: [
-    "Escuto o que não foi dito e acolho antes de reagir.",
-    "Sou coerente entre o que falo e o que faço.",
-    "Cuido de mim para poder cuidar de quem lidero.",
-    "Reconheço quando erro e ajusto sem defesa.",
-    "Peço desculpas quando extrapolo.",
-    "Sei distinguir minha ansiedade da urgência real.",
-    "Fico presente na conversa sem checar celular.",
-    "Sinto empatia sem perder direção.",
-    "Percebo quando alguém está sofrendo antes que fale.",
-    "Meu time me procura antes de escalar.",
+    "Escolho minhas palavras com intenção, e não por impulso.",
+    "Respondo aos erros (meus e dos outros) com foco em aprender, não em culpar.",
+    "Decido como quero agir alinhado aos meus valores, não ao meu medo.",
+    "Escolho ouvir até o fim antes de formular minha defesa.",
+    "Decido quando é hora de parar, respeitando meus limites biológicos.",
+    "Consigo estabelecer limites mesmo quando alguém pode se frustrar comigo.",
+    "Delego responsabilidades com critérios claros e espaço real de autonomia.",
+    "Reservo pausas suficientes para recuperar foco e qualidade de presença.",
+    "Acolho a vulnerabilidade como parte do processo de liderança.",
+    "Mantenho a coerência entre minha intenção e meu comportamento real.",
   ],
 };
 
@@ -327,10 +327,17 @@ function AssessmentWizard() {
     }
   }, [initial, requestedStep]);
 
-  const avg = (arr: number[]) => Math.round((arr.reduce((s, v) => s + v, 0) / arr.length) * 20); // 1..5 → 20..100
-  const hardScore = avg(hard);
-  const softScore = avg(soft);
-  const heartScore = avg(heart);
+  const avg = (arr: number[]) => Math.round((arr.reduce((s, v) => s + v, 0) / (arr.length * 4)) * 100); // 0..4 total → 0..100%
+  // Como as questões são respondidas de 1 a 5, subtraímos 1 para alinhar com a escala 0-4 do PDF
+  const calculateIpm = (arr: number[]) => {
+    if (arr.length === 0) return 0;
+    const sum = arr.reduce((s, v) => s + (v - 1), 0);
+    return Math.round((sum / (arr.length * 4)) * 100);
+  };
+  
+  const hardScore = calculateIpm(hard);
+  const softScore = calculateIpm(soft);
+  const heartScore = calculateIpm(heart);
 
   // Scores derivados
   const sabotageScores: Record<string, number> = useMemo(() => {
@@ -408,13 +415,13 @@ function AssessmentWizard() {
     { title: "Limitadores", hint: "Identifique padrões que travam sua execução." },
     { title: "Predominância cerebral", hint: "Águia · Lobo · Gato · Tubarão." },
     { title: "Riscos",              hint: "Padrões que aparecem sob pressão." },
-    { title: "Hard · Soft · Heart", hint: "30 afirmações oficiais (10 por dimensão)." },
+    { title: "Radar de Autogestão (IPM)", hint: "30 afirmações oficiais (10 por dimensão)." },
   ];
   const canNext = () => {
     if (step === 0) return declaredRole.trim().length > 3;
     if (step === 1) return !!discPrimary;
-    if (step === 2) return Object.keys(sabAns).length >= 8;
-    if (step === 3) return Object.keys(cerAns).length >= 6;
+    if (step === 2) return Object.keys(sabAns).length >= 10;
+    if (step === 3) return Object.keys(cerAns).length >= 8;
     if (step === 5) return hard.length >= 10 && soft.length >= 10 && heart.length >= 10;
     return true;
   };
@@ -423,8 +430,8 @@ function AssessmentWizard() {
   const nextBlockedMessage = () => {
     if (step === 0) return "Escreva seu papel declarado para continuar.";
     if (step === 1) return "Selecione seu estilo DISC predominante para continuar.";
-    if (step === 2) return `Responda pelo menos 8 limitadores. Faltam ${Math.max(0, 8 - sabAnswered)}.`;
-    if (step === 3) return `Responda pelo menos 6 blocos de predominância cerebral. Faltam ${Math.max(0, 6 - cerAnswered)}.`;
+    if (step === 2) return `Responda todas as 10 afirmações para continuar. Faltam ${Math.max(0, 10 - sabAnswered)}.`;
+    if (step === 3) return `Responda todas as 8 afirmações para continuar. Faltam ${Math.max(0, 8 - cerAnswered)}.`;
     if (step === 5) return "Responda todas as 30 afirmações do radar para concluir.";
     return "Complete esta etapa para continuar.";
   };
@@ -478,16 +485,16 @@ function AssessmentWizard() {
             {stepParam === "hsh" && (
               <div className="grid grid-cols-3 gap-3">
                 <div className="rounded-xl bg-card p-3 border border-border text-center">
-                  <div className="text-[10px] font-bold uppercase text-primary">Hard</div>
-                  <div className="text-xl font-bold">{initial?.hardSelfScore ?? "—"}</div>
+                  <div className="text-[10px] font-bold uppercase text-primary">Autopercepção</div>
+                  <div className="text-xl font-bold">{initial?.hardSelfScore ?? "—"}%</div>
                 </div>
                 <div className="rounded-xl bg-card p-3 border border-border text-center">
-                  <div className="text-[10px] font-bold uppercase text-accent">Soft</div>
-                  <div className="text-xl font-bold">{initial?.softSelfScore ?? "—"}</div>
+                  <div className="text-[10px] font-bold uppercase text-accent">Autorregulação</div>
+                  <div className="text-xl font-bold">{initial?.softSelfScore ?? "—"}%</div>
                 </div>
                 <div className="rounded-xl bg-card p-3 border border-border text-center">
-                  <div className="text-[10px] font-bold uppercase text-success">Heart</div>
-                  <div className="text-xl font-bold">{initial?.heartSelfScore ?? "—"}</div>
+                  <div className="text-[10px] font-bold uppercase text-success">Escolha</div>
+                  <div className="text-xl font-bold">{initial?.heartSelfScore ?? "—"}%</div>
                 </div>
               </div>
             )}
@@ -601,7 +608,7 @@ function AssessmentWizard() {
               Para cada afirmação, escolha o quanto ela te descreve (1 = nada · 5 = totalmente).
             </p>
             <div className="rounded-xl border border-accent/25 bg-accent/5 px-3 py-2 text-xs font-medium text-foreground">
-              Respondidas: {sabAnswered}/10 · o botão Próximo libera com 8 respostas.
+              Respondidas: {sabAnswered}/10.
             </div>
             <ul className="space-y-4">
               {SABOTAGE_PILLARS.map((p) => (
@@ -640,7 +647,7 @@ function AssessmentWizard() {
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">Em cada bloco, escolha a frase que MAIS te representa hoje.</p>
             <div className="rounded-xl border border-accent/25 bg-accent/5 px-3 py-2 text-xs font-medium text-foreground">
-              Respondidas: {cerAnswered}/8 · o botão Próximo libera com 6 respostas.
+              Respondidas: {cerAnswered}/8.
             </div>
             <ul className="space-y-4">
               {CEREBRAL.map((b) => (
@@ -668,7 +675,7 @@ function AssessmentWizard() {
                 </li>
               ))}
             </ul>
-            {Object.keys(cerAns).length >= 6 && (
+            {Object.keys(cerAns).length >= 8 && (
               <div className="rounded-xl border border-border bg-secondary/40 p-3">
                 <div className="text-xs uppercase tracking-widest text-muted-foreground">Predominância parcial</div>
                 <div className="mt-1 font-display text-lg">{CEREBRAL_LABEL[cerebralProfile.primary]}</div>
@@ -729,18 +736,18 @@ function AssessmentWizard() {
 
         {step === 5 && (
           <div className="space-y-6">
-            <p className="text-sm text-muted-foreground">30 afirmações oficiais — 10 por dimensão. Escolha de 1 (discordo) a 5 (concordo).</p>
-            <HshBlock title="Hard — saber fazer" color="bg-primary" values={hard} setValues={setHard} questions={HSH_QUESTIONS.hard} />
-            <HshBlock title="Soft — saber agir"  color="bg-accent"  values={soft} setValues={setSoft} questions={HSH_QUESTIONS.soft} />
-            <HshBlock title="Heart — saber ser"  color="bg-success" values={heart} setValues={setHeart} questions={HSH_QUESTIONS.heart} />
+            <p className="text-sm text-muted-foreground">30 afirmações oficiais — 10 por dimensão. O IPM mede sua capacidade de resposta consciente vs padrão automático.</p>
+            <HshBlock title="Autopercepção (Hard)" color="bg-primary" values={hard} setValues={setHard} questions={HSH_QUESTIONS.hard} />
+            <HshBlock title="Autorregulação (Soft)"  color="bg-accent"  values={soft} setValues={setSoft} questions={HSH_QUESTIONS.soft} />
+            <HshBlock title="Escolha Consciente (Heart)"  color="bg-success" values={heart} setValues={setHeart} questions={HSH_QUESTIONS.heart} />
             <div className="rounded-xl border border-border bg-secondary/40 p-4">
               <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
                 <Sparkles className="h-3.5 w-3.5" /> Resultado inicial
               </div>
               <div className="mt-2 grid grid-cols-3 gap-3 text-center">
-                <ResultTile label="Hard"  value={hardScore} />
-                <ResultTile label="Soft"  value={softScore} />
-                <ResultTile label="Heart" value={heartScore} />
+                <ResultTile label="Autopercepção"  value={hardScore} />
+                <ResultTile label="Autorregulação"  value={softScore} />
+                <ResultTile label="Escolha" value={heartScore} />
               </div>
             </div>
           </div>
