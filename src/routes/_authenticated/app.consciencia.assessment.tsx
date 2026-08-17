@@ -246,9 +246,9 @@ function AssessmentWizard() {
   const [heart, setHeart] = useState<number[]>([]);
   const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    setStep(requestedStep);
-  }, [requestedStep]);
+  // Removemos o useEffect que sobrescrevia o step sempre que a URL mudava
+  // para deixar a lógica de inicialização centralizada no useEffect de draft/requestedStep
+
 
   // Salvamento automático: persiste estado local a cada mudança
   useEffect(() => {
@@ -264,16 +264,15 @@ function AssessmentWizard() {
       hard,
       soft,
       heart,
-      step
+      step: requestedStep || step
     };
     localStorage.setItem(`assessment_draft_${orgId}`, JSON.stringify(state));
-  }, [orgId, declaredRole, notMine, discPrimary, mbtiType, riskFlags, sabAns, cerAns, hard, soft, heart, step]);
+  }, [orgId, declaredRole, notMine, discPrimary, mbtiType, riskFlags, sabAns, cerAns, hard, soft, heart, step, requestedStep]);
 
-  // Retomada: tenta carregar draft do localStorage
   useEffect(() => {
     if (!orgId) return;
     const draft = localStorage.getItem(`assessment_draft_${orgId}`);
-    if (draft && !initial) {
+    if (draft) {
       try {
         const s = JSON.parse(draft);
         if (s.declaredRole) setDeclaredRole(s.declaredRole);
@@ -286,20 +285,28 @@ function AssessmentWizard() {
         if (s.hard) setHard(s.hard);
         if (s.soft) setSoft(s.soft);
         if (s.heart) setHeart(s.heart);
-        // Não forçamos o step se vier via URL, mas se não vier, retomamos
-        if (requestedStep === 0 && s.step) setStep(s.step);
+        
+        // Prioridade 1: Step na URL (se for válido e não for 0)
+        // Prioridade 2: Step no draft
+        if (requestedStep !== 0) {
+          setStep(requestedStep);
+        } else if (s.step !== undefined) {
+          setStep(s.step);
+        }
       } catch (e) {
         console.error("Erro ao carregar draft", e);
       }
+    } else if (requestedStep !== 0) {
+      setStep(requestedStep);
     }
-  }, [orgId, initial, requestedStep]);
+  }, [orgId, requestedStep]);
 
   // hidrata quando dados chegam
   useEffect(() => {
     // Se o usuário já concluiu ou se estamos visualizando resultados, hidratamos do perfil.
     // Mas a pedido do usuário: "nenhum teste deve vir com respostas selecionadas" ao refazer.
     // O requestedStep > 0 indica que o usuário escolheu uma etapa específica para (re)fazer.
-    if (!initial || requestedStep > 0) return;
+    if (!initial) return;
 
     setDeclaredRole(initial.declaredRole ?? "");
     setNotMine(initial.notMine ?? "");
@@ -378,6 +385,7 @@ function AssessmentWizard() {
         },
       }),
     onSuccess: async (data: any) => {
+      localStorage.removeItem(`assessment_draft_${orgId}`);
       await queryClient.invalidateQueries({ queryKey: ["consciencia", "me", orgId] });
       toast.success("Assessment oficial concluído.");
       // Redireciona para os resultados dentro do assessment com o parâmetro showResults
@@ -487,7 +495,11 @@ function AssessmentWizard() {
             <Button className="flex-1" onClick={() => navigate({ to: "/app/consciencia" })}>
               Voltar para a Jornada
             </Button>
-            <Button variant="outline" className="flex-1" onClick={() => navigate({ to: "/app/consciencia/assessment", search: { step: stepParam as any, showResults: false } })}>
+            <Button variant="outline" className="flex-1" onClick={() => {
+              localStorage.removeItem(`assessment_draft_${orgId}`);
+              navigate({ to: "/app/consciencia/assessment", search: { step: stepParam as any, showResults: false } });
+              window.location.reload(); // Garante que o estado seja resetado
+            }}>
               Refazer Avaliação
             </Button>
           </div>
