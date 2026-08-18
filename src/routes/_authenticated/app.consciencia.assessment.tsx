@@ -819,7 +819,7 @@ function AssessmentWizard() {
             Próximo <ArrowRight className="h-4 w-4" />
           </Button>
         ) : (
-          <Button type="button" disabled={save.isPending} onClick={() => save.mutate()} className="gap-2">
+          <Button type="button" disabled={save.isPending} onClick={goNext} className="gap-2">
             {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
             Concluir
           </Button>
