@@ -272,7 +272,7 @@ function AssessmentWizard() {
       setSoft([]);
       setHeart([]);
     } else {
-      // Limpeza seletiva para o modo individual
+      // Limpeza seletiva para o modo individual baseada no stepParam
       if (stepParam === "papel") {
         setDeclaredRole("");
         setNotMine("");
@@ -442,22 +442,24 @@ function AssessmentWizard() {
       api(`/organization/${orgId}/consciencia/me`, {
         method: "PUT",
         body: {
-          declaredRole: declaredRole || null,
-          notMine: notMine || null,
-          discPrimary,
-          mbtiType: mbtiType.toUpperCase() || null,
+          declaredRole: declaredRole || initial?.declaredRole || null,
+          notMine: notMine || initial?.notMine || null,
+          discPrimary: discPrimary || initial?.discPrimary || null,
+          mbtiType: (mbtiType || initial?.mbtiType || "").toUpperCase() || null,
           assessmentType: "disc",
-          sabotages: topSabotages,
-          sabotageScores,
-          cerebralProfile: cerebralProfile.pct,
-          cerebralPrimary: cerebralProfile.primary,
-          hardAnswers: hard,
-          softAnswers: soft,
-          heartAnswers: heart,
-          riskFlags,
-          hardSelfScore: hardScore,
-          softSelfScore: softScore,
-          heartSelfScore: heartScore,
+          sabotages: topSabotages.length > 0 ? topSabotages : initial?.sabotages || [],
+          sabotageScores: Object.keys(sabotageScores).length > 0 ? sabotageScores : initial?.sabotageScores || {},
+          cerebralProfile: cerebralProfile.pct.aguia + cerebralProfile.pct.lobo + cerebralProfile.pct.gato + cerebralProfile.pct.tubarao > 0 
+            ? cerebralProfile.pct 
+            : (initial as any)?.cerebralProfile || {},
+          cerebralPrimary: cerebralProfile.primary || (initial as any)?.cerebralPrimary || null,
+          hardAnswers: hard.length > 0 ? hard : initial?.hardAnswers || [],
+          softAnswers: soft.length > 0 ? soft : initial?.softAnswers || [],
+          heartAnswers: heart.length > 0 ? heart : initial?.heartAnswers || [],
+          riskFlags: riskFlags.length > 0 ? riskFlags : initial?.riskFlags || [],
+          hardSelfScore: hard.length > 0 ? hardScore : initial?.hardSelfScore || 0,
+          softSelfScore: soft.length > 0 ? softScore : initial?.softSelfScore || 0,
+          heartSelfScore: heart.length > 0 ? heartScore : initial?.heartSelfScore || 0,
           markAssessedNow: true,
         },
       }),
@@ -520,10 +522,7 @@ function AssessmentWizard() {
     if (isIndividualMode || step === steps.length - 1) {
       try {
         await save.mutateAsync();
-        // O redirecionamento já acontece no onSuccess do save, exceto se quisermos ir para a index
-        if (isIndividualMode && !showResults) {
-          navigate({ to: "/app/consciencia" });
-        }
+        // O redirecionamento já acontece no onSuccess do save
       } catch (err) {
         // Erro já tratado no onError do mutation
         return;
@@ -621,17 +620,31 @@ function AssessmentWizard() {
 
       {!showResults && (
         <>
-      <header>
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Módulo C · Assessment guiado</div>
-        <h1 className="mt-2 font-display text-3xl leading-tight">{steps[step].title}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{steps[step].hint}</p>
+      <header className="flex items-center justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Módulo C · Assessment guiado</div>
+          <h1 className="mt-2 font-display text-3xl leading-tight">{steps[step].title}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{steps[step].hint}</p>
+        </div>
+        {isIndividualMode && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate({ to: "/app/consciencia" })}
+            className="h-8 gap-1.5 px-3 text-muted-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" /> Sair
+          </Button>
+        )}
+      </header>
 
+      {!isIndividualMode && (
         <div className="mt-4 flex items-center gap-1.5">
           {steps.map((_, i) => (
             <div key={i} className={"h-1.5 flex-1 rounded-full " + (i <= step ? "bg-primary" : "bg-border")} />
           ))}
         </div>
-      </header>
+      )}
 
       <section className="rounded-2xl border border-border bg-card p-6">
         {blockedMessage && (
@@ -850,7 +863,13 @@ function AssessmentWizard() {
       </section>
 
       <footer className="flex items-center justify-between">
-        <Button type="button" variant="ghost" disabled={step === 0} onClick={() => setStep((s: number) => Math.max(0, s - 1))} className="gap-1.5">
+        <Button
+          type="button"
+          variant="ghost"
+          disabled={step === 0 || (isIndividualMode && step === requestedStep)}
+          onClick={() => setStep((s: number) => Math.max(0, s - 1))}
+          className="gap-1.5"
+        >
           <ArrowLeft className="h-4 w-4" /> Voltar
         </Button>
         {step < steps.length - 1 ? (
