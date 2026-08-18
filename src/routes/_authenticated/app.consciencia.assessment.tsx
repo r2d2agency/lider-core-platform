@@ -52,6 +52,9 @@ type Profile = {
   strengths: string[]; notes: string | null; communicationStyle: string | null;
   assessmentType: "disc" | "big_five" | "other" | null;
   sabotageScores?: Record<string, number> | null;
+  hardAnswers?: number[] | null;
+  softAnswers?: number[] | null;
+  heartAnswers?: number[] | null;
 };
 type Me = { profile: Profile | null };
 
