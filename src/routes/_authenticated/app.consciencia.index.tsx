@@ -602,7 +602,7 @@ function JourneyRow({
     <li>
       <Link 
         to={step.to} 
-        search={step.state === "done" ? { ...step.search, showResults: true } : step.search} 
+        search={step.state === "done" ? { ...step.search, showResults: true, reset: false } : { ...step.search, reset: false }} 
         className="block w-full text-left"
       >
         {inner}
