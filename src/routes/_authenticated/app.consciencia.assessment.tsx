@@ -530,13 +530,7 @@ function AssessmentWizard() {
               Voltar para a Jornada
             </Button>
             <Button variant="outline" className="flex-1" onClick={() => {
-              localStorage.removeItem(`assessment_draft_${orgId}`);
-              // Limpamos o estado local para garantir que a UI reflita o reset
-              setSabAns({});
-              setCerAns({});
-              setHard([]);
-              setSoft([]);
-              setHeart([]);
+              clearAllStates();
               // Navegamos com a flag reset=true para forçar o reinício
               navigate({ 
                 to: "/app/consciencia/assessment", 
