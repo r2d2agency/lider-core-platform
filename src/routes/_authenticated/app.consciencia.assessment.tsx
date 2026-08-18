@@ -464,7 +464,7 @@ function AssessmentWizard() {
     if (step === 5) return "Responda todas as 30 afirmações do radar para concluir.";
     return "Complete esta etapa para continuar.";
   };
-  const goNext = () => {
+  const goNext = async () => {
     if (!canNext()) {
       const message = nextBlockedMessage();
       setBlockedMessage(message);
@@ -472,10 +472,19 @@ function AssessmentWizard() {
       return;
     }
     setBlockedMessage(null);
-    
-    // Se for modo individual (vindo de um step específico na jornada), volta para a index
-    if (isIndividualMode) {
-      navigate({ to: "/app/consciencia" });
+
+    // Se estivermos no modo individual ou for a última etapa, salvamos antes de prosseguir
+    if (isIndividualMode || step === steps.length - 1) {
+      try {
+        await save.mutateAsync();
+        // O redirecionamento já acontece no onSuccess do save, exceto se quisermos ir para a index
+        if (isIndividualMode && !showResults) {
+          navigate({ to: "/app/consciencia" });
+        }
+      } catch (err) {
+        // Erro já tratado no onError do mutation
+        return;
+      }
       return;
     }
 
