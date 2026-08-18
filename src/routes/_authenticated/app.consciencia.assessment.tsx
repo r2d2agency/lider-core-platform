@@ -254,21 +254,45 @@ function AssessmentWizard() {
 
   const clearAllStates = () => {
     setIsResetting(true);
-    setDeclaredRole("");
-    setNotMine("");
-    setDiscPrimary(null);
-    setMbtiType("");
-    setRiskFlags([]);
-    setSabAns({});
-    setCerAns({});
-    setHard([]);
-    setSoft([]);
-    setHeart([]);
+    
+    // Só limpamos o estado que o usuário realmente quer refazer (baseado no stepParam)
+    // Se não houver stepParam (fluxo completo), limpamos tudo.
+    if (!stepParam) {
+      setDeclaredRole("");
+      setNotMine("");
+      setDiscPrimary(null);
+      setMbtiType("");
+      setRiskFlags([]);
+      setSabAns({});
+      setCerAns({});
+      setHard([]);
+      setSoft([]);
+      setHeart([]);
+    } else {
+      // Limpeza seletiva para o modo individual
+      if (stepParam === "papel") {
+        setDeclaredRole("");
+        setNotMine("");
+      } else if (stepParam === "behavioral") {
+        setDiscPrimary(null);
+        setMbtiType("");
+      } else if (stepParam === "sabotages") {
+        setSabAns({});
+      } else if (stepParam === "hsh") {
+        setHard([]);
+        setSoft([]);
+        setHeart([]);
+      }
+    }
+    
     setBlockedMessage(null);
-    if (orgId) {
+    
+    // IMPORTANTE: Não removemos o draft inteiro se estivermos no modo individual,
+    // apenas atualizamos ele no próximo ciclo de useEffect do auto-save.
+    if (orgId && !stepParam) {
       localStorage.removeItem(`assessment_draft_${orgId}`);
     }
-    // Damos um tempo para os estados serem limpos antes de permitir novo salvamento
+    
     setTimeout(() => setIsResetting(false), 500);
   };
 
