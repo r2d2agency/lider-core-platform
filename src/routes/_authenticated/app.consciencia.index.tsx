@@ -561,8 +561,8 @@ function JourneyRow({
     subtitle: string;
     state: "done" | "current" | "todo";
     minutes: number;
-    to: "/app/consciencia/assessment" | "/app/consciencia/activity" | "/app/consciencia/pdi" | "/app/consciencia/coach" | "/app/consciencia/liderados";
-    search?: { step: "behavioral" | "hsh" | "sabotages"; reset?: boolean };
+    to: string;
+    search?: { step: "behavioral" | "hsh" | "sabotages" | "papel"; reset?: boolean };
   };
 }) {
   const Icon = step.icon;

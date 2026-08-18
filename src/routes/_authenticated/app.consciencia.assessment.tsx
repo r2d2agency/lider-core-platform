@@ -472,6 +472,13 @@ function AssessmentWizard() {
       return;
     }
     setBlockedMessage(null);
+    
+    // Se for modo individual (vindo de um step específico na jornada), volta para a index
+    if (isIndividualMode) {
+      navigate({ to: "/app/consciencia" });
+      return;
+    }
+
     setStep((s: number) => Math.min(steps.length - 1, s + 1));
   };
   const toggle = (arr: string[], v: string, set: (a: string[]) => void) =>
