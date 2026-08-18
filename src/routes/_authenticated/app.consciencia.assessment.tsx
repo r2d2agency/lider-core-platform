@@ -272,7 +272,7 @@ function AssessmentWizard() {
       setSoft([]);
       setHeart([]);
     } else {
-      // Limpeza seletiva para o modo individual
+      // Limpeza seletiva para o modo individual baseada no stepParam
       if (stepParam === "papel") {
         setDeclaredRole("");
         setNotMine("");
@@ -520,10 +520,7 @@ function AssessmentWizard() {
     if (isIndividualMode || step === steps.length - 1) {
       try {
         await save.mutateAsync();
-        // O redirecionamento já acontece no onSuccess do save, exceto se quisermos ir para a index
-        if (isIndividualMode && !showResults) {
-          navigate({ to: "/app/consciencia" });
-        }
+        // O redirecionamento já acontece no onSuccess do save
       } catch (err) {
         // Erro já tratado no onError do mutation
         return;
@@ -621,17 +618,31 @@ function AssessmentWizard() {
 
       {!showResults && (
         <>
-      <header>
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Módulo C · Assessment guiado</div>
-        <h1 className="mt-2 font-display text-3xl leading-tight">{steps[step].title}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{steps[step].hint}</p>
+      <header className="flex items-center justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Módulo C · Assessment guiado</div>
+          <h1 className="mt-2 font-display text-3xl leading-tight">{steps[step].title}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{steps[step].hint}</p>
+        </div>
+        {isIndividualMode && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate({ to: "/app/consciencia" })}
+            className="h-8 gap-1.5 px-3 text-muted-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" /> Sair
+          </Button>
+        )}
+      </header>
 
+      {!isIndividualMode && (
         <div className="mt-4 flex items-center gap-1.5">
           {steps.map((_, i) => (
             <div key={i} className={"h-1.5 flex-1 rounded-full " + (i <= step ? "bg-primary" : "bg-border")} />
           ))}
         </div>
-      </header>
+      )}
 
       <section className="rounded-2xl border border-border bg-card p-6">
         {blockedMessage && (
