@@ -499,6 +499,19 @@ function AssessmentWizard() {
           </div>
           
           <div className="mt-6 space-y-4">
+            {stepParam === "papel" && (
+              <div className="rounded-xl bg-card p-4 border border-border">
+                <div className="text-xs font-semibold uppercase tracking-wider text-accent">Seu Papel Declarado</div>
+                <div className="mt-1 text-xl font-bold font-display">{initial?.declaredRole ?? "Não preenchido"}</div>
+                {initial?.notMine && (
+                  <>
+                    <div className="mt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">O que NÃO é meu papel</div>
+                    <p className="mt-1 text-sm text-muted-foreground italic">"{initial.notMine}"</p>
+                  </>
+                )}
+              </div>
+            )}
+            
             {stepParam === "behavioral" && (
               <div className="rounded-xl bg-card p-4 border border-border">
                 <div className="text-xs font-semibold uppercase tracking-wider text-accent">Seu Estilo Dominante</div>
