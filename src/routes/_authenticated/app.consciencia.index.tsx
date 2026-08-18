@@ -495,7 +495,7 @@ function ConscienciaPage() {
           </div>
           <Link
             to={current.to}
-            search={{ ...current.search, reset: false }}
+            search={{ step: current.search?.step, reset: false }}
             className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-primary px-4 py-2 text-[12px] font-semibold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
           >
             Começar <ArrowRight className="h-3.5 w-3.5" />
