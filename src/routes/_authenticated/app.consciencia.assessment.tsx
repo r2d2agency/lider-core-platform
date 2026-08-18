@@ -357,20 +357,23 @@ function AssessmentWizard() {
 
   // hidrata quando dados chegam
   useEffect(() => {
-    // Se reset for true, ignoramos hidratação inicial para começar limpo
-    if (search.reset) return;
+    // Se reset for true, ignoramos hidratação inicial para começar limpo (apenas para o que foi resetado)
+    // No modo individual, se estivermos resetando, não carregamos do perfil os dados daquele step.
+    if (search.reset && isIndividualMode) return;
+    if (search.reset && !isIndividualMode) return; // Reset total
     
     // Se o usuário já concluiu ou se estamos visualizando resultados, hidratamos do perfil.
     if (!initial) return;
 
-    setDeclaredRole(initial.declaredRole ?? "");
-    setNotMine(initial.notMine ?? "");
-    setDiscPrimary(initial.discPrimary ?? null);
-    setMbtiType(initial.mbtiType ?? "");
-    setRiskFlags(initial.riskFlags ?? []);
+    // Hidratamos tudo, o draft local cuidará de manter o que o usuário já mexeu nesta sessão
+    if (!declaredRole) setDeclaredRole(initial.declaredRole ?? "");
+    if (!notMine) setNotMine(initial.notMine ?? "");
+    if (!discPrimary) setDiscPrimary(initial.discPrimary ?? null);
+    if (!mbtiType) setMbtiType(initial.mbtiType ?? "");
+    if (riskFlags.length === 0) setRiskFlags(initial.riskFlags ?? []);
 
-    // Hidrata respostas de sabotadores se existirem
-    if (initial.sabotageScores) {
+    // Hidrata respostas de sabotadores se existirem e o estado local estiver vazio
+    if (initial.sabotageScores && Object.keys(sabAns).length === 0) {
       const scores = initial.sabotageScores as Record<string, number>;
       const answers: Record<string, number> = {};
       Object.entries(scores).forEach(([key, val]) => {
@@ -378,7 +381,12 @@ function AssessmentWizard() {
       });
       setSabAns(answers);
     }
-  }, [initial, requestedStep]);
+
+    // Hidrata HSH se o estado local estiver vazio
+    if (initial.hardAnswers && hard.length === 0) setHard(initial.hardAnswers as number[]);
+    if (initial.softAnswers && soft.length === 0) setSoft(initial.softAnswers as number[]);
+    if (initial.heartAnswers && heart.length === 0) setHeart(initial.heartAnswers as number[]);
+  }, [initial, requestedStep, search.reset, isIndividualMode]);
 
   const avg = (arr: number[]) => Math.round((arr.reduce((s, v) => s + v, 0) / (arr.length * 4)) * 100); // 0..4 total → 0..100%
   // Como as questões são respondidas de 1 a 5, subtraímos 1 para alinhar com a escala 0-4 do PDF
