@@ -344,7 +344,7 @@ function ConscienciaPage() {
           {current && (
             <Link
               to={current.to}
-              search={current.search}
+              search={{ ...current.search, reset: false }}
               className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-[12px] font-semibold text-primary-foreground transition-transform hover:scale-[1.02] active:scale-100"
             >
               Continuar <ArrowRight className="h-3.5 w-3.5" />
