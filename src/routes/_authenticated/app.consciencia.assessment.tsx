@@ -861,7 +861,13 @@ function AssessmentWizard() {
       </section>
 
       <footer className="flex items-center justify-between">
-        <Button type="button" variant="ghost" disabled={step === 0} onClick={() => setStep((s: number) => Math.max(0, s - 1))} className="gap-1.5">
+        <Button
+          type="button"
+          variant="ghost"
+          disabled={step === 0 || (isIndividualMode && step === requestedStep)}
+          onClick={() => setStep((s: number) => Math.max(0, s - 1))}
+          className="gap-1.5"
+        >
           <ArrowLeft className="h-4 w-4" /> Voltar
         </Button>
         {step < steps.length - 1 ? (
