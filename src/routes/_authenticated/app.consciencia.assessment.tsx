@@ -427,10 +427,14 @@ function AssessmentWizard() {
       await queryClient.invalidateQueries({ queryKey: ["consciencia", "me", orgId] });
       toast.success("Assessment oficial concluído.");
       // Redireciona para os resultados dentro do assessment com o parâmetro showResults
-      navigate({ 
-        to: "/app/consciencia/assessment", 
-        search: { step: stepParam as any, showResults: true, reset: false } 
-      });
+      if (isIndividualMode) {
+        navigate({ to: "/app/consciencia" });
+      } else {
+        navigate({ 
+          to: "/app/consciencia/assessment", 
+          search: { step: stepParam as any, showResults: true, reset: false } 
+        });
+      }
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Falha ao salvar"),
   });
