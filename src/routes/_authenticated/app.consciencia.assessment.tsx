@@ -334,16 +334,20 @@ function AssessmentWizard() {
     if (draft) {
       try {
         const s = JSON.parse(draft);
-        if (s.declaredRole) setDeclaredRole(s.declaredRole);
-        if (s.notMine) setNotMine(s.notMine);
-        if (s.discPrimary) setDiscPrimary(s.discPrimary);
-        if (s.mbtiType) setMbtiType(s.mbtiType);
+        
+        // Se estamos em modo reset individual, não carregamos o estado do rascunho para aquele step
+        const isResetStep = (key: string) => search.reset && stepParam === key;
+
+        if (s.declaredRole && !isResetStep("papel")) setDeclaredRole(s.declaredRole);
+        if (s.notMine && !isResetStep("papel")) setNotMine(s.notMine);
+        if (s.discPrimary && !isResetStep("behavioral")) setDiscPrimary(s.discPrimary);
+        if (s.mbtiType && !isResetStep("behavioral")) setMbtiType(s.mbtiType);
         if (s.riskFlags) setRiskFlags(s.riskFlags);
-        if (s.sabAns) setSabAns(s.sabAns);
+        if (s.sabAns && !isResetStep("sabotages")) setSabAns(s.sabAns);
         if (s.cerAns) setCerAns(s.cerAns);
-        if (s.hard) setHard(s.hard);
-        if (s.soft) setSoft(s.soft);
-        if (s.heart) setHeart(s.heart);
+        if (s.hard && !isResetStep("hsh")) setHard(s.hard);
+        if (s.soft && !isResetStep("hsh")) setSoft(s.soft);
+        if (s.heart && !isResetStep("hsh")) setHeart(s.heart);
         
         if (requestedStep !== 0) {
           setStep(requestedStep);
@@ -356,7 +360,7 @@ function AssessmentWizard() {
     } else if (requestedStep !== 0) {
       setStep(requestedStep);
     }
-  }, [orgId, requestedStep, search.reset]);
+  }, [orgId, requestedStep, search.reset, stepParam]);
 
   // hidrata quando dados chegam
   useEffect(() => {
