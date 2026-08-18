@@ -52,6 +52,9 @@ type Profile = {
   strengths: string[]; notes: string | null; communicationStyle: string | null;
   assessmentType: "disc" | "big_five" | "other" | null;
   sabotageScores?: Record<string, number> | null;
+  hardAnswers?: number[] | null;
+  softAnswers?: number[] | null;
+  heartAnswers?: number[] | null;
 };
 type Me = { profile: Profile | null };
 
@@ -254,21 +257,45 @@ function AssessmentWizard() {
 
   const clearAllStates = () => {
     setIsResetting(true);
-    setDeclaredRole("");
-    setNotMine("");
-    setDiscPrimary(null);
-    setMbtiType("");
-    setRiskFlags([]);
-    setSabAns({});
-    setCerAns({});
-    setHard([]);
-    setSoft([]);
-    setHeart([]);
+    
+    // Só limpamos o estado que o usuário realmente quer refazer (baseado no stepParam)
+    // Se não houver stepParam (fluxo completo), limpamos tudo.
+    if (!stepParam) {
+      setDeclaredRole("");
+      setNotMine("");
+      setDiscPrimary(null);
+      setMbtiType("");
+      setRiskFlags([]);
+      setSabAns({});
+      setCerAns({});
+      setHard([]);
+      setSoft([]);
+      setHeart([]);
+    } else {
+      // Limpeza seletiva para o modo individual
+      if (stepParam === "papel") {
+        setDeclaredRole("");
+        setNotMine("");
+      } else if (stepParam === "behavioral") {
+        setDiscPrimary(null);
+        setMbtiType("");
+      } else if (stepParam === "sabotages") {
+        setSabAns({});
+      } else if (stepParam === "hsh") {
+        setHard([]);
+        setSoft([]);
+        setHeart([]);
+      }
+    }
+    
     setBlockedMessage(null);
-    if (orgId) {
+    
+    // IMPORTANTE: Não removemos o draft inteiro se estivermos no modo individual,
+    // apenas atualizamos ele no próximo ciclo de useEffect do auto-save.
+    if (orgId && !stepParam) {
       localStorage.removeItem(`assessment_draft_${orgId}`);
     }
-    // Damos um tempo para os estados serem limpos antes de permitir novo salvamento
+    
     setTimeout(() => setIsResetting(false), 500);
   };
 
@@ -307,16 +334,20 @@ function AssessmentWizard() {
     if (draft) {
       try {
         const s = JSON.parse(draft);
-        if (s.declaredRole) setDeclaredRole(s.declaredRole);
-        if (s.notMine) setNotMine(s.notMine);
-        if (s.discPrimary) setDiscPrimary(s.discPrimary);
-        if (s.mbtiType) setMbtiType(s.mbtiType);
+        
+        // Se estamos em modo reset individual, não carregamos o estado do rascunho para aquele step
+        const isResetStep = (key: string) => search.reset && stepParam === key;
+
+        if (s.declaredRole && !isResetStep("papel")) setDeclaredRole(s.declaredRole);
+        if (s.notMine && !isResetStep("papel")) setNotMine(s.notMine);
+        if (s.discPrimary && !isResetStep("behavioral")) setDiscPrimary(s.discPrimary);
+        if (s.mbtiType && !isResetStep("behavioral")) setMbtiType(s.mbtiType);
         if (s.riskFlags) setRiskFlags(s.riskFlags);
-        if (s.sabAns) setSabAns(s.sabAns);
+        if (s.sabAns && !isResetStep("sabotages")) setSabAns(s.sabAns);
         if (s.cerAns) setCerAns(s.cerAns);
-        if (s.hard) setHard(s.hard);
-        if (s.soft) setSoft(s.soft);
-        if (s.heart) setHeart(s.heart);
+        if (s.hard && !isResetStep("hsh")) setHard(s.hard);
+        if (s.soft && !isResetStep("hsh")) setSoft(s.soft);
+        if (s.heart && !isResetStep("hsh")) setHeart(s.heart);
         
         if (requestedStep !== 0) {
           setStep(requestedStep);
@@ -329,24 +360,27 @@ function AssessmentWizard() {
     } else if (requestedStep !== 0) {
       setStep(requestedStep);
     }
-  }, [orgId, requestedStep, search.reset]);
+  }, [orgId, requestedStep, search.reset, stepParam]);
 
   // hidrata quando dados chegam
   useEffect(() => {
-    // Se reset for true, ignoramos hidratação inicial para começar limpo
-    if (search.reset) return;
+    // Se reset for true, ignoramos hidratação inicial para começar limpo (apenas para o que foi resetado)
+    // No modo individual, se estivermos resetando, não carregamos do perfil os dados daquele step.
+    if (search.reset && isIndividualMode) return;
+    if (search.reset && !isIndividualMode) return; // Reset total
     
     // Se o usuário já concluiu ou se estamos visualizando resultados, hidratamos do perfil.
     if (!initial) return;
 
-    setDeclaredRole(initial.declaredRole ?? "");
-    setNotMine(initial.notMine ?? "");
-    setDiscPrimary(initial.discPrimary ?? null);
-    setMbtiType(initial.mbtiType ?? "");
-    setRiskFlags(initial.riskFlags ?? []);
+    // Hidratamos tudo, o draft local cuidará de manter o que o usuário já mexeu nesta sessão
+    if (!declaredRole) setDeclaredRole(initial.declaredRole ?? "");
+    if (!notMine) setNotMine(initial.notMine ?? "");
+    if (!discPrimary) setDiscPrimary(initial.discPrimary ?? null);
+    if (!mbtiType) setMbtiType(initial.mbtiType ?? "");
+    if (riskFlags.length === 0) setRiskFlags(initial.riskFlags ?? []);
 
-    // Hidrata respostas de sabotadores se existirem
-    if (initial.sabotageScores) {
+    // Hidrata respostas de sabotadores se existirem e o estado local estiver vazio
+    if (initial.sabotageScores && Object.keys(sabAns).length === 0) {
       const scores = initial.sabotageScores as Record<string, number>;
       const answers: Record<string, number> = {};
       Object.entries(scores).forEach(([key, val]) => {
@@ -354,7 +388,12 @@ function AssessmentWizard() {
       });
       setSabAns(answers);
     }
-  }, [initial, requestedStep]);
+
+    // Hidrata HSH se o estado local estiver vazio
+    if (initial.hardAnswers && hard.length === 0) setHard(initial.hardAnswers as number[]);
+    if (initial.softAnswers && soft.length === 0) setSoft(initial.softAnswers as number[]);
+    if (initial.heartAnswers && heart.length === 0) setHeart(initial.heartAnswers as number[]);
+  }, [initial, requestedStep, search.reset, isIndividualMode]);
 
   const avg = (arr: number[]) => Math.round((arr.reduce((s, v) => s + v, 0) / (arr.length * 4)) * 100); // 0..4 total → 0..100%
   // Como as questões são respondidas de 1 a 5, subtraímos 1 para alinhar com a escala 0-4 do PDF
