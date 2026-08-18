@@ -164,7 +164,7 @@ function ConscienciaPage() {
     done: boolean;
     weight: number; 
     to: "/app/consciencia/assessment" | "/app/consciencia/activity" | "/app/consciencia/pdi" | "/app/consciencia/coach" | "/app/consciencia/liderados";
-    search?: { step: "behavioral" | "hsh" | "sabotages"; showResults?: boolean };
+    search?: { step: "behavioral" | "hsh" | "sabotages"; showResults?: boolean; reset?: boolean };
   };
   const steps: Step[] = [
     {
