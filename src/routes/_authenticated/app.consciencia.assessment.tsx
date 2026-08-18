@@ -427,10 +427,14 @@ function AssessmentWizard() {
       await queryClient.invalidateQueries({ queryKey: ["consciencia", "me", orgId] });
       toast.success("Assessment oficial concluído.");
       // Redireciona para os resultados dentro do assessment com o parâmetro showResults
-      navigate({ 
-        to: "/app/consciencia/assessment", 
-        search: { step: stepParam as any, showResults: true, reset: false } 
-      });
+      if (isIndividualMode) {
+        navigate({ to: "/app/consciencia" });
+      } else {
+        navigate({ 
+          to: "/app/consciencia/assessment", 
+          search: { step: stepParam as any, showResults: true, reset: false } 
+        });
+      }
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Falha ao salvar"),
   });
@@ -464,7 +468,7 @@ function AssessmentWizard() {
     if (step === 5) return "Responda todas as 30 afirmações do radar para concluir.";
     return "Complete esta etapa para continuar.";
   };
-  const goNext = () => {
+  const goNext = async () => {
     if (!canNext()) {
       const message = nextBlockedMessage();
       setBlockedMessage(message);
@@ -472,10 +476,19 @@ function AssessmentWizard() {
       return;
     }
     setBlockedMessage(null);
-    
-    // Se for modo individual (vindo de um step específico na jornada), volta para a index
-    if (isIndividualMode) {
-      navigate({ to: "/app/consciencia" });
+
+    // Se estivermos no modo individual ou for a última etapa, salvamos antes de prosseguir
+    if (isIndividualMode || step === steps.length - 1) {
+      try {
+        await save.mutateAsync();
+        // O redirecionamento já acontece no onSuccess do save, exceto se quisermos ir para a index
+        if (isIndividualMode && !showResults) {
+          navigate({ to: "/app/consciencia" });
+        }
+      } catch (err) {
+        // Erro já tratado no onError do mutation
+        return;
+      }
       return;
     }
 
@@ -806,7 +819,7 @@ function AssessmentWizard() {
             Próximo <ArrowRight className="h-4 w-4" />
           </Button>
         ) : (
-          <Button type="button" disabled={save.isPending} onClick={() => save.mutate()} className="gap-2">
+          <Button type="button" disabled={save.isPending} onClick={goNext} className="gap-2">
             {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
             Concluir
           </Button>
