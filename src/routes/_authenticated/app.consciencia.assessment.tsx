@@ -246,14 +246,31 @@ function AssessmentWizard() {
   const [soft, setSoft] = useState<number[]>([]);
   const [heart, setHeart] = useState<number[]>([]);
   const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
 
-  // Removemos o useEffect que sobrescrevia o step sempre que a URL mudava
-  // para deixar a lógica de inicialização centralizada no useEffect de draft/requestedStep
-
+  const clearAllStates = () => {
+    setIsResetting(true);
+    setDeclaredRole("");
+    setNotMine("");
+    setDiscPrimary(null);
+    setMbtiType("");
+    setRiskFlags([]);
+    setSabAns({});
+    setCerAns({});
+    setHard([]);
+    setSoft([]);
+    setHeart([]);
+    setBlockedMessage(null);
+    if (orgId) {
+      localStorage.removeItem(`assessment_draft_${orgId}`);
+    }
+    // Damos um tempo para os estados serem limpos antes de permitir novo salvamento
+    setTimeout(() => setIsResetting(false), 500);
+  };
 
   // Salvamento automático: persiste estado local a cada mudança
   useEffect(() => {
-    if (!orgId) return;
+    if (!orgId || isResetting || search.reset) return;
     const state = {
       declaredRole,
       notMine,
@@ -265,13 +282,23 @@ function AssessmentWizard() {
       hard,
       soft,
       heart,
-      step: requestedStep || step
+      step
     };
     localStorage.setItem(`assessment_draft_${orgId}`, JSON.stringify(state));
-  }, [orgId, declaredRole, notMine, discPrimary, mbtiType, riskFlags, sabAns, cerAns, hard, soft, heart, step, requestedStep]);
+  }, [orgId, declaredRole, notMine, discPrimary, mbtiType, riskFlags, sabAns, cerAns, hard, soft, heart, step, isResetting, search.reset]);
 
   useEffect(() => {
     if (!orgId) return;
+
+    // Se reset for true, limpamos tudo e ignoramos o draft
+    if (search.reset) {
+      clearAllStates();
+      if (requestedStep !== 0) {
+        setStep(requestedStep);
+      }
+      return;
+    }
+
     const draft = localStorage.getItem(`assessment_draft_${orgId}`);
     if (draft) {
       try {
@@ -287,8 +314,6 @@ function AssessmentWizard() {
         if (s.soft) setSoft(s.soft);
         if (s.heart) setHeart(s.heart);
         
-        // Prioridade 1: Step na URL (se for válido e não for 0)
-        // Prioridade 2: Step no draft
         if (requestedStep !== 0) {
           setStep(requestedStep);
         } else if (s.step !== undefined) {
@@ -300,7 +325,7 @@ function AssessmentWizard() {
     } else if (requestedStep !== 0) {
       setStep(requestedStep);
     }
-  }, [orgId, requestedStep]);
+  }, [orgId, requestedStep, search.reset]);
 
   // hidrata quando dados chegam
   useEffect(() => {
@@ -505,13 +530,7 @@ function AssessmentWizard() {
               Voltar para a Jornada
             </Button>
             <Button variant="outline" className="flex-1" onClick={() => {
-              localStorage.removeItem(`assessment_draft_${orgId}`);
-              // Limpamos o estado local para garantir que a UI reflita o reset
-              setSabAns({});
-              setCerAns({});
-              setHard([]);
-              setSoft([]);
-              setHeart([]);
+              clearAllStates();
               // Navegamos com a flag reset=true para forçar o reinício
               navigate({ 
                 to: "/app/consciencia/assessment", 

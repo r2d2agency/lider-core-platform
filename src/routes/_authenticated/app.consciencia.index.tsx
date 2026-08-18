@@ -164,7 +164,7 @@ function ConscienciaPage() {
     done: boolean;
     weight: number; 
     to: "/app/consciencia/assessment" | "/app/consciencia/activity" | "/app/consciencia/pdi" | "/app/consciencia/coach" | "/app/consciencia/liderados";
-    search?: { step: "behavioral" | "hsh" | "sabotages"; showResults?: boolean };
+    search?: { step: "behavioral" | "hsh" | "sabotages"; showResults?: boolean; reset?: boolean };
   };
   const steps: Step[] = [
     {
@@ -344,7 +344,7 @@ function ConscienciaPage() {
           {current && (
             <Link
               to={current.to}
-              search={current.search}
+              search={{ ...current.search, reset: false }}
               className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-[12px] font-semibold text-primary-foreground transition-transform hover:scale-[1.02] active:scale-100"
             >
               Continuar <ArrowRight className="h-3.5 w-3.5" />
@@ -390,7 +390,7 @@ function ConscienciaPage() {
               </div>
               <Link
                 to={current.to}
-                search={current.search}
+                search={{ ...current.search, reset: false }}
                 className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent-gradient px-4 py-3 text-[13px] font-semibold text-white shadow-lg transition-transform hover:scale-[1.01] active:scale-100"
               >
                 <Play className="h-4 w-4" fill="currentColor" /> Continuar
@@ -484,7 +484,7 @@ function ConscienciaPage() {
           </div>
           <Link
             to={current.to}
-            search={current.search}
+            search={{ ...current.search, reset: false }}
             className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-primary px-4 py-2 text-[12px] font-semibold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
           >
             Começar <ArrowRight className="h-3.5 w-3.5" />
@@ -551,7 +551,7 @@ function JourneyRow({
     state: "done" | "current" | "todo";
     minutes: number;
     to: "/app/consciencia/assessment" | "/app/consciencia/activity" | "/app/consciencia/pdi" | "/app/consciencia/coach" | "/app/consciencia/liderados";
-    search?: { step: "behavioral" | "hsh" | "sabotages" };
+    search?: { step: "behavioral" | "hsh" | "sabotages"; reset?: boolean };
   };
 }) {
   const Icon = step.icon;
@@ -602,7 +602,7 @@ function JourneyRow({
     <li>
       <Link 
         to={step.to} 
-        search={step.state === "done" ? { ...step.search, showResults: true } : step.search} 
+        search={step.state === "done" ? { ...step.search, showResults: true, reset: false } : { ...step.search, reset: false }} 
         className="block w-full text-left"
       >
         {inner}
