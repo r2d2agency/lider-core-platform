@@ -439,12 +439,12 @@ function AssessmentWizard() {
   if (isLoading) return <div className="mx-auto max-w-3xl p-6 text-sm text-muted-foreground"><Loader2 className="mr-2 inline h-4 w-4 animate-spin" />Carregando…</div>;
 
   const steps = [
-    { title: "Papel",      hint: "Pra que sua liderança existe." },
-    { title: "Perfil",         hint: "DISC · MBTI · Papel." },
-    { title: "Limitadores", hint: "Identifique padrões que travam sua execução." },
-    { title: "Predominância cerebral", hint: "Águia · Lobo · Gato · Tubarão." },
-    { title: "Riscos",              hint: "Padrões que aparecem sob pressão." },
-    { title: "Radar de Autogestão (IPM)", hint: "30 afirmações oficiais (10 por dimensão)." },
+    { key: "papel", title: "Papel",      hint: "Pra que sua liderança existe." },
+    { key: "behavioral", title: "Perfil Comportamental", hint: "Qual seu estilo predominante de ação." },
+    { key: "sabotages", title: "Limitadores de Performance", hint: "O que trava sua produtividade e bem-estar." },
+    { key: "cerebral", title: "Predominância cerebral", hint: "Águia · Lobo · Gato · Tubarão." },
+    { key: "risks", title: "Análise de Riscos",              hint: "Padrões que aparecem sob pressão." },
+    { key: "hsh", title: "Radar de Autogestão (IPM)", hint: "Sua potência mental e capacidade de resposta." },
   ];
   const canNext = () => {
     if (step === 0) return declaredRole.trim().length > 3;
