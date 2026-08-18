@@ -10,16 +10,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-type AssessmentStepKey = "behavioral" | "sabotages" | "hsh";
+type AssessmentStepKey = "papel" | "behavioral" | "sabotages" | "hsh";
 
 const STEP_INDEX: Record<AssessmentStepKey, number> = {
+  papel: 0,
   behavioral: 1,
   sabotages: 2,
   hsh: 5,
 };
 
 function isAssessmentStepKey(value: unknown): value is AssessmentStepKey {
-  return value === "behavioral" || value === "sabotages" || value === "hsh";
+  return value === "papel" || value === "behavioral" || value === "sabotages" || value === "hsh";
 }
 
 export const Route = createFileRoute("/_authenticated/app/consciencia/assessment")({
@@ -226,6 +227,9 @@ function AssessmentWizard() {
   const search = Route.useSearch();
   const stepParam: unknown = search.step;
   const showResults = !!search.showResults && !search.reset;
+  
+  // Se houver um step parametrizado, o modo é "individual" (não sequencial)
+  const isIndividualMode = !!stepParam;
   const requestedStep: number = isAssessmentStepKey(stepParam) ? STEP_INDEX[stepParam] : 0;
   const { data, isLoading } = useQuery({
     queryKey: ["consciencia", "me", orgId],
