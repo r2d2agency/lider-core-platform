@@ -163,10 +163,21 @@ function ConscienciaPage() {
     minutes: number;
     done: boolean;
     weight: number; 
-    to: "/app/consciencia/assessment" | "/app/consciencia/activity" | "/app/consciencia/pdi" | "/app/consciencia/coach" | "/app/consciencia/liderados";
-    search?: { step: "behavioral" | "hsh" | "sabotages"; showResults?: boolean; reset?: boolean };
+    to: string;
+    search?: { step: "behavioral" | "hsh" | "sabotages" | "papel"; showResults?: boolean; reset?: boolean };
   };
   const steps: Step[] = [
+    {
+      key: "papel",
+      icon: Target,
+      title: "Papel",
+      subtitle: profile?.declaredRole ? profile.declaredRole : "Pra que sua liderança existe",
+      minutes: 3,
+      done: !!profile?.declaredRole,
+      weight: 10,
+      to: "/app/consciencia/assessment",
+      search: { step: "papel" },
+    },
     {
       key: "behavioral",
       icon: Brain,
@@ -550,8 +561,8 @@ function JourneyRow({
     subtitle: string;
     state: "done" | "current" | "todo";
     minutes: number;
-    to: "/app/consciencia/assessment" | "/app/consciencia/activity" | "/app/consciencia/pdi" | "/app/consciencia/coach" | "/app/consciencia/liderados";
-    search?: { step: "behavioral" | "hsh" | "sabotages"; reset?: boolean };
+    to: string;
+    search?: { step: "behavioral" | "hsh" | "sabotages" | "papel"; reset?: boolean };
   };
 }) {
   const Icon = step.icon;

@@ -10,16 +10,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-type AssessmentStepKey = "behavioral" | "sabotages" | "hsh";
+type AssessmentStepKey = "papel" | "behavioral" | "sabotages" | "hsh";
 
 const STEP_INDEX: Record<AssessmentStepKey, number> = {
+  papel: 0,
   behavioral: 1,
   sabotages: 2,
   hsh: 5,
 };
 
 function isAssessmentStepKey(value: unknown): value is AssessmentStepKey {
-  return value === "behavioral" || value === "sabotages" || value === "hsh";
+  return value === "papel" || value === "behavioral" || value === "sabotages" || value === "hsh";
 }
 
 export const Route = createFileRoute("/_authenticated/app/consciencia/assessment")({
@@ -226,6 +227,9 @@ function AssessmentWizard() {
   const search = Route.useSearch();
   const stepParam: unknown = search.step;
   const showResults = !!search.showResults && !search.reset;
+  
+  // Se houver um step parametrizado, o modo é "individual" (não sequencial)
+  const isIndividualMode = !!stepParam;
   const requestedStep: number = isAssessmentStepKey(stepParam) ? STEP_INDEX[stepParam] : 0;
   const { data, isLoading } = useQuery({
     queryKey: ["consciencia", "me", orgId],
@@ -435,12 +439,12 @@ function AssessmentWizard() {
   if (isLoading) return <div className="mx-auto max-w-3xl p-6 text-sm text-muted-foreground"><Loader2 className="mr-2 inline h-4 w-4 animate-spin" />Carregando…</div>;
 
   const steps = [
-    { title: "Papel",      hint: "Pra que sua liderança existe." },
-    { title: "Perfil",         hint: "DISC · MBTI · Papel." },
-    { title: "Limitadores", hint: "Identifique padrões que travam sua execução." },
-    { title: "Predominância cerebral", hint: "Águia · Lobo · Gato · Tubarão." },
-    { title: "Riscos",              hint: "Padrões que aparecem sob pressão." },
-    { title: "Radar de Autogestão (IPM)", hint: "30 afirmações oficiais (10 por dimensão)." },
+    { key: "papel", title: "Papel",      hint: "Pra que sua liderança existe." },
+    { key: "behavioral", title: "Perfil Comportamental", hint: "Qual seu estilo predominante de ação." },
+    { key: "sabotages", title: "Limitadores de Performance", hint: "O que trava sua produtividade e bem-estar." },
+    { key: "cerebral", title: "Predominância cerebral", hint: "Águia · Lobo · Gato · Tubarão." },
+    { key: "risks", title: "Análise de Riscos",              hint: "Padrões que aparecem sob pressão." },
+    { key: "hsh", title: "Radar de Autogestão (IPM)", hint: "Sua potência mental e capacidade de resposta." },
   ];
   const canNext = () => {
     if (step === 0) return declaredRole.trim().length > 3;
@@ -468,6 +472,13 @@ function AssessmentWizard() {
       return;
     }
     setBlockedMessage(null);
+    
+    // Se for modo individual (vindo de um step específico na jornada), volta para a index
+    if (isIndividualMode) {
+      navigate({ to: "/app/consciencia" });
+      return;
+    }
+
     setStep((s: number) => Math.min(steps.length - 1, s + 1));
   };
   const toggle = (arr: string[], v: string, set: (a: string[]) => void) =>
@@ -488,6 +499,19 @@ function AssessmentWizard() {
           </div>
           
           <div className="mt-6 space-y-4">
+            {stepParam === "papel" && (
+              <div className="rounded-xl bg-card p-4 border border-border">
+                <div className="text-xs font-semibold uppercase tracking-wider text-accent">Seu Papel Declarado</div>
+                <div className="mt-1 text-xl font-bold font-display">{initial?.declaredRole ?? "Não preenchido"}</div>
+                {initial?.notMine && (
+                  <>
+                    <div className="mt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">O que NÃO é meu papel</div>
+                    <p className="mt-1 text-sm text-muted-foreground italic">"{initial.notMine}"</p>
+                  </>
+                )}
+              </div>
+            )}
+            
             {stepParam === "behavioral" && (
               <div className="rounded-xl bg-card p-4 border border-border">
                 <div className="text-xs font-semibold uppercase tracking-wider text-accent">Seu Estilo Dominante</div>
