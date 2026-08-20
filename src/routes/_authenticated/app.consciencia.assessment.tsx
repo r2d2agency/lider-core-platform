@@ -377,15 +377,8 @@ function AssessmentWizard() {
     if (!mbtiType) setMbtiType(initial.mbtiType ?? "");
     if (riskFlags.length === 0) setRiskFlags(initial.riskFlags ?? []);
 
-    // Hidrata respostas de sabotadores se existirem e o estado local estiver vazio
-    if (initial.sabotageScores && Object.keys(sabAns).length === 0) {
-      const scores = initial.sabotageScores as Record<string, number>;
-      const answers: Record<string, number> = {};
-      Object.entries(scores).forEach(([key, val]) => {
-        answers[key] = Math.round(val / 20);
-      });
-      setSabAns(answers);
-    }
+    // Respostas item a item (50 itens) não são reconstruídas a partir dos scores:
+    // o resultado consolidado já é exibido na tela de resultados.
 
     // Hidrata HSH se o estado local estiver vazio
     if (initial.hardAnswers && hard.length === 0) setHard(initial.hardAnswers as number[]);
@@ -405,19 +398,17 @@ function AssessmentWizard() {
   const softScore = calculateIpm(soft);
   const heartScore = calculateIpm(heart);
 
-  // Scores derivados
-  const sabotageScores: Record<string, number> = useMemo(() => {
-    const out: Record<string, number> = {};
-    for (const p of SABOTAGE_PILLARS) {
-      const v = sabAns[p.id];
-      if (typeof v === "number") out[p.id] = v * 20;
+  // Apuração oficial: soma dos 5 itens de cada padrão × 5 → 0..100%
+  const sabotagemResult = useMemo(() => {
+    const numeric: Record<number, number> = {};
+    for (const [key, value] of Object.entries(sabAns)) {
+      const n = Number(key);
+      if (Number.isFinite(n) && typeof value === "number") numeric[n] = value;
     }
-    return out;
+    return scoreSabotagem(numeric);
   }, [sabAns]);
-  const topSabotages = useMemo(
-    () => Object.entries(sabotageScores).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k),
-    [sabotageScores],
-  );
+  const sabotageScores = sabotagemResult.scores;
+  const topSabotages = sabotagemResult.top3;
   const cerebralProfile = useMemo(() => {
     const counts = { aguia: 0, lobo: 0, gato: 0, tubarao: 0 } as Record<CerebralMode, number>;
     for (const b of CEREBRAL) {
