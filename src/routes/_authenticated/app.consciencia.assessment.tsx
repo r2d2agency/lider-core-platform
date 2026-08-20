@@ -904,16 +904,7 @@ function AssessmentWizard() {
             <HshBlock title="Autopercepção (Hard)" color="bg-primary" values={hard} setValues={setHard} questions={HSH_QUESTIONS.hard} />
             <HshBlock title="Autorregulação (Soft)"  color="bg-accent"  values={soft} setValues={setSoft} questions={HSH_QUESTIONS.soft} />
             <HshBlock title="Escolha Consciente (Heart)"  color="bg-success" values={heart} setValues={setHeart} questions={HSH_QUESTIONS.heart} />
-            <div className="rounded-xl border border-border bg-secondary/40 p-4">
-              <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
-                <Sparkles className="h-3.5 w-3.5" /> Resultado inicial
-              </div>
-              <div className="mt-2 grid grid-cols-3 gap-3 text-center">
-                <ResultTile label="Autopercepção"  value={hardScore} />
-                <ResultTile label="Autorregulação"  value={softScore} />
-                <ResultTile label="Escolha" value={heartScore} />
-              </div>
-            </div>
+            {/* Resultado inicial removido a pedido */}
           </div>
         )}
       </section>
