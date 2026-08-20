@@ -816,24 +816,7 @@ function AssessmentWizard() {
                 </div>
               );
             })}
-            {sabotagemResult.ranked.length > 0 && (
-              <div className="space-y-2 rounded-xl border border-border bg-secondary/40 p-3">
-                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Apuração parcial (soma dos 5 itens × 5)
-                </div>
-                {sabotagemResult.ranked.map(([id, value]) => (
-                  <div key={id} className="flex items-center gap-3 text-xs">
-                    <span className="w-32 shrink-0 font-medium text-foreground">{id}</span>
-                    <div className="h-1.5 flex-1 rounded-full bg-border">
-                      <div className="h-full rounded-full bg-accent" style={{ width: `${value}%` }} />
-                    </div>
-                    <span className="w-24 shrink-0 text-right text-muted-foreground">
-                      {value}% · {sabotagemBand(value).band}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* Apuração parcial removida a pedido para não influenciar respostas */}
           </div>
         )}
 
