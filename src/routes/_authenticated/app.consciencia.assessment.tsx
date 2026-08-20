@@ -816,24 +816,7 @@ function AssessmentWizard() {
                 </div>
               );
             })}
-            {sabotagemResult.ranked.length > 0 && (
-              <div className="space-y-2 rounded-xl border border-border bg-secondary/40 p-3">
-                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Apuração parcial (soma dos 5 itens × 5)
-                </div>
-                {sabotagemResult.ranked.map(([id, value]) => (
-                  <div key={id} className="flex items-center gap-3 text-xs">
-                    <span className="w-32 shrink-0 font-medium text-foreground">{id}</span>
-                    <div className="h-1.5 flex-1 rounded-full bg-border">
-                      <div className="h-full rounded-full bg-accent" style={{ width: `${value}%` }} />
-                    </div>
-                    <span className="w-24 shrink-0 text-right text-muted-foreground">
-                      {value}% · {sabotagemBand(value).band}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* Apuração parcial removida a pedido para não influenciar respostas */}
           </div>
         )}
 
@@ -869,20 +852,7 @@ function AssessmentWizard() {
                 </li>
               ))}
             </ul>
-            {Object.keys(cerAns).length >= 8 && (
-              <div className="rounded-xl border border-border bg-secondary/40 p-3">
-                <div className="text-xs uppercase tracking-widest text-muted-foreground">Predominância parcial</div>
-                <div className="mt-1 font-display text-lg">{CEREBRAL_LABEL[cerebralProfile.primary]}</div>
-                <div className="mt-2 grid grid-cols-4 gap-2 text-center text-xs">
-                  {(Object.keys(cerebralProfile.pct) as CerebralMode[]).map((k) => (
-                    <div key={k}>
-                      <div className="text-muted-foreground">{k}</div>
-                      <div className="font-mono">{cerebralProfile.pct[k]}%</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Predominância parcial removida a pedido */}
           </div>
         )}
 
@@ -934,16 +904,7 @@ function AssessmentWizard() {
             <HshBlock title="Autopercepção (Hard)" color="bg-primary" values={hard} setValues={setHard} questions={HSH_QUESTIONS.hard} />
             <HshBlock title="Autorregulação (Soft)"  color="bg-accent"  values={soft} setValues={setSoft} questions={HSH_QUESTIONS.soft} />
             <HshBlock title="Escolha Consciente (Heart)"  color="bg-success" values={heart} setValues={setHeart} questions={HSH_QUESTIONS.heart} />
-            <div className="rounded-xl border border-border bg-secondary/40 p-4">
-              <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
-                <Sparkles className="h-3.5 w-3.5" /> Resultado inicial
-              </div>
-              <div className="mt-2 grid grid-cols-3 gap-3 text-center">
-                <ResultTile label="Autopercepção"  value={hardScore} />
-                <ResultTile label="Autorregulação"  value={softScore} />
-                <ResultTile label="Escolha" value={heartScore} />
-              </div>
-            </div>
+            {/* Resultado inicial removido a pedido */}
           </div>
         )}
       </section>
