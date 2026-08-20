@@ -195,12 +195,12 @@ function ConscienciaPage() {
     {
       key: "sabotages",
       icon: Zap,
-      title: "Limitadores de Performance",
+      title: "Sabotadores de Performance",
       subtitle:
         (profile?.sabotages?.length ?? 0) > 0
           ? `${profile!.sabotages.slice(0, 2).join(", ")}${profile!.sabotages.length > 2 ? "..." : ""}`
-          : "Identifique padrões que travam sua execução",
-      minutes: 6,
+          : "50 afirmações · 10 padrões automáticos",
+      minutes: 12,
       done: (profile?.sabotages?.length ?? 0) >= 3,
       weight: 15,
       to: "/app/consciencia/assessment",
@@ -293,7 +293,7 @@ function ConscienciaPage() {
     const sList = profile.sabotages.join(", ");
     timeline.push({ 
       when: relativeDay(profile.assessmentAt ?? profile.updatedAt), 
-      label: `Limitadores identificados: ${sList}` 
+      label: `Sabotadores identificados: ${sList}` 
     });
   }
   if (profile?.updatedAt) timeline.push({ when: relativeDay(profile.updatedAt), label: "Perfil atualizado" });

@@ -9,6 +9,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  SABOTAGEM_BLOCKS,
+  SABOTAGEM_HELP,
+  SABOTAGEM_ITEMS,
+  SABOTAGEM_PATTERNS,
+  SABOTAGEM_SCALE,
+  sabotagemBand,
+  sabotagemPattern,
+  scoreSabotagem,
+} from "@/lib/sabotadores";
 
 type AssessmentStepKey = "papel" | "behavioral" | "sabotages" | "hsh";
 
@@ -33,9 +43,9 @@ export const Route = createFileRoute("/_authenticated/app/consciencia/assessment
   head: () => ({
     meta: [
       { title: "Assessment guiado · Consciência · LíderCore" },
-      { name: "description", content: "Complete seu perfil comportamental, limitadores e radar Hard Soft Heart." },
+      { name: "description", content: "Complete seu perfil comportamental, sabotadores de performance e radar Hard Soft Heart." },
       { property: "og:title", content: "Assessment guiado · Consciência · LíderCore" },
-      { property: "og:description", content: "Complete seu perfil comportamental, limitadores e radar Hard Soft Heart." },
+      { property: "og:description", content: "Complete seu perfil comportamental, sabotadores de performance e radar Hard Soft Heart." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -65,19 +75,7 @@ const DISC = [
   { key: "C" as const, title: "Cauteloso",  desc: "Analítico, metódico, valoriza precisão." },
 ];
 
-// 10 pilares oficiais (Radar de Autogestão e Performance Mental)
-const SABOTAGE_PILLARS = [
-  { id: "Crítico Interno",     q: "Percebo primeiro o que está errado, mesmo quando o resultado geral é bom." },
-  { id: "Controlador",        q: "Fico tenso quando decisões importantes são tomadas sem minha participação." },
-  { id: "Perfeccionista",     q: "Adio uma entrega quando acredito que ela ainda não atingiu o padrão ideal." },
-  { id: "Agradador",          q: "Digo sim para evitar decepcionar alguém, mesmo quando deveria dizer não." },
-  { id: "Hiper-realizador",   q: "Meu valor pessoal fica muito ligado ao que produzo ou conquisto." },
-  { id: "Alerta",             q: "Imagino com frequência o que pode dar errado antes de considerar o que pode dar certo." },
-  { id: "Esquivo",            q: "Adio conversas difíceis na esperança de que o problema se resolva sozinho." },
-  { id: "Vitimia",            q: "Quando me sinto incompreendido, permaneço preso a essa sensação por bastante tempo." },
-  { id: "Inquieto",           q: "Perco o interesse quando uma atividade deixa de oferecer novidade ou estímulo." },
-  { id: "Hiperanalítico",     q: "Confio mais na lógica do que em sinais emocionais ou relacionais." },
-] as const;
+const SABOTAGEM_TOTAL = SABOTAGEM_ITEMS.length; // 50 itens oficiais
 
 const RISKS = [
   { 
@@ -379,15 +377,8 @@ function AssessmentWizard() {
     if (!mbtiType) setMbtiType(initial.mbtiType ?? "");
     if (riskFlags.length === 0) setRiskFlags(initial.riskFlags ?? []);
 
-    // Hidrata respostas de sabotadores se existirem e o estado local estiver vazio
-    if (initial.sabotageScores && Object.keys(sabAns).length === 0) {
-      const scores = initial.sabotageScores as Record<string, number>;
-      const answers: Record<string, number> = {};
-      Object.entries(scores).forEach(([key, val]) => {
-        answers[key] = Math.round(val / 20);
-      });
-      setSabAns(answers);
-    }
+    // Respostas item a item (50 itens) não são reconstruídas a partir dos scores:
+    // o resultado consolidado já é exibido na tela de resultados.
 
     // Hidrata HSH se o estado local estiver vazio
     if (initial.hardAnswers && hard.length === 0) setHard(initial.hardAnswers as number[]);
@@ -407,19 +398,17 @@ function AssessmentWizard() {
   const softScore = calculateIpm(soft);
   const heartScore = calculateIpm(heart);
 
-  // Scores derivados
-  const sabotageScores: Record<string, number> = useMemo(() => {
-    const out: Record<string, number> = {};
-    for (const p of SABOTAGE_PILLARS) {
-      const v = sabAns[p.id];
-      if (typeof v === "number") out[p.id] = v * 20;
+  // Apuração oficial: soma dos 5 itens de cada padrão × 5 → 0..100%
+  const sabotagemResult = useMemo(() => {
+    const numeric: Record<number, number> = {};
+    for (const [key, value] of Object.entries(sabAns)) {
+      const n = Number(key);
+      if (Number.isFinite(n) && typeof value === "number") numeric[n] = value;
     }
-    return out;
+    return scoreSabotagem(numeric);
   }, [sabAns]);
-  const topSabotages = useMemo(
-    () => Object.entries(sabotageScores).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k),
-    [sabotageScores],
-  );
+  const sabotageScores = sabotagemResult.scores;
+  const topSabotages = sabotagemResult.top3;
   const cerebralProfile = useMemo(() => {
     const counts = { aguia: 0, lobo: 0, gato: 0, tubarao: 0 } as Record<CerebralMode, number>;
     for (const b of CEREBRAL) {
@@ -486,7 +475,7 @@ function AssessmentWizard() {
   const steps = [
     { key: "papel", title: "Papel",      hint: "Pra que sua liderança existe." },
     { key: "behavioral", title: "Perfil Comportamental", hint: "Qual seu estilo predominante de ação." },
-    { key: "sabotages", title: "Limitadores de Performance", hint: "O que trava sua produtividade e bem-estar." },
+    { key: "sabotages", title: "Sabotadores de Performance", hint: "Padrões automáticos que travam sua performance sob pressão." },
     { key: "cerebral", title: "Predominância cerebral", hint: "Águia · Lobo · Gato · Tubarão." },
     { key: "risks", title: "Análise de Riscos",              hint: "Padrões que aparecem sob pressão." },
     { key: "hsh", title: "Radar de Autogestão (IPM)", hint: "Sua potência mental e capacidade de resposta." },
@@ -494,7 +483,7 @@ function AssessmentWizard() {
   const canNext = () => {
     if (step === 0) return declaredRole.trim().length > 3;
     if (step === 1) return !!discPrimary;
-    if (step === 2) return Object.keys(sabAns).length >= 10;
+    if (step === 2) return Object.keys(sabAns).length >= SABOTAGEM_TOTAL;
     if (step === 3) return Object.keys(cerAns).length >= 8;
     if (step === 5) return hard.length >= 10 && soft.length >= 10 && heart.length >= 10;
     return true;
@@ -504,7 +493,7 @@ function AssessmentWizard() {
   const nextBlockedMessage = () => {
     if (step === 0) return "Escreva seu papel declarado para continuar.";
     if (step === 1) return "Selecione seu estilo DISC predominante para continuar.";
-    if (step === 2) return `Responda todas as 10 afirmações para continuar. Faltam ${Math.max(0, 10 - sabAnswered)}.`;
+    if (step === 2) return `Responda todas as ${SABOTAGEM_TOTAL} afirmações para continuar. Faltam ${Math.max(0, SABOTAGEM_TOTAL - sabAnswered)}.`;
     if (step === 3) return `Responda todas as 8 afirmações para continuar. Faltam ${Math.max(0, 8 - cerAnswered)}.`;
     if (step === 5) return "Responda todas as 30 afirmações do radar para concluir.";
     return "Complete esta etapa para continuar.";
@@ -572,13 +561,44 @@ function AssessmentWizard() {
             )}
             
             {stepParam === "sabotages" && (
-              <div className="rounded-xl bg-card p-4 border border-border">
-                <div className="text-xs font-semibold uppercase tracking-wider text-accent">Seus Principais Limitadores</div>
-                <div className="mt-2 flex flex-wrap gap-2">
+              <div className="space-y-3 rounded-xl bg-card p-4 border border-border">
+                <div className="text-xs font-semibold uppercase tracking-wider text-accent">Seus 3 Sabotadores Prioritários</div>
+                <div className="flex flex-wrap gap-2">
                   {initial?.sabotages?.map(s => (
                     <span key={s} className="rounded-full bg-accent/10 px-3 py-1 text-sm font-bold text-accent border border-accent/20">{s}</span>
                   ))}
                 </div>
+                <div className="space-y-2">
+                  {SABOTAGEM_PATTERNS.map((p) => {
+                    const value = (initial?.sabotageScores as Record<string, number> | null | undefined)?.[p.id];
+                    if (typeof value !== "number") return null;
+                    return (
+                      <div key={p.id} className="flex items-center gap-3 text-xs">
+                        <span className="w-32 shrink-0 font-medium">{p.id}</span>
+                        <div className="h-1.5 flex-1 rounded-full bg-border">
+                          <div className="h-full rounded-full bg-accent" style={{ width: `${value}%` }} />
+                        </div>
+                        <span className="w-24 shrink-0 text-right text-muted-foreground">{value}% · {sabotagemBand(value).band}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {(initial?.sabotages ?? []).slice(0, 3).map((s) => {
+                  const p = sabotagemPattern(s);
+                  if (!p) return null;
+                  return (
+                    <div key={s} className="rounded-lg border border-border/60 bg-secondary/30 p-3 text-xs">
+                      <div className="font-display text-sm font-bold">{p.id}</div>
+                      <p className="mt-1"><span className="font-semibold">Mecanismo:</span> {p.mechanism}</p>
+                      <p><span className="font-semibold">Potência quando regulado:</span> {p.strength}</p>
+                      <p><span className="font-semibold">Custo quando dominante:</span> {p.cost}</p>
+                      <p className="mt-1 italic text-muted-foreground">{p.question}</p>
+                    </div>
+                  );
+                })}
+                <p className="text-[11px] text-muted-foreground">
+                  Leitura responsável: priorize os três padrões mais altos e trate diferenças de até 10 pontos como empate técnico.
+                </p>
               </div>
             )}
             
@@ -712,40 +732,72 @@ function AssessmentWizard() {
 
         {step === 2 && (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Para cada afirmação, escolha o quanto ela te descreve (1 = nada · 5 = totalmente).
-            </p>
-            <div className="rounded-xl border border-accent/25 bg-accent/5 px-3 py-2 text-xs font-medium text-foreground">
-              Respondidas: {sabAnswered}/10.
-            </div>
-            <ul className="space-y-4">
-              {SABOTAGE_PILLARS.map((p) => (
-                <li key={p.id} className="rounded-xl border border-border/60 p-3">
-                  <div className="mb-1 text-xs uppercase tracking-widest text-muted-foreground">{p.id}</div>
-                  <div className="text-sm">{p.q}</div>
-                  <div className="mt-2 flex gap-1.5">
-                    {[1,2,3,4,5].map((v) => (
-                    <button
-                        type="button"
-                        key={v}
-                        onClick={() => {
-                          setBlockedMessage(null);
-                          setSabAns((prev) => ({ ...prev, [p.id]: v }));
-                        }}
-                        className={
-                          "h-9 flex-1 rounded-lg border text-sm transition-colors " +
-                          (sabAns[p.id] === v
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border bg-card hover:bg-secondary")
-                        }>{v}</button>
-                    ))}
-                  </div>
-                </li>
+            <p className="text-sm text-muted-foreground">{SABOTAGEM_HELP}</p>
+            <div className="grid grid-cols-5 gap-1.5 rounded-xl border border-border bg-secondary/40 p-2 text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              {SABOTAGEM_SCALE.map((s) => (
+                <div key={s.value}>
+                  <div className="text-sm font-bold text-foreground">{s.value}</div>
+                  {s.label}
+                </div>
               ))}
-            </ul>
-            {topSabotages.length > 0 && (
-              <div className="rounded-xl border border-border bg-secondary/40 p-3 text-xs text-muted-foreground">
-                Top 3 (parcial): <span className="font-medium text-foreground">{topSabotages.join(" · ")}</span>
+            </div>
+            <div className="rounded-xl border border-accent/25 bg-accent/5 px-3 py-2 text-xs font-medium text-foreground">
+              Respondidas: {sabAnswered}/{SABOTAGEM_TOTAL}.
+            </div>
+            {SABOTAGEM_BLOCKS.map((block) => (
+              <div key={block.title} className="space-y-3">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">{block.title}</div>
+                <ul className="space-y-3">
+                  {SABOTAGEM_ITEMS.slice(block.from - 1, block.to).map((prompt, idx) => {
+                    const num = block.from + idx;
+                    return (
+                      <li key={num} className="rounded-xl border border-border/60 p-3">
+                        <div className="text-sm">
+                          <span className="mr-2 font-mono text-xs text-muted-foreground">{num}.</span>
+                          {prompt}
+                        </div>
+                        <div className="mt-2 flex gap-1.5">
+                          {SABOTAGEM_SCALE.map((s) => (
+                            <button
+                              type="button"
+                              key={s.value}
+                              onClick={() => {
+                                setBlockedMessage(null);
+                                setSabAns((prev) => ({ ...prev, [String(num)]: s.value }));
+                              }}
+                              className={
+                                "h-9 flex-1 rounded-lg border text-sm transition-colors " +
+                                (sabAns[String(num)] === s.value
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-border bg-card hover:bg-secondary")
+                              }
+                            >
+                              {s.value}
+                            </button>
+                          ))}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+            {sabotagemResult.ranked.length > 0 && (
+              <div className="space-y-2 rounded-xl border border-border bg-secondary/40 p-3">
+                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Apuração parcial (soma dos 5 itens × 5)
+                </div>
+                {sabotagemResult.ranked.map(([id, value]) => (
+                  <div key={id} className="flex items-center gap-3 text-xs">
+                    <span className="w-32 shrink-0 font-medium text-foreground">{id}</span>
+                    <div className="h-1.5 flex-1 rounded-full bg-border">
+                      <div className="h-full rounded-full bg-accent" style={{ width: `${value}%` }} />
+                    </div>
+                    <span className="w-24 shrink-0 text-right text-muted-foreground">
+                      {value}% · {sabotagemBand(value).band}
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
           </div>
