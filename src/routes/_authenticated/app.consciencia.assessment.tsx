@@ -852,20 +852,7 @@ function AssessmentWizard() {
                 </li>
               ))}
             </ul>
-            {Object.keys(cerAns).length >= 8 && (
-              <div className="rounded-xl border border-border bg-secondary/40 p-3">
-                <div className="text-xs uppercase tracking-widest text-muted-foreground">Predominância parcial</div>
-                <div className="mt-1 font-display text-lg">{CEREBRAL_LABEL[cerebralProfile.primary]}</div>
-                <div className="mt-2 grid grid-cols-4 gap-2 text-center text-xs">
-                  {(Object.keys(cerebralProfile.pct) as CerebralMode[]).map((k) => (
-                    <div key={k}>
-                      <div className="text-muted-foreground">{k}</div>
-                      <div className="font-mono">{cerebralProfile.pct[k]}%</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Predominância parcial removida a pedido */}
           </div>
         )}
 
