@@ -701,40 +701,72 @@ function AssessmentWizard() {
 
         {step === 2 && (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Para cada afirmação, escolha o quanto ela te descreve (1 = nada · 5 = totalmente).
-            </p>
-            <div className="rounded-xl border border-accent/25 bg-accent/5 px-3 py-2 text-xs font-medium text-foreground">
-              Respondidas: {sabAnswered}/10.
-            </div>
-            <ul className="space-y-4">
-              {SABOTAGE_PILLARS.map((p) => (
-                <li key={p.id} className="rounded-xl border border-border/60 p-3">
-                  <div className="mb-1 text-xs uppercase tracking-widest text-muted-foreground">{p.id}</div>
-                  <div className="text-sm">{p.q}</div>
-                  <div className="mt-2 flex gap-1.5">
-                    {[1,2,3,4,5].map((v) => (
-                    <button
-                        type="button"
-                        key={v}
-                        onClick={() => {
-                          setBlockedMessage(null);
-                          setSabAns((prev) => ({ ...prev, [p.id]: v }));
-                        }}
-                        className={
-                          "h-9 flex-1 rounded-lg border text-sm transition-colors " +
-                          (sabAns[p.id] === v
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border bg-card hover:bg-secondary")
-                        }>{v}</button>
-                    ))}
-                  </div>
-                </li>
+            <p className="text-sm text-muted-foreground">{SABOTAGEM_HELP}</p>
+            <div className="grid grid-cols-5 gap-1.5 rounded-xl border border-border bg-secondary/40 p-2 text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              {SABOTAGEM_SCALE.map((s) => (
+                <div key={s.value}>
+                  <div className="text-sm font-bold text-foreground">{s.value}</div>
+                  {s.label}
+                </div>
               ))}
-            </ul>
-            {topSabotages.length > 0 && (
-              <div className="rounded-xl border border-border bg-secondary/40 p-3 text-xs text-muted-foreground">
-                Top 3 (parcial): <span className="font-medium text-foreground">{topSabotages.join(" · ")}</span>
+            </div>
+            <div className="rounded-xl border border-accent/25 bg-accent/5 px-3 py-2 text-xs font-medium text-foreground">
+              Respondidas: {sabAnswered}/{SABOTAGEM_TOTAL}.
+            </div>
+            {SABOTAGEM_BLOCKS.map((block) => (
+              <div key={block.title} className="space-y-3">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">{block.title}</div>
+                <ul className="space-y-3">
+                  {SABOTAGEM_ITEMS.slice(block.from - 1, block.to).map((prompt, idx) => {
+                    const num = block.from + idx;
+                    return (
+                      <li key={num} className="rounded-xl border border-border/60 p-3">
+                        <div className="text-sm">
+                          <span className="mr-2 font-mono text-xs text-muted-foreground">{num}.</span>
+                          {prompt}
+                        </div>
+                        <div className="mt-2 flex gap-1.5">
+                          {SABOTAGEM_SCALE.map((s) => (
+                            <button
+                              type="button"
+                              key={s.value}
+                              onClick={() => {
+                                setBlockedMessage(null);
+                                setSabAns((prev) => ({ ...prev, [String(num)]: s.value }));
+                              }}
+                              className={
+                                "h-9 flex-1 rounded-lg border text-sm transition-colors " +
+                                (sabAns[String(num)] === s.value
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-border bg-card hover:bg-secondary")
+                              }
+                            >
+                              {s.value}
+                            </button>
+                          ))}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+            {sabotagemResult.ranked.length > 0 && (
+              <div className="space-y-2 rounded-xl border border-border bg-secondary/40 p-3">
+                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Apuração parcial (soma dos 5 itens × 5)
+                </div>
+                {sabotagemResult.ranked.map(([id, value]) => (
+                  <div key={id} className="flex items-center gap-3 text-xs">
+                    <span className="w-32 shrink-0 font-medium text-foreground">{id}</span>
+                    <div className="h-1.5 flex-1 rounded-full bg-border">
+                      <div className="h-full rounded-full bg-accent" style={{ width: `${value}%` }} />
+                    </div>
+                    <span className="w-24 shrink-0 text-right text-muted-foreground">
+                      {value}% · {sabotagemBand(value).band}
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
           </div>
