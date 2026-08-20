@@ -251,6 +251,7 @@ function AssessmentWizard() {
   const [soft, setSoft] = useState<number[]>([]);
   const [heart, setHeart] = useState<number[]>([]);
   const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
+  const [sabotageBlockIndex, setSabotageBlockIndex] = useState(0);
   const [isResetting, setIsResetting] = useState(false);
 
   const clearAllStates = () => {
@@ -279,6 +280,7 @@ function AssessmentWizard() {
         setMbtiType("");
       } else if (stepParam === "sabotages") {
         setSabAns({});
+        setSabotageBlockIndex(0);
       } else if (stepParam === "hsh") {
         setHard([]);
         setSoft([]);
@@ -311,10 +313,11 @@ function AssessmentWizard() {
       hard,
       soft,
       heart,
-      step
+      step,
+      sabotageBlockIndex
     };
     localStorage.setItem(`assessment_draft_${orgId}`, JSON.stringify(state));
-  }, [orgId, declaredRole, notMine, discPrimary, mbtiType, riskFlags, sabAns, cerAns, hard, soft, heart, step, isResetting, search.reset]);
+  }, [orgId, declaredRole, notMine, discPrimary, mbtiType, riskFlags, sabAns, cerAns, hard, soft, heart, step, sabotageBlockIndex, isResetting, search.reset]);
 
   useEffect(() => {
     if (!orgId) return;
@@ -346,6 +349,7 @@ function AssessmentWizard() {
         if (s.hard && !isResetStep("hsh")) setHard(s.hard);
         if (s.soft && !isResetStep("hsh")) setSoft(s.soft);
         if (s.heart && !isResetStep("hsh")) setHeart(s.heart);
+        if (s.sabotageBlockIndex !== undefined) setSabotageBlockIndex(s.sabotageBlockIndex);
         
         if (requestedStep !== 0) {
           setStep(requestedStep);
@@ -744,44 +748,74 @@ function AssessmentWizard() {
             <div className="rounded-xl border border-accent/25 bg-accent/5 px-3 py-2 text-xs font-medium text-foreground">
               Respondidas: {sabAnswered}/{SABOTAGEM_TOTAL}.
             </div>
-            {SABOTAGEM_BLOCKS.map((block) => (
-              <div key={block.title} className="space-y-3">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">{block.title}</div>
-                <ul className="space-y-3">
-                  {SABOTAGEM_ITEMS.slice(block.from - 1, block.to).map((prompt, idx) => {
-                    const num = block.from + idx;
-                    return (
-                      <li key={num} className="rounded-xl border border-border/60 p-3">
-                        <div className="text-sm">
-                          <span className="mr-2 font-mono text-xs text-muted-foreground">{num}.</span>
-                          {prompt}
-                        </div>
-                        <div className="mt-2 flex gap-1.5">
-                          {SABOTAGEM_SCALE.map((s) => (
-                            <button
-                              type="button"
-                              key={s.value}
-                              onClick={() => {
-                                setBlockedMessage(null);
-                                setSabAns((prev) => ({ ...prev, [String(num)]: s.value }));
-                              }}
-                              className={
-                                "h-9 flex-1 rounded-lg border text-sm transition-colors " +
-                                (sabAns[String(num)] === s.value
-                                  ? "border-primary bg-primary text-primary-foreground"
-                                  : "border-border bg-card hover:bg-secondary")
-                              }
-                            >
-                              {s.value}
-                            </button>
-                          ))}
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
+            {SABOTAGEM_BLOCKS.map((block, bIdx) => {
+              if (bIdx !== sabotageBlockIndex) return null;
+              
+              return (
+                <div key={block.title} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">{block.title}</div>
+                    <div className="text-[10px] font-medium text-muted-foreground">Bloco {bIdx + 1} de {SABOTAGEM_BLOCKS.length}</div>
+                  </div>
+                  
+                  <ul className="space-y-3">
+                    {SABOTAGEM_ITEMS.slice(block.from - 1, block.to).map((prompt, idx) => {
+                      const num = block.from + idx;
+                      return (
+                        <li key={num} className="rounded-xl border border-border/60 p-3">
+                          <div className="text-sm">
+                            <span className="mr-2 font-mono text-xs text-muted-foreground">{num}.</span>
+                            {prompt}
+                          </div>
+                          <div className="mt-2 flex gap-1.5">
+                            {SABOTAGEM_SCALE.map((s) => (
+                              <button
+                                type="button"
+                                key={s.value}
+                                onClick={() => {
+                                  setBlockedMessage(null);
+                                  setSabAns((prev) => ({ ...prev, [String(num)]: s.value }));
+                                }}
+                                className={
+                                  "h-9 flex-1 rounded-lg border text-sm transition-colors " +
+                                  (sabAns[String(num)] === s.value
+                                    ? "border-primary bg-primary text-primary-foreground"
+                                    : "border-border bg-card hover:bg-secondary")
+                                }
+                              >
+                                {s.value}
+                              </button>
+                            ))}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+
+                  <div className="flex gap-3 pt-2">
+                    {sabotageBlockIndex > 0 && (
+                      <Button 
+                        variant="outline" 
+                        className="flex-1 gap-2" 
+                        onClick={() => setSabotageBlockIndex(i => i - 1)}
+                      >
+                        <ArrowLeft className="h-4 w-4" /> Bloco anterior
+                      </Button>
+                    )}
+                    
+                    {sabotageBlockIndex < SABOTAGEM_BLOCKS.length - 1 && (
+                      <Button 
+                        className="flex-1 gap-2" 
+                        disabled={!SABOTAGEM_ITEMS.slice(block.from - 1, block.to).every((_, i) => sabAns[String(block.from + i)] !== undefined)}
+                        onClick={() => setSabotageBlockIndex(i => i + 1)}
+                      >
+                        Próximo bloco <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
             {sabotagemResult.ranked.length > 0 && (
               <div className="space-y-2 rounded-xl border border-border bg-secondary/40 p-3">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
