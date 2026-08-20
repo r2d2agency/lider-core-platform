@@ -475,7 +475,7 @@ function AssessmentWizard() {
   const steps = [
     { key: "papel", title: "Papel",      hint: "Pra que sua liderança existe." },
     { key: "behavioral", title: "Perfil Comportamental", hint: "Qual seu estilo predominante de ação." },
-    { key: "sabotages", title: "Limitadores de Performance", hint: "O que trava sua produtividade e bem-estar." },
+    { key: "sabotages", title: "Sabotadores de Performance", hint: "Padrões automáticos que travam sua performance sob pressão." },
     { key: "cerebral", title: "Predominância cerebral", hint: "Águia · Lobo · Gato · Tubarão." },
     { key: "risks", title: "Análise de Riscos",              hint: "Padrões que aparecem sob pressão." },
     { key: "hsh", title: "Radar de Autogestão (IPM)", hint: "Sua potência mental e capacidade de resposta." },
@@ -483,7 +483,7 @@ function AssessmentWizard() {
   const canNext = () => {
     if (step === 0) return declaredRole.trim().length > 3;
     if (step === 1) return !!discPrimary;
-    if (step === 2) return Object.keys(sabAns).length >= 10;
+    if (step === 2) return Object.keys(sabAns).length >= SABOTAGEM_TOTAL;
     if (step === 3) return Object.keys(cerAns).length >= 8;
     if (step === 5) return hard.length >= 10 && soft.length >= 10 && heart.length >= 10;
     return true;
@@ -493,7 +493,7 @@ function AssessmentWizard() {
   const nextBlockedMessage = () => {
     if (step === 0) return "Escreva seu papel declarado para continuar.";
     if (step === 1) return "Selecione seu estilo DISC predominante para continuar.";
-    if (step === 2) return `Responda todas as 10 afirmações para continuar. Faltam ${Math.max(0, 10 - sabAnswered)}.`;
+    if (step === 2) return `Responda todas as ${SABOTAGEM_TOTAL} afirmações para continuar. Faltam ${Math.max(0, SABOTAGEM_TOTAL - sabAnswered)}.`;
     if (step === 3) return `Responda todas as 8 afirmações para continuar. Faltam ${Math.max(0, 8 - cerAnswered)}.`;
     if (step === 5) return "Responda todas as 30 afirmações do radar para concluir.";
     return "Complete esta etapa para continuar.";
@@ -561,13 +561,44 @@ function AssessmentWizard() {
             )}
             
             {stepParam === "sabotages" && (
-              <div className="rounded-xl bg-card p-4 border border-border">
-                <div className="text-xs font-semibold uppercase tracking-wider text-accent">Seus Principais Limitadores</div>
-                <div className="mt-2 flex flex-wrap gap-2">
+              <div className="space-y-3 rounded-xl bg-card p-4 border border-border">
+                <div className="text-xs font-semibold uppercase tracking-wider text-accent">Seus 3 Sabotadores Prioritários</div>
+                <div className="flex flex-wrap gap-2">
                   {initial?.sabotages?.map(s => (
                     <span key={s} className="rounded-full bg-accent/10 px-3 py-1 text-sm font-bold text-accent border border-accent/20">{s}</span>
                   ))}
                 </div>
+                <div className="space-y-2">
+                  {SABOTAGEM_PATTERNS.map((p) => {
+                    const value = (initial?.sabotageScores as Record<string, number> | null | undefined)?.[p.id];
+                    if (typeof value !== "number") return null;
+                    return (
+                      <div key={p.id} className="flex items-center gap-3 text-xs">
+                        <span className="w-32 shrink-0 font-medium">{p.id}</span>
+                        <div className="h-1.5 flex-1 rounded-full bg-border">
+                          <div className="h-full rounded-full bg-accent" style={{ width: `${value}%` }} />
+                        </div>
+                        <span className="w-24 shrink-0 text-right text-muted-foreground">{value}% · {sabotagemBand(value).band}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {(initial?.sabotages ?? []).slice(0, 3).map((s) => {
+                  const p = sabotagemPattern(s);
+                  if (!p) return null;
+                  return (
+                    <div key={s} className="rounded-lg border border-border/60 bg-secondary/30 p-3 text-xs">
+                      <div className="font-display text-sm font-bold">{p.id}</div>
+                      <p className="mt-1"><span className="font-semibold">Mecanismo:</span> {p.mechanism}</p>
+                      <p><span className="font-semibold">Potência quando regulado:</span> {p.strength}</p>
+                      <p><span className="font-semibold">Custo quando dominante:</span> {p.cost}</p>
+                      <p className="mt-1 italic text-muted-foreground">{p.question}</p>
+                    </div>
+                  );
+                })}
+                <p className="text-[11px] text-muted-foreground">
+                  Leitura responsável: priorize os três padrões mais altos e trate diferenças de até 10 pontos como empate técnico.
+                </p>
               </div>
             )}
             
