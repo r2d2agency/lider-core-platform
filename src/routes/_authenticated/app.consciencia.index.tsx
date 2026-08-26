@@ -74,6 +74,7 @@ type Profile = {
   autoPdiGeneratedAt?: string | null;
   coachTrackGeneratedAt?: string | null;
   updatedAt: string;
+  cerebralPrimary?: "aguia" | "lobo" | "gato" | "tubarao" | null;
 };
 
 type Commitment = {
@@ -105,6 +106,14 @@ function formatDiscPair(
   secondary: Profile["discSecondary"] | undefined,
 ) {
   return primary ? `DISC ${primary}${secondary ?? ""}` : null;
+}
+
+function formatCerebralMode(mode: Profile["cerebralPrimary"] | undefined) {
+  if (mode === "aguia") return "Águia";
+  if (mode === "lobo") return "Lobo";
+  if (mode === "gato") return "Gato";
+  if (mode === "tubarao") return "Tubarão";
+  return null;
 }
 
 const RISK_OPTIONS = [
@@ -172,7 +181,7 @@ function ConscienciaPage() {
     done: boolean;
     weight: number; 
     to: string;
-    search?: { step: "behavioral" | "hsh" | "sabotages" | "papel"; showResults?: boolean; reset?: boolean };
+    search?: { step: "behavioral" | "hsh" | "sabotages" | "cerebral" | "papel"; showResults?: boolean; reset?: boolean };
   };
   const steps: Step[] = [
     {
@@ -213,6 +222,17 @@ function ConscienciaPage() {
       weight: 15,
       to: "/app/consciencia/assessment",
       search: { step: "sabotages" },
+    },
+    {
+      key: "cerebral",
+      icon: Brain,
+      title: "Predominância cerebral",
+      subtitle: formatCerebralMode(profile?.cerebralPrimary) ?? "Águia · Lobo · Gato · Tubarão",
+      minutes: 4,
+      done: !!profile?.cerebralPrimary,
+      weight: 10,
+      to: "/app/consciencia/assessment",
+      search: { step: "cerebral" },
     },
     {
       key: "hsh",
@@ -305,6 +325,12 @@ function ConscienciaPage() {
     timeline.push({ 
       when: relativeDay(profile.assessmentAt ?? profile.updatedAt), 
       label: `Sabotadores identificados: ${sList}` 
+    });
+  }
+  if (profile?.cerebralPrimary) {
+    timeline.push({
+      when: relativeDay(profile.assessmentAt ?? profile.updatedAt),
+      label: `Predominância cerebral: ${formatCerebralMode(profile.cerebralPrimary) ?? profile.cerebralPrimary}`,
     });
   }
   if (profile?.updatedAt) timeline.push({ when: relativeDay(profile.updatedAt), label: "Perfil atualizado" });

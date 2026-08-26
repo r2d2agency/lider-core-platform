@@ -21,17 +21,18 @@ import {
   scoreSabotagem,
 } from "@/lib/sabotadores";
 
-type AssessmentStepKey = "papel" | "behavioral" | "sabotages" | "hsh";
+type AssessmentStepKey = "papel" | "behavioral" | "sabotages" | "cerebral" | "hsh";
 
 const STEP_INDEX: Record<AssessmentStepKey, number> = {
   papel: 0,
   behavioral: 1,
   sabotages: 2,
+  cerebral: 3,
   hsh: 5,
 };
 
 function isAssessmentStepKey(value: unknown): value is AssessmentStepKey {
-  return value === "papel" || value === "behavioral" || value === "sabotages" || value === "hsh";
+  return value === "papel" || value === "behavioral" || value === "sabotages" || value === "cerebral" || value === "hsh";
 }
 
 export const Route = createFileRoute("/_authenticated/app/consciencia/assessment")({
@@ -58,6 +59,8 @@ type CerebralMode = "aguia" | "lobo" | "gato" | "tubarao";
 type Profile = {
   declaredRole: string | null; notMine: string | null;
   discPrimary: DiscPrimary | null; discSecondary?: DiscPrimary | null; mbtiType: string | null;
+  cerebralPrimary?: CerebralMode | null;
+  cerebralProfile?: Record<CerebralMode, number> | null;
   sabotages: string[]; riskFlags: string[];
   hardSelfScore: number | null; softSelfScore: number | null; heartSelfScore: number | null;
   strengths: string[]; notes: string | null; communicationStyle: string | null;
@@ -299,6 +302,8 @@ function AssessmentWizard() {
       } else if (stepParam === "sabotages") {
         setSabAns({});
         setSabotageBlockIndex(0);
+      } else if (stepParam === "cerebral") {
+        setCerAns({});
       } else if (stepParam === "hsh") {
         setHard([]);
         setSoft([]);
@@ -365,7 +370,7 @@ function AssessmentWizard() {
         if (s.mbtiType && !isResetStep("behavioral")) setMbtiType(s.mbtiType);
         if (s.riskFlags) setRiskFlags(s.riskFlags);
         if (s.sabAns && !isResetStep("sabotages")) setSabAns(sanitizeSabotageAnswers(s.sabAns));
-        if (s.cerAns) setCerAns(s.cerAns);
+        if (s.cerAns && !isResetStep("cerebral")) setCerAns(s.cerAns);
         if (s.hard && !isResetStep("hsh")) setHard(s.hard);
         if (s.soft && !isResetStep("hsh")) setSoft(s.soft);
         if (s.heart && !isResetStep("hsh")) setHeart(s.heart);
