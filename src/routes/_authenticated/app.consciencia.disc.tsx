@@ -161,7 +161,11 @@ const ITEMS: Array<{ prompt: string; options: Array<{ label: string; factor: Fac
 
 const PER_PAGE = 5;
 
-type Profile = { discPrimary: Factor | null; discProfile: Record<string, unknown> | null };
+type Profile = {
+  discPrimary: Factor | null;
+  discSecondary?: Factor | null;
+  discProfile: Record<string, unknown> | null;
+};
 
 function DiscTestPage() {
   const { orgId } = useCurrentOrg();
@@ -194,7 +198,7 @@ function DiscTestPage() {
       }))
       .sort((a, b) => b.count - a.count);
     const primary = ranking[0].count > 0 ? ranking[0].factor : null;
-    const secondary = ranking[1] && ranking[1].percent >= 20 ? ranking[1].factor : null;
+    const secondary = ranking[1] && ranking[1].count > 0 ? ranking[1].factor : null;
     return { counts, ranking, primary, secondary };
   }, [answers, answered]);
 
@@ -205,6 +209,7 @@ function DiscTestPage() {
         body: {
           assessmentType: "disc",
           discPrimary: result.primary,
+          discSecondary: result.secondary,
           discAnswers: Object.fromEntries(
             Object.entries(answers).map(([i, f]) => [`q${Number(i) + 1}`, f]),
           ),
@@ -253,9 +258,17 @@ function DiscTestPage() {
               : "Sem perfil identificado"}
           </h1>
           {result.primary && (
-            <p className="mt-1 text-sm text-muted-foreground">
-              {FACTORS[result.primary].description}
-            </p>
+            <div className="mt-3 space-y-1 text-sm text-muted-foreground">
+              <p>
+                <strong className="text-foreground">Principal:</strong> {result.primary} · {FACTORS[result.primary].name}
+              </p>
+              {result.secondary && (
+                <p>
+                  <strong className="text-foreground">Secundária:</strong> {result.secondary} · {FACTORS[result.secondary].name}
+                </p>
+              )}
+              <p>{FACTORS[result.primary].description}</p>
+            </div>
           )}
         </header>
 
@@ -276,10 +289,18 @@ function DiscTestPage() {
               </div>
             </div>
           ))}
-          {previous && result.primary && previous !== result.primary && (
+          {(previous || data?.profile?.discSecondary) && result.primary && (
             <p className="pt-2 text-xs text-muted-foreground">
-              Seu perfil anterior era <strong>{previous}</strong> — ao salvar, ele será substituído
-              por <strong>{result.primary}</strong>.
+              Seu perfil anterior era{" "}
+              <strong>
+                {previous}
+                {data?.profile?.discSecondary ? data.profile.discSecondary : ""}
+              </strong>
+              {" "}e ao salvar passará para{" "}
+              <strong>
+                {result.primary}
+                {result.secondary ? result.secondary : ""}
+              </strong>.
             </p>
           )}
         </section>

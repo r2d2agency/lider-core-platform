@@ -141,9 +141,9 @@ function AppShell() {
   const isAdmin = roles.includes("super_admin") || roles.includes("neo_admin");
   const enabledModules = (() => {
     if (isAdmin) return null; // null = show all
-    // While features are loading OR the request failed, don't hide anything.
-    // Otherwise a transient 401/CORS blip would wipe the whole navigation.
-    if (!featuresQ.data) return null;
+    // Durante o loading não escondemos módulos; se falhar, fechamos a UI.
+    if (featuresQ.isLoading) return null;
+    if (!featuresQ.data) return new Set<string>();
     const set = new Set<string>();
     const feats = featuresQ.data?.features ?? {};
     for (const key of Object.keys(feats)) {

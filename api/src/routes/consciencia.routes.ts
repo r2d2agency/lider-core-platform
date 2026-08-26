@@ -5,6 +5,7 @@ import { requireAuth } from "../auth.js";
 import { completeChat, extractDocumentText } from "../lib/ai-gateway.js";
 import { heuristicTrack, type TrackStep } from "../lib/subordinate-track.js";
 import { neoContextMessage } from "../lib/neo-context.js";
+import { DISC_FACTORS, type DiscFactor } from "../lib/disc.js";
 
 /**
  * MÓDULO C — Consciência.
@@ -37,6 +38,29 @@ async function assertOrgAccess(userId: string, orgId: string) {
 }
 function badReq(res: Response, err: unknown) {
   return res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
+}
+
+function asDiscFactor(value: unknown): DiscFactor | null {
+  return value === "D" || value === "I" || value === "S" || value === "C" ? value : null;
+}
+
+function describeDiscProfile(primary: DiscFactor | null, secondary: DiscFactor | null) {
+  if (!primary) return "Sem perfil identificado";
+  return secondary
+    ? `Perfil ${primary}${secondary} — ${DISC_FACTORS[primary].name} com ${DISC_FACTORS[secondary].name}`
+    : `Perfil ${primary} — ${DISC_FACTORS[primary].name}`;
+}
+
+function extractDiscSecondary(profile: { discProfile?: unknown; assessmentTraits?: unknown } | null | undefined) {
+  const discProfile = profile?.discProfile;
+  if (discProfile && typeof discProfile === "object" && !Array.isArray(discProfile)) {
+    return asDiscFactor((discProfile as Record<string, unknown>).secondary);
+  }
+  const assessmentTraits = profile?.assessmentTraits;
+  if (assessmentTraits && typeof assessmentTraits === "object" && !Array.isArray(assessmentTraits)) {
+    return asDiscFactor((assessmentTraits as Record<string, unknown>).discSecondary);
+  }
+  return null;
 }
 
 conscienciaRouter.param("orgId", async (req, res, next, orgId) => {
@@ -130,7 +154,14 @@ conscienciaRouter.get("/:orgId/consciencia/me", asyncRoute(async (req, res) => {
     ? Date.now() - profile.assessmentAt.getTime() > 90 * 86400000
     : profile != null;
 
-  res.json({ profile, commitments, signals, assessmentStale: stale });
+  const shapedProfile = profile
+    ? {
+        ...profile,
+        discSecondary: extractDiscSecondary(profile),
+      }
+    : null;
+
+  res.json({ profile: shapedProfile, commitments, signals, assessmentStale: stale });
 }));
 
 // ------------------------------------------------------------
@@ -145,6 +176,7 @@ const profileSchema = z.object({
   communicationStyle: z.string().optional().nullable(),
   mbtiType: z.string().max(4).optional().nullable(),
   discPrimary: z.enum(["D", "I", "S", "C"]).optional().nullable(),
+  discSecondary: z.enum(["D", "I", "S", "C"]).optional().nullable(),
   egogramaTraits: z.record(z.any()).optional().nullable(),
   hardSelfScore: z.number().int().min(0).max(100).optional().nullable(),
   softSelfScore: z.number().int().min(0).max(100).optional().nullable(),
@@ -175,7 +207,65 @@ conscienciaRouter.put("/:orgId/consciencia/me", async (req, res) => {
     const data = profileV2Schema.parse(req.body);
     const userId = req.userId!;
     const orgId = req.params.orgId;
+
+    if (data.discPrimary && data.discSecondary && data.discPrimary === data.discSecondary) {
+      return res.status(400).json({
+        error: "DISC principal e secundário precisam ser diferentes.",
+      });
+    }
+    if (!data.discPrimary && data.discSecondary) {
+      return res.status(400).json({
+        error: "Defina um perfil DISC principal antes do secundário.",
+      });
+    }
+
     const assessmentAt = data.markAssessedNow ? new Date() : undefined;
+    const current = await prisma.leaderProfile.findUnique({
+      where: { organizationId_userId: { organizationId: orgId, userId } },
+      select: { discProfile: true, assessmentTraits: true },
+    });
+
+    const primary = data.discPrimary === undefined ? undefined : (data.discPrimary ?? null);
+    const secondary = data.discSecondary === undefined ? undefined : (data.discSecondary ?? null);
+
+    const currentDiscProfile =
+      current?.discProfile && typeof current.discProfile === "object" && !Array.isArray(current.discProfile)
+        ? { ...(current.discProfile as Record<string, unknown>) }
+        : null;
+    const incomingDiscProfile =
+      data.discProfile && typeof data.discProfile === "object" && !Array.isArray(data.discProfile)
+        ? { ...(data.discProfile as Record<string, unknown>) }
+        : data.discProfile === null
+          ? null
+          : undefined;
+    const nextDiscProfile =
+      incomingDiscProfile !== undefined
+        ? incomingDiscProfile
+        : primary !== undefined || secondary !== undefined
+          ? { ...(currentDiscProfile ?? {}) }
+          : undefined;
+
+    if (nextDiscProfile) {
+      if (!("kind" in nextDiscProfile)) nextDiscProfile.kind = "disc_profile";
+      if (primary !== undefined) nextDiscProfile.primary = primary;
+      if (secondary !== undefined) nextDiscProfile.secondary = secondary;
+      const nextPrimary = asDiscFactor(nextDiscProfile.primary);
+      const nextSecondary = asDiscFactor(nextDiscProfile.secondary);
+      nextDiscProfile.profile = describeDiscProfile(nextPrimary, nextSecondary);
+    }
+
+    const currentTraits =
+      current?.assessmentTraits && typeof current.assessmentTraits === "object" && !Array.isArray(current.assessmentTraits)
+        ? { ...(current.assessmentTraits as Record<string, unknown>) }
+        : null;
+    const nextAssessmentTraits =
+      primary !== undefined || secondary !== undefined
+        ? {
+            ...(currentTraits ?? {}),
+            ...(primary !== undefined ? { discPrimary: primary } : {}),
+            ...(secondary !== undefined ? { discSecondary: secondary } : {}),
+          }
+        : undefined;
 
     const v2Fields = {
       ...(data.activityDescription !== undefined ? { activityDescription: data.activityDescription ?? null } : {}),
@@ -187,7 +277,8 @@ conscienciaRouter.put("/:orgId/consciencia/me", async (req, res) => {
       ...(data.softAnswers !== undefined ? { softAnswers: (data.softAnswers ?? null) as never } : {}),
       ...(data.heartAnswers !== undefined ? { heartAnswers: (data.heartAnswers ?? null) as never } : {}),
       ...(data.discAnswers !== undefined ? { discAnswers: (data.discAnswers ?? null) as never } : {}),
-      ...(data.discProfile !== undefined ? { discProfile: (data.discProfile ?? null) as never } : {}),
+      ...(nextDiscProfile !== undefined ? { discProfile: (nextDiscProfile ?? null) as never } : {}),
+      ...(nextAssessmentTraits !== undefined ? { assessmentTraits: nextAssessmentTraits as never } : {}),
       ...(data.coachCadence !== undefined ? { coachCadence: data.coachCadence } : {}),
     };
 
@@ -197,7 +288,9 @@ conscienciaRouter.put("/:orgId/consciencia/me", async (req, res) => {
         declaredRole: data.declaredRole ?? null,
         notMine: data.notMine ?? null,
         assessmentType: data.assessmentType ?? null,
-        assessmentTraits: (data.assessmentTraits ?? null) as never,
+        assessmentTraits: nextAssessmentTraits !== undefined
+          ? (nextAssessmentTraits as never)
+          : (data.assessmentTraits ?? null) as never,
         sabotages: data.sabotages,
         communicationStyle: data.communicationStyle ?? null,
         mbtiType: data.mbtiType ?? null,
@@ -218,7 +311,9 @@ conscienciaRouter.put("/:orgId/consciencia/me", async (req, res) => {
         declaredRole: data.declaredRole ?? null,
         notMine: data.notMine ?? null,
         assessmentType: data.assessmentType ?? null,
-        assessmentTraits: (data.assessmentTraits ?? null) as never,
+        assessmentTraits: nextAssessmentTraits !== undefined
+          ? (nextAssessmentTraits as never)
+          : (data.assessmentTraits ?? null) as never,
         sabotages: data.sabotages,
         communicationStyle: data.communicationStyle ?? null,
         mbtiType: data.mbtiType ?? null,

@@ -5,6 +5,7 @@ import { requireAuth } from "../auth.js";
 import { computeIndicatorSignals } from "./indicators.routes.js";
 import { computeCrossSignals } from "./consciencia.routes.js";
 import { notifyInApp } from "../lib/notifications.js";
+import { assertOrgAccess } from "../lib/org-access.js";
 
 /**
  * MÓDULO ORGANIZAÇÃO — base operacional da liderança.
@@ -21,21 +22,6 @@ organizationRouter.use(requireAuth);
 // ------------------------------------------------------------
 // Helpers
 // ------------------------------------------------------------
-async function isSuper(userId: string) {
-  const r = await prisma.userRole.findFirst({
-    where: { userId, role: { in: ["super_admin", "neo_admin"] } },
-  });
-  return !!r;
-}
-
-async function assertOrgAccess(userId: string, orgId: string) {
-  if (await isSuper(userId)) return true;
-  const m = await prisma.membership.findFirst({
-    where: { userId, organizationId: orgId },
-  });
-  return !!m;
-}
-
 async function audit(actorUserId: string | undefined, action: string, targetType?: string, targetId?: string, metadata?: Record<string, unknown>) {
   try {
     await prisma.auditLog.create({
@@ -54,6 +40,40 @@ async function audit(actorUserId: string | undefined, action: string, targetType
 
 function badReq(res: Response, err: unknown) {
   return res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
+}
+
+async function findAreaInOrg(orgId: string, id: string) {
+  return prisma.area.findFirst({ where: { id, organizationId: orgId } });
+}
+
+async function findTeamInOrg(orgId: string, id: string) {
+  return prisma.team.findFirst({ where: { id, organizationId: orgId } });
+}
+
+async function findRoleInOrg(orgId: string, id: string) {
+  return prisma.orgRole.findFirst({ where: { id, organizationId: orgId } });
+}
+
+async function findRitualInOrg(orgId: string, id: string) {
+  return prisma.ritual.findFirst({ where: { id, organizationId: orgId } });
+}
+
+async function findOccurrenceInOrg(orgId: string, id: string) {
+  return prisma.ritualOccurrence.findFirst({
+    where: { id, ritual: { organizationId: orgId } },
+  });
+}
+
+async function findDelegationInOrg(orgId: string, id: string) {
+  return prisma.delegation.findFirst({ where: { id, organizationId: orgId } });
+}
+
+async function findDecisionInOrg(orgId: string, id: string) {
+  return prisma.decision.findFirst({ where: { id, organizationId: orgId } });
+}
+
+async function findDocumentInOrg(orgId: string, id: string) {
+  return prisma.orgDocument.findFirst({ where: { id, organizationId: orgId } });
 }
 
 // Middleware para todas as rotas /:orgId/*
@@ -165,6 +185,8 @@ const areaExtSchema = z.object({
 organizationRouter.patch("/:orgId/areas/:id", async (req, res) => {
   try {
     const data = areaExtSchema.parse(req.body);
+    const existing = await findAreaInOrg(req.params.orgId, req.params.id);
+    if (!existing) return res.status(404).json({ error: "Área não encontrada" });
     const a = await prisma.area.update({
       where: { id: req.params.id },
       data: { ...data, updatedAt: new Date() },
@@ -175,8 +197,8 @@ organizationRouter.patch("/:orgId/areas/:id", async (req, res) => {
 });
 
 organizationRouter.get("/:orgId/areas/:id", async (req, res) => {
-  const area = await prisma.area.findUnique({
-    where: { id: req.params.id },
+  const area = await prisma.area.findFirst({
+    where: { id: req.params.id, organizationId: req.params.orgId },
     include: {
       branch: true,
       teams: { include: { _count: { select: { memberships: true } } } },
@@ -202,6 +224,8 @@ const teamExtSchema = z.object({
 organizationRouter.patch("/:orgId/teams/:id", async (req, res) => {
   try {
     const data = teamExtSchema.parse(req.body);
+    const existing = await findTeamInOrg(req.params.orgId, req.params.id);
+    if (!existing) return res.status(404).json({ error: "Time não encontrado" });
     const t = await prisma.team.update({ where: { id: req.params.id }, data: { ...data, updatedAt: new Date() } });
     await audit(req.userId, "team.update", "team", t.id, data);
     res.json(t);
@@ -258,6 +282,8 @@ organizationRouter.patch("/:orgId/roles/:id", async (req, res) => {
 });
 
 organizationRouter.delete("/:orgId/roles/:id", async (req, res) => {
+  const existing = await findRoleInOrg(req.params.orgId, req.params.id);
+  if (!existing) return res.status(404).json({ error: "Cargo não encontrado" });
   await prisma.orgRole.delete({ where: { id: req.params.id } }).catch(() => null);
   await audit(req.userId, "role.delete", "role", req.params.id);
   res.status(204).end();
@@ -304,8 +330,8 @@ organizationRouter.get("/:orgId/rituals", async (req, res) => {
 });
 
 organizationRouter.get("/:orgId/rituals/:id", async (req, res) => {
-  const r = await prisma.ritual.findUnique({
-    where: { id: req.params.id },
+  const r = await prisma.ritual.findFirst({
+    where: { id: req.params.id, organizationId: req.params.orgId },
     include: {
       participants: { include: { membership: { include: { user: { include: { profile: true } } } } } },
       occurrences: { orderBy: { scheduledAt: "desc" }, take: 20 },
@@ -341,6 +367,8 @@ organizationRouter.post("/:orgId/rituals", async (req, res) => {
 organizationRouter.patch("/:orgId/rituals/:id", async (req, res) => {
   try {
     const { participantMembershipIds, checklist, ...data } = ritualSchema.partial().parse(req.body);
+    const existing = await findRitualInOrg(req.params.orgId, req.params.id);
+    if (!existing) return res.status(404).json({ error: "Ritual não encontrado" });
     const r = await prisma.ritual.update({
       where: { id: req.params.id },
       data: {
@@ -364,6 +392,8 @@ organizationRouter.patch("/:orgId/rituals/:id", async (req, res) => {
 });
 
 organizationRouter.delete("/:orgId/rituals/:id", async (req, res) => {
+  const existing = await findRitualInOrg(req.params.orgId, req.params.id);
+  if (!existing) return res.status(404).json({ error: "Ritual não encontrado" });
   await prisma.ritual.delete({ where: { id: req.params.id } }).catch(() => null);
   await audit(req.userId, "ritual.delete", "ritual", req.params.id);
   res.status(204).end();
@@ -378,6 +408,8 @@ const occurrenceSchema = z.object({
 organizationRouter.post("/:orgId/rituals/:id/occurrences", async (req, res) => {
   try {
     const data = occurrenceSchema.parse(req.body);
+    const ritual = await findRitualInOrg(req.params.orgId, req.params.id);
+    if (!ritual) return res.status(404).json({ error: "Ritual não encontrado" });
     const o = await prisma.ritualOccurrence.create({
       data: {
         ritualId: req.params.id,
@@ -392,6 +424,8 @@ organizationRouter.post("/:orgId/rituals/:id/occurrences", async (req, res) => {
 
 organizationRouter.patch("/:orgId/occurrences/:id", async (req, res) => {
   try {
+    const existing = await findOccurrenceInOrg(req.params.orgId, req.params.id);
+    if (!existing) return res.status(404).json({ error: "Ocorrência não encontrada" });
     const body = z.object({
       status: z.enum(["scheduled", "in_progress", "done", "missed", "canceled"]).optional(),
       startedAt: z.string().datetime().optional(),
@@ -475,7 +509,7 @@ organizationRouter.post("/:orgId/delegations", async (req, res) => {
 organizationRouter.patch("/:orgId/delegations/:id", async (req, res) => {
   try {
     const data = delegationSchema.partial().parse(req.body);
-    const existing = await prisma.delegation.findUnique({ where: { id: req.params.id } });
+    const existing = await findDelegationInOrg(req.params.orgId, req.params.id);
     if (!existing) return res.status(404).json({ error: "Não encontrada" });
     const hist = Array.isArray(existing.history) ? (existing.history as unknown[]) : [];
     hist.push({ at: new Date().toISOString(), by: req.userId, changes: data });
@@ -508,6 +542,8 @@ organizationRouter.patch("/:orgId/delegations/:id", async (req, res) => {
 });
 
 organizationRouter.delete("/:orgId/delegations/:id", async (req, res) => {
+  const existing = await findDelegationInOrg(req.params.orgId, req.params.id);
+  if (!existing) return res.status(404).json({ error: "Não encontrada" });
   await prisma.delegation.delete({ where: { id: req.params.id } }).catch(() => null);
   await audit(req.userId, "delegation.delete", "delegation", req.params.id);
   res.status(204).end();
@@ -516,6 +552,8 @@ organizationRouter.delete("/:orgId/delegations/:id", async (req, res) => {
 organizationRouter.post("/:orgId/delegations/:id/comments", async (req, res) => {
   try {
     const { body } = z.object({ body: z.string().min(1) }).parse(req.body);
+    const delegation = await findDelegationInOrg(req.params.orgId, req.params.id);
+    if (!delegation) return res.status(404).json({ error: "Não encontrada" });
     const c = await prisma.delegationComment.create({
       data: { delegationId: req.params.id, authorId: req.userId, body },
     });
@@ -564,7 +602,7 @@ organizationRouter.get("/:orgId/delegations/follow-up", async (req, res) => {
 organizationRouter.post("/:orgId/delegations/:id/nudge", async (req, res) => {
   try {
     const { message } = z.object({ message: z.string().optional() }).parse(req.body ?? {});
-    const d = await prisma.delegation.findUnique({ where: { id: req.params.id } });
+    const d = await findDelegationInOrg(req.params.orgId, req.params.id);
     if (!d) return res.status(404).json({ error: "Não encontrada" });
     if (!d.assigneeId) return res.status(400).json({ error: "Delegação sem responsável" });
     const hist = Array.isArray(d.history) ? (d.history as unknown[]) : [];
@@ -588,6 +626,8 @@ organizationRouter.post("/:orgId/delegations/:id/nudge", async (req, res) => {
 // Check-in rápido de ocorrência (1 clique: feita ou perdida)
 organizationRouter.post("/:orgId/occurrences/:id/quick-checkin", async (req, res) => {
   try {
+    const existing = await findOccurrenceInOrg(req.params.orgId, req.params.id);
+    if (!existing) return res.status(404).json({ error: "Ocorrência não encontrada" });
     const { status, note } = z.object({
       status: z.enum(["done", "missed"]),
       note: z.string().optional(),
@@ -676,7 +716,7 @@ organizationRouter.post("/:orgId/decisions", async (req, res) => {
 organizationRouter.patch("/:orgId/decisions/:id", async (req, res) => {
   try {
     const data = decisionSchema.partial().parse(req.body);
-    const existing = await prisma.decision.findUnique({ where: { id: req.params.id } });
+    const existing = await findDecisionInOrg(req.params.orgId, req.params.id);
     if (!existing) return res.status(404).json({ error: "Não encontrada" });
     const hist = Array.isArray(existing.history) ? (existing.history as unknown[]) : [];
     hist.push({ at: new Date().toISOString(), by: req.userId, changes: data });
@@ -695,6 +735,8 @@ organizationRouter.patch("/:orgId/decisions/:id", async (req, res) => {
 });
 
 organizationRouter.delete("/:orgId/decisions/:id", async (req, res) => {
+  const existing = await findDecisionInOrg(req.params.orgId, req.params.id);
+  if (!existing) return res.status(404).json({ error: "Não encontrada" });
   await prisma.decision.delete({ where: { id: req.params.id } }).catch(() => null);
   await audit(req.userId, "decision.delete", "decision", req.params.id);
   res.status(204).end();
@@ -741,6 +783,8 @@ organizationRouter.post("/:orgId/documents", async (req, res) => {
 });
 
 organizationRouter.delete("/:orgId/documents/:id", async (req, res) => {
+  const existing = await findDocumentInOrg(req.params.orgId, req.params.id);
+  if (!existing) return res.status(404).json({ error: "Documento não encontrado" });
   await prisma.orgDocument.delete({ where: { id: req.params.id } }).catch(() => null);
   await audit(req.userId, "document.delete", "document", req.params.id);
   res.status(204).end();

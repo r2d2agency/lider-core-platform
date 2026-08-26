@@ -24,9 +24,9 @@ export function useFeatures() {
 
 export function useFeature(featureKey: string, action: FeatureAction = "view"): boolean {
   const q = useFeatures();
-  // Enquanto carrega, deixamos ligado para evitar flash de conteúdo vazio.
-  // Se você precisa de rigor absoluto, cheque q.isLoading no chamador.
-  if (!q.data) return true;
+  // Enquanto carrega, mantemos a UI estável; em erro, falhamos fechado.
+  if (q.isLoading) return true;
+  if (!q.data) return false;
   return !!q.data.features?.[featureKey]?.[action];
 }
 

@@ -18,6 +18,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useFeatures, type FeaturesResponse } from "@/lib/features";
+import { useCurrentOrg } from "@/lib/use-current-org";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   ssr: false,
@@ -64,6 +65,7 @@ type Attention = {
 };
 
 function HomeBriefing() {
+  const { orgId } = useCurrentOrg();
   const featuresQ = useFeatures();
   const modules = collectModules(featuresQ.data);
   // Enquanto as features carregam, não bloqueamos nada (evita "Em breve" falso).
@@ -76,8 +78,9 @@ function HomeBriefing() {
   const data = q.data;
 
   const attentionQ = useQuery({
-    queryKey: ["me", "home", "attention"],
-    queryFn: () => api<Attention>("/me/home/attention"),
+    queryKey: ["me", "home", "attention", orgId],
+    queryFn: () => api<Attention>(`/me/home/attention?orgId=${encodeURIComponent(orgId!)}`),
+    enabled: !!orgId,
     refetchInterval: 120_000,
   });
   const pdiPending = (attentionQ.data?.items ?? []).some((i) => i.id === "pdi-none");
@@ -177,9 +180,11 @@ function collectModules(features: FeaturesResponse | undefined): Set<string> {
 }
 
 function AttentionCard() {
+  const { orgId } = useCurrentOrg();
   const q = useQuery({
-    queryKey: ["me", "home", "attention"],
-    queryFn: () => api<Attention>("/me/home/attention"),
+    queryKey: ["me", "home", "attention", orgId],
+    queryFn: () => api<Attention>(`/me/home/attention?orgId=${encodeURIComponent(orgId!)}`),
+    enabled: !!orgId,
     refetchInterval: 120_000,
   });
   const items = q.data?.items ?? [];

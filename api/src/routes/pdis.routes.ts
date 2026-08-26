@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../prisma.js";
 import { requireAuth } from "../auth.js";
 import { notifyInApp } from "../lib/notifications.js";
+import { assertOrgAccess } from "../lib/org-access.js";
 
 /**
  * PDIs — Planos de Desenvolvimento Individual.
@@ -10,18 +11,6 @@ import { notifyInApp } from "../lib/notifications.js";
  */
 export const pdisRouter = Router();
 pdisRouter.use(requireAuth);
-
-async function isSuper(userId: string) {
-  const r = await prisma.userRole.findFirst({
-    where: { userId, role: { in: ["super_admin", "neo_admin"] } },
-  });
-  return !!r;
-}
-async function assertOrgAccess(userId: string, orgId: string) {
-  if (await isSuper(userId)) return true;
-  const m = await prisma.membership.findFirst({ where: { userId, organizationId: orgId } });
-  return !!m;
-}
 function badReq(res: Response, err: unknown) {
   return res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
 }
@@ -175,6 +164,11 @@ pdisRouter.patch("/:orgId/pdis/:id/goals/:goalId", async (req, res) => {
       where: { id: req.params.id, organizationId: req.params.orgId },
     });
     if (!pdi) return res.status(404).json({ error: "Not found" });
+    const goal = await prisma.pdiGoal.findFirst({
+      where: { id: req.params.goalId, pdiId: pdi.id },
+      select: { id: true },
+    });
+    if (!goal) return res.status(404).json({ error: "Not found" });
     const data = goalSchema.partial().parse(req.body);
     const updated = await prisma.pdiGoal.update({
       where: { id: req.params.goalId },
@@ -197,6 +191,11 @@ pdisRouter.delete("/:orgId/pdis/:id/goals/:goalId", async (req, res) => {
     where: { id: req.params.id, organizationId: req.params.orgId },
   });
   if (!pdi) return res.status(404).json({ error: "Not found" });
+  const goal = await prisma.pdiGoal.findFirst({
+    where: { id: req.params.goalId, pdiId: pdi.id },
+    select: { id: true },
+  });
+  if (!goal) return res.status(404).json({ error: "Not found" });
   await prisma.pdiGoal.delete({ where: { id: req.params.goalId } });
   res.status(204).end();
 });

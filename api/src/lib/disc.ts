@@ -211,7 +211,7 @@ export function scoreDisc(
     .sort((a, b) => b.count - a.count);
 
   const primary = ranking[0].count > 0 ? ranking[0].factor : null;
-  const secondary = ranking[1] && ranking[1].percent >= 20 ? ranking[1].factor : null;
+  const secondary = ranking[1] && ranking[1].count > 0 ? ranking[1].factor : null;
   const profile = primary
     ? secondary
       ? `Perfil ${primary}${secondary} — ${DISC_FACTORS[primary].name} com ${DISC_FACTORS[secondary].name}`

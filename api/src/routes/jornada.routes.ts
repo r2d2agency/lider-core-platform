@@ -21,6 +21,29 @@ function badReq(res: Response, err: unknown) {
   return res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
 }
 
+function asDiscFactor(value: unknown): "D" | "I" | "S" | "C" | null {
+  return value === "D" || value === "I" || value === "S" || value === "C" ? value : null;
+}
+
+function extractDiscSecondary(profile: { discProfile?: unknown; assessmentTraits?: unknown } | null | undefined) {
+  const discProfile = profile?.discProfile;
+  if (discProfile && typeof discProfile === "object" && !Array.isArray(discProfile)) {
+    return asDiscFactor((discProfile as Record<string, unknown>).secondary);
+  }
+  const assessmentTraits = profile?.assessmentTraits;
+  if (assessmentTraits && typeof assessmentTraits === "object" && !Array.isArray(assessmentTraits)) {
+    return asDiscFactor((assessmentTraits as Record<string, unknown>).discSecondary);
+  }
+  return null;
+}
+
+function formatDiscProfile(primary: unknown, secondary: unknown) {
+  const main = asDiscFactor(primary);
+  const aux = asDiscFactor(secondary);
+  if (!main) return null;
+  return aux ? `${main}${aux}` : main;
+}
+
 async function assertOrgAccess(userId: string, orgId: string) {
   const su = await prisma.userRole.findFirst({
     where: { userId, role: { in: ["super_admin", "neo_admin"] } },
@@ -553,6 +576,8 @@ jornadaRouter.get("/:orgId/jornada/progress", async (req, res) => {
         : Promise.resolve(0),
     ]);
 
+    const discSecondary = extractDiscSecondary(profile);
+    const discProfileLabel = formatDiscProfile(profile?.discPrimary, discSecondary);
     const hsh =
       profile?.hardSelfScore != null &&
       profile?.softSelfScore != null &&
@@ -564,7 +589,15 @@ jornadaRouter.get("/:orgId/jornada/progress", async (req, res) => {
     const deliveryAgreements = agreements.filter((a) => a.kind === "entrega").length;
 
     const consciencia: JourneyStep[] = [
-      { key: "disc", label: "Assessment DISC", status: mark(!!profile?.discPrimary), detail: profile?.discPrimary ? `Perfil predominante: ${profile.discPrimary}` : "Ainda não respondido", to: "/app/consciencia/disc" },
+      {
+        key: "disc",
+        label: "Assessment DISC",
+        status: mark(!!(profile?.discPrimary && discSecondary), !!profile?.discPrimary),
+        detail: discProfileLabel
+          ? `Perfil predominante: ${discProfileLabel}`
+          : "Ainda não respondido",
+        to: "/app/consciencia/disc",
+      },
       { key: "sabotadores", label: "Sabotadores", status: mark((profile?.sabotages?.length ?? 0) > 0), detail: (profile?.sabotages?.length ?? 0) > 0 ? `Padrões: ${profile!.sabotages.join(", ")}` : "Ainda não respondido", to: "/app/consciencia/assessment" },
       { key: "cerebral", label: "Predominância cerebral (4 animais)", status: mark(!!profile?.cerebralPrimary), detail: profile?.cerebralPrimary ? `Predominância: ${profile.cerebralPrimary}` : "Ainda não respondido", to: "/app/consciencia/assessment" },
       { key: "hsh", label: "Radar Hard · Soft · Heart", status: mark(hsh), detail: hsh ? `Hard ${profile!.hardSelfScore} · Soft ${profile!.softSelfScore} · Heart ${profile!.heartSelfScore}` : "Radar HSH pendente", to: "/app/consciencia" },

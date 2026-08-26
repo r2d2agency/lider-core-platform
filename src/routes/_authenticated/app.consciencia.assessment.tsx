@@ -56,7 +56,7 @@ type DiscPrimary = "D" | "I" | "S" | "C";
 type CerebralMode = "aguia" | "lobo" | "gato" | "tubarao";
 type Profile = {
   declaredRole: string | null; notMine: string | null;
-  discPrimary: DiscPrimary | null; mbtiType: string | null;
+  discPrimary: DiscPrimary | null; discSecondary?: DiscPrimary | null; mbtiType: string | null;
   sabotages: string[]; riskFlags: string[];
   hardSelfScore: number | null; softSelfScore: number | null; heartSelfScore: number | null;
   strengths: string[]; notes: string | null; communicationStyle: string | null;
@@ -74,6 +74,10 @@ const DISC = [
   { key: "S" as const, title: "Estável",    desc: "Cooperativo, paciente, mantém o time unido." },
   { key: "C" as const, title: "Cauteloso",  desc: "Analítico, metódico, valoriza precisão." },
 ];
+
+function formatDiscSummary(primary: DiscPrimary | null | undefined, secondary: DiscPrimary | null | undefined) {
+  return primary ? `${primary}${secondary ?? ""}` : null;
+}
 
 const SABOTAGEM_TOTAL = SABOTAGEM_ITEMS.length; // 50 itens oficiais
 
@@ -243,6 +247,7 @@ function AssessmentWizard() {
   const [declaredRole, setDeclaredRole] = useState("");
   const [notMine, setNotMine] = useState("");
   const [discPrimary, setDiscPrimary] = useState<DiscPrimary | null>(null);
+  const [discSecondary, setDiscSecondary] = useState<DiscPrimary | null>(null);
   const [mbtiType, setMbtiType] = useState("");
   const [riskFlags, setRiskFlags] = useState<string[]>([]);
   const [sabAns, setSabAns] = useState<Record<string, number>>({});
@@ -263,6 +268,7 @@ function AssessmentWizard() {
       setDeclaredRole("");
       setNotMine("");
       setDiscPrimary(null);
+      setDiscSecondary(null);
       setMbtiType("");
       setRiskFlags([]);
       setSabAns({});
@@ -277,6 +283,7 @@ function AssessmentWizard() {
         setNotMine("");
       } else if (stepParam === "behavioral") {
         setDiscPrimary(null);
+        setDiscSecondary(null);
         setMbtiType("");
       } else if (stepParam === "sabotages") {
         setSabAns({});
@@ -306,6 +313,7 @@ function AssessmentWizard() {
       declaredRole,
       notMine,
       discPrimary,
+      discSecondary,
       mbtiType,
       riskFlags,
       sabAns,
@@ -317,7 +325,7 @@ function AssessmentWizard() {
       sabotageBlockIndex
     };
     localStorage.setItem(`assessment_draft_${orgId}`, JSON.stringify(state));
-  }, [orgId, declaredRole, notMine, discPrimary, mbtiType, riskFlags, sabAns, cerAns, hard, soft, heart, step, sabotageBlockIndex, isResetting, search.reset]);
+  }, [orgId, declaredRole, notMine, discPrimary, discSecondary, mbtiType, riskFlags, sabAns, cerAns, hard, soft, heart, step, sabotageBlockIndex, isResetting, search.reset]);
 
   useEffect(() => {
     if (!orgId) return;
@@ -342,6 +350,7 @@ function AssessmentWizard() {
         if (s.declaredRole && !isResetStep("papel")) setDeclaredRole(s.declaredRole);
         if (s.notMine && !isResetStep("papel")) setNotMine(s.notMine);
         if (s.discPrimary && !isResetStep("behavioral")) setDiscPrimary(s.discPrimary);
+        if (s.discSecondary && !isResetStep("behavioral")) setDiscSecondary(s.discSecondary);
         if (s.mbtiType && !isResetStep("behavioral")) setMbtiType(s.mbtiType);
         if (s.riskFlags) setRiskFlags(s.riskFlags);
         if (s.sabAns && !isResetStep("sabotages")) setSabAns(s.sabAns);
@@ -378,6 +387,7 @@ function AssessmentWizard() {
     if (!declaredRole) setDeclaredRole(initial.declaredRole ?? "");
     if (!notMine) setNotMine(initial.notMine ?? "");
     if (!discPrimary) setDiscPrimary(initial.discPrimary ?? null);
+    if (!discSecondary) setDiscSecondary(initial.discSecondary ?? null);
     if (!mbtiType) setMbtiType(initial.mbtiType ?? "");
     if (riskFlags.length === 0) setRiskFlags(initial.riskFlags ?? []);
 
@@ -438,6 +448,16 @@ function AssessmentWizard() {
           declaredRole: declaredRole || initial?.declaredRole || null,
           notMine: notMine || initial?.notMine || null,
           discPrimary: discPrimary || initial?.discPrimary || null,
+          discSecondary: discSecondary || initial?.discSecondary || null,
+          discProfile:
+            (discPrimary || initial?.discPrimary)
+              ? {
+                  kind: "disc_profile",
+                  primary: discPrimary || initial?.discPrimary || null,
+                  secondary: discSecondary || initial?.discSecondary || null,
+                  manual: true,
+                }
+              : null,
           mbtiType: (mbtiType || initial?.mbtiType || "").toUpperCase() || null,
           assessmentType: "disc",
           sabotages: topSabotages.length > 0 ? topSabotages : initial?.sabotages || [],
@@ -478,7 +498,7 @@ function AssessmentWizard() {
 
   const steps = [
     { key: "papel", title: "Papel",      hint: "Pra que sua liderança existe." },
-    { key: "behavioral", title: "Perfil Comportamental", hint: "Qual seu estilo predominante de ação." },
+    { key: "behavioral", title: "Perfil Comportamental", hint: "Defina seu estilo principal e sua secundária." },
     { key: "sabotages", title: "Sabotadores de Performance", hint: "Padrões automáticos que travam sua performance sob pressão." },
     { key: "cerebral", title: "Predominância cerebral", hint: "Águia · Lobo · Gato · Tubarão." },
     { key: "risks", title: "Análise de Riscos",              hint: "Padrões que aparecem sob pressão." },
@@ -486,7 +506,7 @@ function AssessmentWizard() {
   ];
   const canNext = () => {
     if (step === 0) return declaredRole.trim().length > 3;
-    if (step === 1) return !!discPrimary;
+    if (step === 1) return !!discPrimary && !!discSecondary && discPrimary !== discSecondary;
     if (step === 2) return Object.keys(sabAns).length >= SABOTAGEM_TOTAL;
     if (step === 3) return Object.keys(cerAns).length >= 8;
     if (step === 5) return hard.length >= 10 && soft.length >= 10 && heart.length >= 10;
@@ -496,7 +516,7 @@ function AssessmentWizard() {
   const cerAnswered = Object.keys(cerAns).length;
   const nextBlockedMessage = () => {
     if (step === 0) return "Escreva seu papel declarado para continuar.";
-    if (step === 1) return "Selecione seu estilo DISC predominante para continuar.";
+    if (step === 1) return "Selecione dois estilos DISC diferentes, definindo principal e secundária.";
     if (step === 2) return `Responda todas as ${SABOTAGEM_TOTAL} afirmações para continuar. Faltam ${Math.max(0, SABOTAGEM_TOTAL - sabAnswered)}.`;
     if (step === 3) return `Responda todas as 8 afirmações para continuar. Faltam ${Math.max(0, 8 - cerAnswered)}.`;
     if (step === 5) return "Responda todas as 30 afirmações do radar para concluir.";
@@ -558,9 +578,27 @@ function AssessmentWizard() {
             
             {stepParam === "behavioral" && (
               <div className="rounded-xl bg-card p-4 border border-border">
-                <div className="text-xs font-semibold uppercase tracking-wider text-accent">Seu Estilo Dominante</div>
-                <div className="mt-1 text-3xl font-bold font-display">{initial?.discPrimary ? DISC.find(d => d.key === initial.discPrimary)?.title : "Não identificado"}</div>
-                <p className="mt-2 text-sm text-muted-foreground">{initial?.discPrimary ? DISC.find(d => d.key === initial.discPrimary)?.desc : ""}</p>
+                <div className="text-xs font-semibold uppercase tracking-wider text-accent">Seus Estilos DISC</div>
+                <div className="mt-1 text-3xl font-bold font-display">
+                  {formatDiscSummary(initial?.discPrimary, initial?.discSecondary)
+                    ? `DISC ${formatDiscSummary(initial?.discPrimary, initial?.discSecondary)}`
+                    : "Não identificado"}
+                </div>
+                {initial?.discPrimary && (
+                  <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+                    <p>
+                      <strong className="text-foreground">Principal:</strong>{" "}
+                      {DISC.find(d => d.key === initial.discPrimary)?.title}
+                    </p>
+                    {initial?.discSecondary && (
+                      <p>
+                        <strong className="text-foreground">Secundária:</strong>{" "}
+                        {DISC.find(d => d.key === initial.discSecondary)?.title}
+                      </p>
+                    )}
+                    <p>{DISC.find(d => d.key === initial.discPrimary)?.desc}</p>
+                  </div>
+                )}
               </div>
             )}
             
@@ -692,7 +730,7 @@ function AssessmentWizard() {
         {step === 1 && (
           <div className="space-y-5">
             <div>
-              <Label>Estilo DISC predominante *</Label>
+              <Label>Perfil DISC principal *</Label>
               <p className="mt-1 text-xs text-muted-foreground">
                 Não sabe o seu?{" "}
                 <button
@@ -709,7 +747,10 @@ function AssessmentWizard() {
                   <button
                     type="button"
                     key={d.key}
-                    onClick={() => setDiscPrimary(d.key)}
+                    onClick={() => {
+                      setDiscPrimary(d.key);
+                      if (discSecondary === d.key) setDiscSecondary(null);
+                    }}
                     className={
                       "rounded-xl border p-3 text-left transition-colors " +
                       (discPrimary === d.key
@@ -724,6 +765,39 @@ function AssessmentWizard() {
                     <p className="mt-1 text-xs text-muted-foreground">{d.desc}</p>
                   </button>
                 ))}
+              </div>
+            </div>
+            <div>
+              <Label>Perfil DISC secundário *</Label>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Escolha a segunda predominância. Ela precisa ser diferente da principal.
+              </p>
+              <div className="mt-2 grid gap-2 md:grid-cols-2">
+                {DISC.map((d) => {
+                  const disabled = discPrimary === d.key;
+                  return (
+                    <button
+                      type="button"
+                      key={`secondary-${d.key}`}
+                      disabled={disabled}
+                      onClick={() => setDiscSecondary(d.key)}
+                      className={
+                        "rounded-xl border p-3 text-left transition-colors " +
+                        (discSecondary === d.key
+                          ? "border-primary bg-primary/10"
+                          : disabled
+                            ? "cursor-not-allowed border-border bg-secondary/30 text-muted-foreground opacity-60"
+                            : "border-border hover:bg-secondary/60")
+                      }
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="font-display text-lg">{d.title}</div>
+                        <span className="rounded-full border border-border px-1.5 text-xs font-mono">{d.key}</span>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">{d.desc}</p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div>

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../prisma.js";
 import { requireAuth } from "../auth.js";
+import { resolveOrgContext } from "../lib/org-access.js";
 
 /**
  * Rotas do "eu logado" — dados agregados para a Home (Briefing do dia),
@@ -104,19 +105,26 @@ meRouter.get("/home/attention", async (req, res) => {
   const userId = req.userId!;
   const now = new Date();
   try {
-    const membership = await prisma.membership.findFirst({
-      where: { userId },
-      select: { organizationId: true },
-    });
-    if (!membership) {
+    const requestedOrgId = typeof req.query.orgId === "string" ? req.query.orgId : null;
+    const orgId = await resolveOrgContext(userId, requestedOrgId);
+    if (requestedOrgId && !orgId) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    if (!orgId) {
       return res.json({ generatedAt: now.toISOString(), items: [], total: 0, coreScore: null });
     }
-    const orgId = membership.organizationId;
 
-    const [profile, pdis, members, snapshots, occurrences, snapshot] = await Promise.all([
+    const recentOneOnOneSince = new Date(now.getTime() - 30 * DAY);
+    const upcomingWindowEnd = new Date(now.getTime() + 14 * DAY);
+
+    const [profile, myMembership, pdis, snapshots, snapshot, directReports, coachedSubjects] = await Promise.all([
       prisma.profile.findUnique({
         where: { id: userId },
         select: { onboardingSteps: true, onboardingCompletedAt: true }
+      }),
+      prisma.membership.findFirst({
+        where: { userId, organizationId: orgId },
+        select: { id: true },
       }),
       prisma.pdi.findMany({
         where: {
@@ -125,37 +133,87 @@ meRouter.get("/home/attention", async (req, res) => {
         },
         select: { id: true },
       }),
-      prisma.membership.findMany({
-        where: { organizationId: orgId, userId: { not: userId } },
-        include: { user: { include: { profile: true } } },
-        take: 50
-      }),
       prisma.pdiSnapshot.findMany({
         where: { organizationId: orgId, subjectUserId: userId },
         select: { id: true, radarSnapshot: true },
         orderBy: { version: "desc" },
         take: 2
       }),
-      prisma.ritualOccurrence.findMany({
-        where: {
-          ritual: { organizationId: orgId },
-          scheduledAt: { gte: now },
-          status: "scheduled"
-        },
-        take: 5
-      }),
       prisma.leadershipScoreSnapshot.findFirst({
         where: { organizationId: orgId, userId },
         orderBy: [{ periodYear: "desc" }, { periodMonth: "desc" }],
         select: { score: true }
+      }),
+      prisma.membership.findMany({
+        where: { organizationId: orgId, directLeaderId: userId },
+        include: { user: { include: { profile: true } } },
+        take: 50
+      }),
+      prisma.oneOnOne.findMany({
+        where: { organizationId: orgId, leaderId: userId },
+        distinct: ["subjectUserId"],
+        select: { subjectUserId: true },
+        take: 50,
       })
     ]);
 
+    const upcomingOccurrences = await prisma.ritualOccurrence.findMany({
+      where: {
+        ritual: {
+          organizationId: orgId,
+          OR: [
+            { ownerId: userId },
+            ...(myMembership ? [{ participants: { some: { membershipId: myMembership.id } } }] : []),
+          ],
+        },
+        scheduledAt: { gte: now },
+        status: { in: ["scheduled", "in_progress"] }
+      },
+      take: 5
+    });
+
     const items: AttentionItem[] = [];
+
+    const reportIds = new Set<string>(directReports.map((m) => m.userId));
+    for (const row of coachedSubjects) {
+      if (row.subjectUserId && row.subjectUserId !== userId) reportIds.add(row.subjectUserId);
+    }
+
+    const reportMemberships =
+      directReports.length > 0 && directReports.length === reportIds.size
+        ? directReports
+        : reportIds.size === 0
+          ? []
+          : await prisma.membership.findMany({
+              where: { organizationId: orgId, userId: { in: [...reportIds] } },
+              include: { user: { include: { profile: true } } },
+              take: 50,
+            });
+
+    const recentOneOnOnes = reportIds.size === 0
+      ? []
+      : await prisma.oneOnOne.findMany({
+          where: {
+            organizationId: orgId,
+            leaderId: userId,
+            subjectUserId: { in: [...reportIds] },
+            status: { not: "canceled" },
+            scheduledAt: { gte: recentOneOnOneSince },
+          },
+          orderBy: { scheduledAt: "desc" },
+          select: { subjectUserId: true, scheduledAt: true, status: true },
+        });
+
+    const latestBySubject = new Map<string, (typeof recentOneOnOnes)[number]>();
+    for (const row of recentOneOnOnes) {
+      if (!latestBySubject.has(row.subjectUserId)) latestBySubject.set(row.subjectUserId, row);
+    }
 
     // 1. Status do Perfil/Onboarding
     if (!profile?.onboardingCompletedAt) {
-      const steps = (profile?.onboardingSteps as any[]) || [];
+      const steps = profile?.onboardingSteps && typeof profile.onboardingSteps === "object"
+        ? Object.keys(profile.onboardingSteps as Record<string, unknown>)
+        : [];
       const totalSteps = 4;
       const pct = Math.round((steps.length / totalSteps) * 100);
       items.push({
@@ -172,7 +230,7 @@ meRouter.get("/home/attention", async (req, res) => {
     const lastSnapshot = snapshots?.[0];
     const prevSnapshot = snapshots?.[1];
     
-    if (!lastSnapshot) {
+    if (pdis.length === 0) {
       items.push({
         id: "pdi-none",
         title: "Meu PDI",
@@ -181,7 +239,7 @@ meRouter.get("/home/attention", async (req, res) => {
         kind: "pdi",
         link: "/app/pdis"
       });
-    } else if (prevSnapshot && lastSnapshot.radarSnapshot && prevSnapshot.radarSnapshot) {
+    } else if (lastSnapshot && prevSnapshot && lastSnapshot.radarSnapshot && prevSnapshot.radarSnapshot) {
       const cur = lastSnapshot.radarSnapshot as any;
       const old = prevSnapshot.radarSnapshot as any;
       const curTotal = (cur.hard || 0) + (cur.soft || 0) + (cur.heart || 0);
@@ -201,7 +259,7 @@ meRouter.get("/home/attention", async (req, res) => {
     }
 
     // 3. Agenda/Rituais
-    if (occurrences.length === 0) {
+    if (upcomingOccurrences.length === 0) {
       items.push({
         id: "agenda-empty",
         title: "Agenda",
@@ -212,14 +270,17 @@ meRouter.get("/home/attention", async (req, res) => {
       });
     }
 
-    // 4. Liderados (Atenção Baseada em Engajamento)
-    for (const m of (members as any[])) {
-      const name = m.user?.profile?.fullName || m.user?.email || "Liderado";
-      // Simulação de lógica: se não tem 1:1 agendada
+    // 4. Liderados (baseado em 1:1 real)
+    for (const member of reportMemberships) {
+      const name = member.user?.profile?.fullName || member.user?.email || "Liderado";
+      const latest = latestBySubject.get(member.userId);
+      if (latest?.scheduledAt && latest.scheduledAt <= upcomingWindowEnd) continue;
       items.push({
-        id: `member-${m.id}`,
+        id: `member-${member.id}`,
         title: name,
-        reason: "Sem 1:1 agendada",
+        reason: latest
+          ? `Sem 1:1 futuro agendado desde ${latest.scheduledAt.toLocaleDateString("pt-BR")}`
+          : "Sem 1:1 registrado nos últimos 30 dias",
         severity: "medium",
         kind: "one_on_one",
         link: "/app/one-on-ones"

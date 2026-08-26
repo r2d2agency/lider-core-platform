@@ -62,6 +62,7 @@ type Profile = {
   communicationStyle: string | null;
   mbtiType: string | null;
   discPrimary: "D" | "I" | "S" | "C" | null;
+  discSecondary?: "D" | "I" | "S" | "C" | null;
   hardSelfScore: number | null;
   softSelfScore: number | null;
   heartSelfScore: number | null;
@@ -98,6 +99,13 @@ type MeResponse = {
   signals: CrossSignal[];
   assessmentStale: boolean;
 };
+
+function formatDiscPair(
+  primary: Profile["discPrimary"] | undefined,
+  secondary: Profile["discSecondary"] | undefined,
+) {
+  return primary ? `DISC ${primary}${secondary ?? ""}` : null;
+}
 
 const RISK_OPTIONS = [
   { value: "controle", label: "Controle excessivo" },
@@ -184,10 +192,10 @@ function ConscienciaPage() {
       title: "Perfil Comportamental",
       subtitle:
         profile?.discPrimary || profile?.mbtiType
-          ? `${profile?.discPrimary ? "DISC " + profile.discPrimary : ""}${profile?.discPrimary && profile?.mbtiType ? " · " : ""}${profile?.mbtiType ?? ""}`
+          ? `${formatDiscPair(profile?.discPrimary, profile?.discSecondary) ?? ""}${profile?.discPrimary && profile?.mbtiType ? " · " : ""}${profile?.mbtiType ?? ""}`
           : "DISC · MBTI",
       minutes: 8,
-      done: !!(profile?.discPrimary || profile?.mbtiType),
+      done: !!(profile?.discPrimary && profile?.discSecondary),
       weight: 20,
       to: "/app/consciencia/assessment",
       search: { step: "behavioral" },
@@ -288,7 +296,10 @@ function ConscienciaPage() {
 
   // Timeline
   const timeline: Array<{ when: string; label: string }> = [];
-  if (profile?.discPrimary) timeline.push({ when: relativeDay(profile.assessmentAt ?? profile.updatedAt), label: `DISC ${profile.discPrimary} concluído` });
+  if (profile?.discPrimary) timeline.push({
+    when: relativeDay(profile.assessmentAt ?? profile.updatedAt),
+    label: `${formatDiscPair(profile.discPrimary, profile?.discSecondary) ?? "DISC"} concluído`,
+  });
   if (profile?.sabotages && profile.sabotages.length > 0) {
     const sList = profile.sabotages.join(", ");
     timeline.push({ 
@@ -761,6 +772,7 @@ function ProfileDialog({
   const [assessmentType, setAssessmentType] = useState<Profile["assessmentType"]>(initial?.assessmentType ?? null);
   const [mbtiType, setMbtiType] = useState(initial?.mbtiType ?? "");
   const [discPrimary, setDiscPrimary] = useState<Profile["discPrimary"]>(initial?.discPrimary ?? null);
+  const [discSecondary, setDiscSecondary] = useState<Profile["discSecondary"]>(initial?.discSecondary ?? null);
   const [hardSelfScore, setHardSelfScore] = useState<number>(initial?.hardSelfScore ?? 50);
   const [softSelfScore, setSoftSelfScore] = useState<number>(initial?.softSelfScore ?? 50);
   const [heartSelfScore, setHeartSelfScore] = useState<number>(initial?.heartSelfScore ?? 50);
@@ -769,6 +781,13 @@ function ProfileDialog({
   const [communicationStyle, setCommunicationStyle] = useState(initial?.communicationStyle ?? "");
   const [riskFlags, setRiskFlags] = useState<string[]>(initial?.riskFlags ?? []);
   const [sabotages, setSabotages] = useState<string[]>(initial?.sabotages ?? []);
+  const hasIncompleteDisc = (!!discPrimary && !discSecondary) || (!discPrimary && !!discSecondary);
+  const hasInvalidDiscPair = !!discPrimary && !!discSecondary && discPrimary === discSecondary;
+  const discError = hasInvalidDiscPair
+    ? "Os perfis DISC principal e secundário precisam ser diferentes."
+    : hasIncompleteDisc
+      ? "Para salvar o DISC manualmente, selecione principal e secundário."
+      : null;
 
   const save = useMutation({
     mutationFn: () =>
@@ -780,6 +799,15 @@ function ProfileDialog({
           assessmentType,
           mbtiType: mbtiType.toUpperCase() || null,
           discPrimary,
+          discSecondary,
+          discProfile: discPrimary
+            ? {
+                kind: "disc_profile",
+                primary: discPrimary,
+                secondary: discSecondary,
+                manual: true,
+              }
+            : null,
           hardSelfScore,
           softSelfScore,
           heartSelfScore,
@@ -852,8 +880,15 @@ function ProfileDialog({
             <Input maxLength={4} value={mbtiType} onChange={(e) => setMbtiType(e.target.value.toUpperCase())} placeholder="Ex.: ENTJ" />
           </div>
           <div>
-            <Label>Perfil DISC dominante</Label>
-            <Select value={discPrimary ?? ""} onValueChange={(v) => setDiscPrimary((v || null) as Profile["discPrimary"])}>
+            <Label>Perfil DISC principal</Label>
+            <Select
+              value={discPrimary ?? ""}
+              onValueChange={(v) => {
+                const next = (v || null) as Profile["discPrimary"];
+                setDiscPrimary(next);
+                if (discSecondary && discSecondary === next) setDiscSecondary(null);
+              }}
+            >
               <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="D">D — Dominância</SelectItem>
@@ -863,6 +898,26 @@ function ProfileDialog({
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        <div>
+          <Label>Perfil DISC secundário</Label>
+          <Select value={discSecondary ?? ""} onValueChange={(v) => setDiscSecondary((v || null) as Profile["discSecondary"])}>
+            <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
+            <SelectContent>
+              {discPrimary !== "D" && <SelectItem value="D">D — Dominância</SelectItem>}
+              {discPrimary !== "I" && <SelectItem value="I">I — Influência</SelectItem>}
+              {discPrimary !== "S" && <SelectItem value="S">S — Estabilidade</SelectItem>}
+              {discPrimary !== "C" && <SelectItem value="C">C — Conformidade</SelectItem>}
+            </SelectContent>
+          </Select>
+          {discError ? (
+            <p className="mt-1 text-xs text-destructive">{discError}</p>
+          ) : (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Se informar DISC manualmente, defina principal e secundário.
+            </p>
+          )}
         </div>
 
         <div>
@@ -919,7 +974,7 @@ function ProfileDialog({
         </div>
       </div>
       <DialogFooter>
-        <Button disabled={save.isPending} onClick={() => save.mutate()}>
+        <Button disabled={save.isPending || !!discError} onClick={() => save.mutate()}>
           {save.isPending ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : null}
           Salvar
         </Button>
