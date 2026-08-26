@@ -822,11 +822,11 @@ function AssessmentWizard() {
         {step === 2 && (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">{SABOTAGEM_HELP}</p>
-            <div className="grid grid-cols-4 gap-1.5 rounded-xl border border-border bg-secondary/40 p-2 text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="grid grid-cols-2 gap-1.5 rounded-xl border border-border bg-secondary/40 p-2 text-center text-[9px] font-semibold uppercase tracking-wide text-muted-foreground sm:grid-cols-4 sm:text-[10px]">
               {SABOTAGEM_SCALE.map((s) => (
-                <div key={s.value}>
+                <div key={s.value} className="rounded-lg bg-background/50 px-2 py-1.5 leading-tight">
                   <div className="text-sm font-bold text-foreground">{s.value}</div>
-                  {s.label}
+                  <div className="mt-0.5 break-words normal-case">{s.label}</div>
                 </div>
               ))}
             </div>
