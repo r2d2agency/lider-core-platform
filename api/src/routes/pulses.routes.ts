@@ -133,8 +133,10 @@ function buildSabotageQuestions(): Q[] {
     id: p.id,
     type: "scale",
     label: p.q,
-    minLabel: "1 · nada",
-    maxLabel: "5 · totalmente",
+    min: 1,
+    max: 4,
+    minLabel: "1 · raramente",
+    maxLabel: "4 · quase sempre",
     required: true,
   }));
 }
@@ -143,7 +145,11 @@ function scoreSabotages(answers: Record<string, unknown>) {
   const scores: Record<string, number> = {};
   for (const p of SABOTAGE_PILLARS) {
     const v = answers[p.id];
-    if (typeof v === "number") scores[p.label] = Math.max(0, Math.min(100, v * 20));
+    if (typeof v === "number" && Number.isFinite(v)) {
+      const normalized = Math.round(v);
+      if (normalized < 1 || normalized > 4) continue;
+      scores[p.label] = Math.round(((normalized - 1) / 3) * 100);
+    }
   }
   return scores;
 }

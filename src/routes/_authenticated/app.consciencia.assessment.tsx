@@ -15,6 +15,7 @@ import {
   SABOTAGEM_ITEMS,
   SABOTAGEM_PATTERNS,
   SABOTAGEM_SCALE,
+  normalizeSabotagemAnswer,
   sabotagemBand,
   sabotagemPattern,
   scoreSabotagem,
@@ -77,6 +78,16 @@ const DISC = [
 
 function formatDiscSummary(primary: DiscPrimary | null | undefined, secondary: DiscPrimary | null | undefined) {
   return primary ? `${primary}${secondary ?? ""}` : null;
+}
+
+function sanitizeSabotageAnswers(raw: unknown): Record<string, number> {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  const sanitized: Record<string, number> = {};
+  for (const [key, value] of Object.entries(raw)) {
+    const normalized = normalizeSabotagemAnswer(value);
+    if (normalized != null) sanitized[key] = normalized;
+  }
+  return sanitized;
 }
 
 const SABOTAGEM_TOTAL = SABOTAGEM_ITEMS.length; // 50 itens oficiais
@@ -353,7 +364,7 @@ function AssessmentWizard() {
         if (s.discSecondary && !isResetStep("behavioral")) setDiscSecondary(s.discSecondary);
         if (s.mbtiType && !isResetStep("behavioral")) setMbtiType(s.mbtiType);
         if (s.riskFlags) setRiskFlags(s.riskFlags);
-        if (s.sabAns && !isResetStep("sabotages")) setSabAns(s.sabAns);
+        if (s.sabAns && !isResetStep("sabotages")) setSabAns(sanitizeSabotageAnswers(s.sabAns));
         if (s.cerAns) setCerAns(s.cerAns);
         if (s.hard && !isResetStep("hsh")) setHard(s.hard);
         if (s.soft && !isResetStep("hsh")) setSoft(s.soft);
@@ -400,7 +411,6 @@ function AssessmentWizard() {
     if (initial.heartAnswers && heart.length === 0) setHeart(initial.heartAnswers as number[]);
   }, [initial, requestedStep, search.reset, isIndividualMode]);
 
-  const avg = (arr: number[]) => Math.round((arr.reduce((s, v) => s + v, 0) / (arr.length * 4)) * 100); // 0..4 total → 0..100%
   // Como as questões são respondidas de 1 a 5, subtraímos 1 para alinhar com a escala 0-4 do PDF
   const calculateIpm = (arr: number[]) => {
     if (arr.length === 0) return 0;
@@ -412,12 +422,13 @@ function AssessmentWizard() {
   const softScore = calculateIpm(soft);
   const heartScore = calculateIpm(heart);
 
-  // Apuração oficial: soma dos 5 itens de cada padrão × 5 → 0..100%
+  // Apuração oficial: soma dos 5 itens de cada padrão, normalizada da escala 1..4 para 0..100%.
   const sabotagemResult = useMemo(() => {
     const numeric: Record<number, number> = {};
     for (const [key, value] of Object.entries(sabAns)) {
       const n = Number(key);
-      if (Number.isFinite(n) && typeof value === "number") numeric[n] = value;
+      const normalized = normalizeSabotagemAnswer(value);
+      if (Number.isFinite(n) && normalized != null) numeric[n] = normalized;
     }
     return scoreSabotagem(numeric);
   }, [sabAns]);
@@ -512,7 +523,7 @@ function AssessmentWizard() {
     if (step === 5) return hard.length >= 10 && soft.length >= 10 && heart.length >= 10;
     return true;
   };
-  const sabAnswered = Object.keys(sabAns).length;
+  const sabAnswered = Object.values(sabAns).filter((value) => normalizeSabotagemAnswer(value) != null).length;
   const cerAnswered = Object.keys(cerAns).length;
   const nextBlockedMessage = () => {
     if (step === 0) return "Escreva seu papel declarado para continuar.";
@@ -811,7 +822,7 @@ function AssessmentWizard() {
         {step === 2 && (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">{SABOTAGEM_HELP}</p>
-            <div className="grid grid-cols-5 gap-1.5 rounded-xl border border-border bg-secondary/40 p-2 text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="grid grid-cols-4 gap-1.5 rounded-xl border border-border bg-secondary/40 p-2 text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               {SABOTAGEM_SCALE.map((s) => (
                 <div key={s.value}>
                   <div className="text-sm font-bold text-foreground">{s.value}</div>
@@ -852,7 +863,7 @@ function AssessmentWizard() {
                                 }}
                                 className={
                                   "h-9 flex-1 rounded-lg border text-sm transition-colors " +
-                                  (sabAns[String(num)] === s.value
+                                  (normalizeSabotagemAnswer(sabAns[String(num)]) === s.value
                                     ? "border-primary bg-primary text-primary-foreground"
                                     : "border-border bg-card hover:bg-secondary")
                                 }
@@ -880,7 +891,10 @@ function AssessmentWizard() {
                     {sabotageBlockIndex < SABOTAGEM_BLOCKS.length - 1 && (
                       <Button 
                         className="flex-1 gap-2" 
-                        disabled={!SABOTAGEM_ITEMS.slice(block.from - 1, block.to).every((_, i) => sabAns[String(block.from + i)] !== undefined)}
+                        disabled={!SABOTAGEM_ITEMS.slice(block.from - 1, block.to).every((_, i) => {
+                          const answer = sabAns[String(block.from + i)];
+                          return normalizeSabotagemAnswer(answer) != null;
+                        })}
                         onClick={() => setSabotageBlockIndex(i => i + 1)}
                       >
                         Próximo bloco <ArrowRight className="h-4 w-4" />

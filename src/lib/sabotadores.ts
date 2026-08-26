@@ -2,13 +2,15 @@
  * Sabotadores de Performance — Radar de Autogestão e Performance Mental.
  * Instrumento autoral de desenvolvimento (NÃO é teste psicológico).
  *
- * 50 afirmações (10 padrões × 5 itens). Escala 0..4:
- * 0 Nunca · 1 Raramente · 2 Às vezes · 3 Frequentemente · 4 Quase sempre.
- * Apuração por padrão: soma dos 5 itens (0..20) × 5 → intensidade 0..100%.
+ * 50 afirmações (10 padrões × 5 itens). Escala 1..4:
+ * 1 Raramente · 2 Às vezes · 3 Frequentemente · 4 Quase sempre.
+ * Apuração por padrão: soma dos 5 itens, normalizada de 1..4 para 0..100%.
  */
 
+export const SABOTAGEM_MIN = 1;
+export const SABOTAGEM_MAX = 4;
+
 export const SABOTAGEM_SCALE = [
-  { value: 0, label: "Nunca" },
   { value: 1, label: "Raramente" },
   { value: 2, label: "Às vezes" },
   { value: 3, label: "Frequentemente" },
@@ -172,6 +174,17 @@ export const SABOTAGEM_BLOCKS = Array.from({ length: 5 }, (_, b) => ({
   to: b * 10 + 10,
 }));
 
+export function normalizeSabotagemAnswer(value: unknown): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  const rounded = Math.round(value);
+
+  // Compatibilidade com rascunhos antigos salvos na escala 0..4.
+  if (rounded === 0) return SABOTAGEM_MIN;
+
+  if (rounded < SABOTAGEM_MIN || rounded > SABOTAGEM_MAX) return null;
+  return rounded;
+}
+
 export function sabotagemBand(percent: number): { band: string; reading: string } {
   if (percent < 25)
     return { band: "Baixa ativação", reading: "O padrão aparece pontualmente e raramente comanda decisões." };
@@ -183,16 +196,23 @@ export function sabotagemBand(percent: number): { band: string; reading: string 
 }
 
 /**
- * Apuração oficial: soma dos 5 itens do padrão × 5 → 0..100%.
+ * Apuração oficial: soma dos 5 itens do padrão, com normalização da escala 1..4 → 0..100%.
  * `answers` é indexado pelo número oficial do item (1..50).
  */
 export function scoreSabotagem(answers: Record<number, number>) {
   const scores: Record<string, number> = {};
+  const range = SABOTAGEM_MAX - SABOTAGEM_MIN;
   for (const p of SABOTAGEM_PATTERNS) {
-    const answered = p.items.filter((n) => typeof answers[n] === "number");
-    if (answered.length === 0) continue;
-    const sum = answered.reduce((acc, n) => acc + Math.max(0, Math.min(4, answers[n])), 0);
-    scores[p.id] = Math.round(sum * 5);
+    const normalized = p.items
+      .map((n) => normalizeSabotagemAnswer(answers[n]))
+      .filter((value): value is number => value != null);
+    const answered = normalized.length;
+    if (answered === 0) continue;
+    const adjustedSum = normalized.reduce((acc, value) => acc + (value - SABOTAGEM_MIN), 0);
+    const maxAdjustedSum = answered * range;
+    scores[p.id] = maxAdjustedSum > 0
+      ? Math.round((adjustedSum / maxAdjustedSum) * 100)
+      : 0;
   }
   const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
   return { scores, ranked, top3: ranked.slice(0, 3).map(([id]) => id) };

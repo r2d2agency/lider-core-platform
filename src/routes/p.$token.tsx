@@ -278,7 +278,10 @@ function renderQuestion(
           {q.label} {q.required && <span className="text-destructive">*</span>}
         </label>
         <div className="mt-4 flex items-center justify-between gap-2">
-          {[1, 2, 3, 4, 5].map((n) => (
+          {Array.from(
+            { length: (q.type === "scale" ? (q.max ?? 5) - (q.min ?? 1) + 1 : 0) },
+            (_, i) => (q.min ?? 1) + i,
+          ).map((n) => (
             <button
               key={n}
               onClick={() => set(n)}
