@@ -582,6 +582,24 @@ conscienciaRouter.put("/:orgId/consciencia/me/activity", async (req, res) => {
 });
 
 // -------- PDI auto-gerado (heurístico) --------
+type AutoPdiGoal = {
+  title: string;
+  description: string;
+  priority: "high" | "medium" | "low";
+  source: string;
+  detail: {
+    context: string;
+    explanation: string;
+    practices: string[];
+    firstStep: string;
+    successSignal: string;
+  };
+};
+
+function buildAutoPdiGoal(input: AutoPdiGoal): AutoPdiGoal {
+  return input;
+}
+
 // -------- Upload de documento com a descrição de atividades --------
 const activityDocSchema = z.object({
   filename: z.string().min(1).max(200),
@@ -664,7 +682,7 @@ conscienciaRouter.post("/:orgId/consciencia/pdi/auto-generate", async (req, res)
     if (!profile)
       return res.status(400).json({ error: "Preencha o assessment antes de gerar o PDI." });
 
-    const goals: Array<{ title: string; description: string; priority: "high" | "medium" | "low"; source: string }> = [];
+    const goals: AutoPdiGoal[] = [];
 
     const scores = [
       { k: "hard", label: "Hard — método e indicadores", v: profile.hardSelfScore ?? 50 },
@@ -672,13 +690,27 @@ conscienciaRouter.post("/:orgId/consciencia/pdi/auto-generate", async (req, res)
       { k: "heart", label: "Heart — escuta e coerência", v: profile.heartSelfScore ?? 50 },
     ].sort((a, b) => a.v - b.v);
     const lowest = scores[0];
-    goals.push({
+    goals.push(buildAutoPdiGoal({
       title: `Elevar ${lowest.label} de ${lowest.v} → 75 em 90 dias`,
       description:
-        "Trilha C.O.R.E. quinzenal focada nessa dimensão + 1 aplicação prática por semana no time.",
+        `Seu menor placar hoje está em ${lowest.label}. Esse objetivo prioriza a dimensão que mais tende a travar sua liderança no curto prazo.`,
       priority: "high",
       source: "hsh_gap",
-    });
+      detail: {
+        context: `Entre Hard, Soft e Heart, a dimensão mais baixa hoje é ${lowest.label} com ${lowest.v}/100.`,
+        explanation:
+          "O PDI começou por aqui porque, quando a menor dimensão evolui, a liderança ganha mais consistência no dia a dia. A ideia não é 'virar outra pessoa', e sim fortalecer a parte que hoje está mais frágil.",
+        practices: [
+          "Escolher uma situação real da semana em que essa dimensão foi exigida e registrar o que funcionou ou travou.",
+          "Aplicar uma prática concreta por semana com o time, em vez de deixar o objetivo só no campo da intenção.",
+          "Revisar quinzenalmente o que mudou na sua resposta sob pressão, em decisão ou em escuta.",
+        ],
+        firstStep:
+          `Reserve 20 minutos ainda esta semana e descreva uma situação recente em que ${lowest.label} fez falta na sua liderança.`,
+        successSignal:
+          "Você começa a perceber que reage com mais clareza e menos impulso exatamente nas situações em que antes se sentia mais travado.",
+      },
+    }));
 
     const sabotageScores = (profile.sabotageScores as Record<string, number> | null) ?? null;
     if (sabotageScores) {
@@ -687,42 +719,101 @@ conscienciaRouter.post("/:orgId/consciencia/pdi/auto-generate", async (req, res)
         .slice(0, 3)
         .filter(([, v]) => v >= 40);
       for (const [name, score] of top) {
-        goals.push({
+        goals.push(buildAutoPdiGoal({
           title: `Neutralizar o sabotador "${name}"`,
-          description: `Score ${score}/100. Prática: 1 interceptação por dia + journaling quinzenal.`,
+          description:
+            `O padrão "${name}" apareceu com força (${score}/100). A recomendação aqui é diminuir o comando automático desse sabotador nas decisões do dia a dia.`,
           priority: score >= 70 ? "high" : "medium",
           source: `sabotage:${name}`,
-        });
+          detail: {
+            context: `Esse sabotador apareceu entre os mais altos do seu assessment, com score ${score}/100.`,
+            explanation:
+              "Ele entrou no PDI porque provavelmente está influenciando seu jeito de decidir, se posicionar ou conduzir o time quando a pressão sobe. O objetivo não é 'eliminar' o padrão, mas perceber quando ele assumiu o volante.",
+            practices: [
+              "Fazer uma interceptação por dia: identificar o gatilho, nomear o padrão e escolher uma resposta mais consciente.",
+              "Anotar no fim da semana em quais contextos esse sabotador apareceu com mais frequência.",
+              "Levar um caso real para revisão quinzenal e observar o custo concreto desse padrão na liderança.",
+            ],
+            firstStep:
+              `Escolha uma situação recorrente em que o sabotador "${name}" costuma aparecer e defina qual será o novo comportamento de resposta.`,
+            successSignal:
+              "Você começa a reconhecer o padrão mais cedo e percebe redução no custo que ele gera sobre conversas, decisões ou execução.",
+          },
+        }));
       }
     } else if (profile.sabotages?.length) {
       for (const s of profile.sabotages.slice(0, 3)) {
-        goals.push({
+        goals.push(buildAutoPdiGoal({
           title: `Reduzir o padrão "${s}"`,
-          description: "Prática: 1 interceptação por dia + revisão semanal em 1:1 consigo mesmo.",
+          description:
+            `Esse padrão apareceu no seu perfil e merece observação prática. A ideia é sair da percepção genérica e transformar isso em treino consciente.`,
           priority: "medium",
           source: `sabotage:${s}`,
-        });
+          detail: {
+            context: `O padrão "${s}" apareceu no seu assessment, mesmo sem score detalhado disponível nesta leitura.`,
+            explanation:
+              "Ele entrou no PDI porque já existe evidência suficiente de que influencia sua liderança. Sem score detalhado, o foco aqui é aumentar consciência e registrar exemplos reais.",
+            practices: [
+              "Observar durante a semana em quais situações esse padrão aparece com mais clareza.",
+              "Fazer uma revisão semanal consigo mesmo: o que acionou, como você respondeu e o que teria sido uma resposta melhor.",
+              "Escolher uma conversa ou decisão concreta para praticar uma resposta diferente do impulso automático.",
+            ],
+            firstStep:
+              `Escreva um exemplo real em que o padrão "${s}" apareceu nos últimos 15 dias e o custo que ele gerou.`,
+            successSignal:
+              "Você começa a sair do modo automático e consegue descrever com mais precisão quando o padrão entra em cena.",
+          },
+        }));
       }
     }
 
     for (const r of (profile.riskFlags ?? []).slice(0, 2)) {
-      goals.push({
+      goals.push(buildAutoPdiGoal({
         title: `Trabalhar o risco declarado "${r}"`,
         description:
-          "Combinar prática com ritual quinzenal do time e feedback direto do liderado mais afetado.",
+          `Esse risco foi declarado no seu perfil e entrou no PDI para não ficar só como alerta abstrato. A proposta é transformar percepção em prática acompanhável.`,
         priority: "medium",
         source: `risk:${r}`,
-      });
+        detail: {
+          context: `Você marcou "${r}" como um risco comportamental do seu momento atual.`,
+          explanation:
+            "Como esse ponto já foi reconhecido por você, o PDI usa essa informação para transformar autoconsciência em ação concreta. O ganho aqui vem de repetir prática com observação, e não de uma mudança brusca.",
+          practices: [
+            "Escolher um ritual quinzenal para observar esse risco em contexto real.",
+            "Pedir feedback direto de uma pessoa do time impactada por esse comportamento.",
+            "Registrar um microajuste objetivo para a próxima conversa, reunião ou decisão relevante.",
+          ],
+          firstStep:
+            `Defina qual situação real da sua rotina mais ativa o risco "${r}" e qual ajuste concreto você quer testar primeiro.`,
+          successSignal:
+            "As pessoas começam a perceber mais consistência no seu comportamento exatamente no ponto que antes gerava ruído.",
+        },
+      }));
     }
 
     if (profile.activityDescription && profile.activityDescription.length > 60) {
-      goals.push({
+      goals.push(buildAutoPdiGoal({
         title: "Delegar 2 entregas presas no papel do líder",
         description:
-          "Sua descrição de atividades sinaliza acúmulo executivo. Escolha 2 entregas para delegar nas próximas 2 semanas com critério de aceite claro.",
+          "Sua descrição de atividades mostra acúmulo executivo no papel do líder. Esse objetivo busca tirar você do operacional que hoje consome energia demais.",
         priority: "medium",
         source: "activity_delegation",
-      });
+        detail: {
+          context:
+            "Na leitura das suas atividades existe sinal de sobrecarga executiva, com tarefas que ainda estão excessivamente concentradas em você.",
+          explanation:
+            "Esse item entrou no PDI porque o líder cresce menos quando continua operando o que já deveria estar rodando com o time. Delegar bem aqui não é só aliviar agenda: é abrir espaço para liderar.",
+          practices: [
+            "Mapear duas entregas que hoje estão no seu colo e que poderiam rodar com outra pessoa.",
+            "Definir critério de aceite claro, prazo e checkpoint antes de delegar.",
+            "Acompanhar sem retomar a tarefa ao primeiro sinal de imperfeição ou lentidão.",
+          ],
+          firstStep:
+            "Escolha agora duas entregas repetitivas ou operacionais que você ainda centraliza e nomeie quem pode assumir cada uma.",
+          successSignal:
+            "Você começa a recuperar tempo de liderança e percebe o time ganhando autonomia sem depender de você para cada passo.",
+        },
+      }));
     }
 
     await prisma.leaderProfile.update({
