@@ -115,6 +115,14 @@ type ShellNavItem = {
   module: string;
 };
 
+function sectionColor(section: string) {
+  return section === "Consciência" ? "var(--pilar-c)"
+    : section === "Organização" ? "var(--pilar-o)"
+    : section === "Resultado" ? "var(--pilar-r)"
+    : section === "Evolução" ? "var(--pilar-e)"
+    : "var(--accent)";
+}
+
 function AppShell() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -256,6 +264,14 @@ function AppShell() {
 
   const currentLabel =
     visibleNav.find((n) => isActiveRoute(n.to))?.label ?? "Sala de liderança";
+  const currentNavItem = visibleNav.find((n) => isActiveRoute(n.to)) ?? null;
+  const currentSection = currentNavItem?.section ?? "Navegação";
+  const sectionTabs = Object.entries(grouped).map(([section, items]) => ({
+    section,
+    to: items[0]?.to,
+    active: items.some((item) => isActiveRoute(item.to)),
+    color: sectionColor(section),
+  })).filter((tab) => !!tab.to);
   const initials = (user?.fullName || user?.email || "L")
     .split(" ")
     .filter(Boolean)
@@ -293,19 +309,17 @@ function AppShell() {
           {Object.entries(grouped).map(([section, items]) => (
             <div key={section} className="mb-5">
               {!collapsed && (
-                <div className="mb-2 px-3 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                <div
+                  className="mb-2 px-3 text-[10px] font-medium uppercase tracking-widest"
+                  style={{ color: sectionColor(section) }}
+                >
                   {section}
                 </div>
               )}
               <ul className="space-y-0.5">
                 {items.map(({ to, label, icon: Icon, section }) => {
                   const active = isActiveRoute(to);
-                  const pilarColor = 
-                    section === "Consciência" ? "var(--pilar-c)" :
-                    section === "Organização" ? "var(--pilar-o)" :
-                    section === "Resultado" ? "var(--pilar-r)" :
-                    section === "Evolução" ? "var(--pilar-e)" :
-                    "var(--sidebar-accent-foreground)";
+                  const pilarColor = sectionColor(section);
 
                   return (
                     <li key={to}>
@@ -382,10 +396,23 @@ function AppShell() {
 
       <div className="flex min-w-0 flex-col">
         <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-border/60 bg-background/85 px-5 py-3 backdrop-blur md:px-8 md:py-4">
-          <Logo className="h-6 w-auto max-w-[130px] md:hidden" />
+          <div className="flex min-w-0 items-center gap-3">
+            <Logo className="h-6 w-auto max-w-[130px] md:hidden" />
+            <div className="min-w-0 md:hidden">
+              <div
+                className="text-[10px] uppercase tracking-widest"
+                style={{ color: sectionColor(currentSection) }}
+              >
+                {currentSection}
+              </div>
+              <div className="truncate text-sm font-medium">{currentLabel}</div>
+            </div>
+          </div>
           <div className="hidden min-w-0 md:block">
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              {formatTodayBr()}
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest">
+              <span>{formatTodayBr()}</span>
+              <span>•</span>
+              <span style={{ color: sectionColor(currentSection) }}>{currentSection}</span>
             </div>
             <div className="truncate text-sm font-medium">{currentLabel}</div>
           </div>
@@ -412,10 +439,35 @@ function AppShell() {
             <div className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-secondary text-sm font-medium ring-2" style={{ borderColor: 'var(--pilar-c)' }}>
               <Logo variant="mark" className="h-8 w-8 rounded-full" />
             </div>
-
-
           </div>
         </header>
+        <div className="sticky top-[61px] z-20 border-b border-border/60 bg-background/92 backdrop-blur md:top-[73px]">
+          <div className="mx-auto flex w-full max-w-[1200px] items-center gap-2 overflow-x-auto px-4 py-2 md:px-8 xl:px-12">
+            <span className="shrink-0 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+              Módulos
+            </span>
+            {sectionTabs.map((tab) => (
+              <Link
+                key={tab.section}
+                to={tab.to!}
+                search={{}}
+                style={{
+                  color: tab.color,
+                  borderColor: `color-mix(in oklab, ${tab.color} 30%, var(--border))`,
+                  backgroundColor: `color-mix(in oklab, ${tab.color} ${tab.active ? "14%" : "8%"}, transparent)`,
+                }}
+                className={
+                  "inline-flex shrink-0 items-center rounded-full border px-3 py-1.5 text-xs font-medium transition-colors " +
+                  (tab.active
+                    ? "font-semibold shadow-sm"
+                    : "hover:brightness-105")
+                }
+              >
+                {tab.section}
+              </Link>
+            ))}
+          </div>
+        </div>
         <main className="flex-1 px-4 py-5 pb-28 md:px-8 md:py-10 md:pb-14 xl:px-12">
           <div className="mx-auto w-full max-w-[1200px]">
             <Outlet />
