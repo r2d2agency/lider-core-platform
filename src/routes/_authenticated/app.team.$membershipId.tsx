@@ -72,6 +72,20 @@ type MemberDetailData = {
   pdis: { id: string; title?: string | null; status: string; updatedAt: string; goals: unknown[] }[];
 };
 
+type MemberFacts = {
+  openDelegs: number;
+  overdueDelegs: number;
+  completedDelegs: number;
+  feedbackDays: number | null;
+  hasActivePdi: boolean;
+  pdiDays: number | null;
+  lastPdi: MemberDetailData["pdis"][number] | undefined;
+  oneOnOnes: number;
+  recognitionCount: number;
+  evidenceCount: number;
+  hasEvidence: boolean;
+};
+
 const DAY = 24 * 60 * 60 * 1000;
 function daysSince(iso: string | null | undefined) {
   if (!iso) return null;
@@ -86,21 +100,17 @@ function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
 }
 
-type CompetencyKey = "resultado" | "comunicacao" | "organizacao" | "desenvolvimento" | "engajamento";
-const COMP_META: Record<CompetencyKey, { label: string; icon: typeof Target }> = {
-  resultado:      { label: "Resultado",      icon: Target },
-  comunicacao:    { label: "Comunicação",    icon: MessageSquare },
-  organizacao:    { label: "Organização",    icon: Workflow },
-  desenvolvimento:{ label: "Desenvolvimento",icon: Award },
-  engajamento:    { label: "Engajamento",    icon: Users2 },
-};
-
-function bandFor(score: number): { label: string; className: string; tone: string } {
-  if (score < 60) return { label: "Atenção", className: "bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300", tone: "text-rose-600 dark:text-rose-400" };
-  if (score < 72) return { label: "Atenção", className: "bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300", tone: "text-amber-600 dark:text-amber-400" };
-  if (score < 80) return { label: "Médio",   className: "bg-secondary text-foreground", tone: "text-foreground" };
-  if (score < 90) return { label: "Bom",     className: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300", tone: "text-emerald-600 dark:text-emerald-400" };
-  return             { label: "Excelente", className: "bg-violet-50 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300", tone: "text-violet-600 dark:text-violet-400" };
+function evidenceBand(facts: MemberFacts): { label: string; className: string } {
+  if (!facts.hasEvidence) {
+    return { label: "Sem dados suficientes", className: "bg-secondary text-foreground" };
+  }
+  if (facts.overdueDelegs > 0) {
+    return { label: "Delegações em atenção", className: "bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300" };
+  }
+  if (facts.feedbackDays !== null && facts.feedbackDays > 30) {
+    return { label: "Acompanhar feedback", className: "bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300" };
+  }
+  return { label: "Com dados reais", className: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300" };
 }
 
 function MemberDetail() {
@@ -121,22 +131,31 @@ function MemberDetail() {
   const derived = useMemo(() => {
     if (!m) return null;
     const openDelegs = m.delegations.filter((d) => !["done", "canceled"].includes(d.status)).length;
+    const overdueDelegs = m.delegations.filter((d) =>
+      !!d.dueAt && new Date(d.dueAt).getTime() < Date.now() && !["done", "canceled"].includes(d.status)
+    ).length;
+    const completedDelegs = m.delegations.filter((d) => d.status === "done").length;
     const feedbackDays = daysSince(m.feedbacks[0]?.createdAt) ?? null;
     const lastPdi = m.pdis[0];
     const pdiDays = daysSince(lastPdi?.updatedAt) ?? null;
     const hasActivePdi = m.pdis.some((p) => p.status === "ativo");
-    const auto = { n1_direciono: -8, n2_acompanho: 0, n3_valido: 4, n4_delego: 8, n5_autonomo: 12 }[m.profile?.autonomyLevel ?? "n2_acompanho"];
-    const core = Math.max(35, Math.min(99, Math.round(70 + m.feedbacks.length * 2 - openDelegs * 4 + (hasActivePdi ? 4 : 0) + auto)));
-    const trend = -8; // pontos vs mês anterior (placeholder honesto)
-    const scores: Record<CompetencyKey, number> = {
-      resultado:       Math.max(35, Math.min(99, core)),
-      comunicacao:     Math.max(35, Math.min(99, core - 8 + (m.feedbacks.length >= 3 ? 6 : 0))),
-      organizacao:     Math.max(35, Math.min(99, core + 4 - openDelegs * 2)),
-      desenvolvimento: Math.max(35, Math.min(99, core - 14 + (hasActivePdi ? 10 : 0))),
-      engajamento:     Math.max(35, Math.min(99, core - 2 + (feedbackDays !== null && feedbackDays < 30 ? 6 : 0))),
+    const oneOnOnes = countOneOnOnes(m);
+    const recognitionCount = m.feedbacks.filter((f) => (f.type ?? "").toLowerCase().includes("reconhec")).length;
+    const evidenceCount = m.feedbacks.length + m.delegations.length + m.pdis.length;
+    const hasEvidence = evidenceCount > 0;
+    return {
+      openDelegs,
+      overdueDelegs,
+      completedDelegs,
+      feedbackDays,
+      hasActivePdi,
+      pdiDays,
+      lastPdi,
+      oneOnOnes,
+      recognitionCount,
+      evidenceCount,
+      hasEvidence,
     };
-    const health = Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / 5);
-    return { openDelegs, feedbackDays, hasActivePdi, pdiDays, lastPdi, core, trend, scores, health };
   }, [m]);
 
   if (q.isLoading || !m || !derived) {
@@ -149,7 +168,7 @@ function MemberDetail() {
     );
   }
 
-  const status = bandFor(derived.core);
+  const status = evidenceBand(derived);
   const timeline = buildTimeline(m, derived);
 
   const tabs = [
@@ -229,15 +248,17 @@ function MemberDetail() {
         <>
           {/* CORE + Saúde */}
           <div className="grid gap-3 md:grid-cols-2">
-            <CoreCard score={derived.core} trend={derived.trend} />
-            <HealthCard percent={derived.health} />
+            <EvidenceCard facts={derived} />
+            <HealthCard facts={derived} />
           </div>
 
-          {/* Competências */}
+          {/* Sinais reais */}
           <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-            {(Object.keys(COMP_META) as CompetencyKey[]).map((k) => (
-              <CompetencyCard key={k} k={k} score={derived.scores[k]} />
-            ))}
+            <MiniStat value={m.feedbacks.length} label="Feedbacks" hint="Registros reais" />
+            <MiniStat value={derived.oneOnOnes} label="1:1s" hint="Reconhecidos no histórico" />
+            <MiniStat value={derived.openDelegs} label="Delegações abertas" hint="Em andamento" />
+            <MiniStat value={m.pdis.length} label="PDIs" hint="Registrados" />
+            <MiniStat value={derived.recognitionCount} label="Reconhecimentos" hint="Histórico real" />
           </div>
 
           {/* Últimas atividades */}
@@ -259,10 +280,10 @@ function MemberDetail() {
           <Section title="Indicadores rápidos" action={{ label: "Ver indicadores completos", onClick: () => setTab("metas") }}>
             <div className="grid grid-cols-2 gap-3 p-2 md:grid-cols-5">
               <MiniStat value={m.feedbacks.length} label="Feedbacks" hint="Últimos 90 dias" />
-              <MiniStat value={countOneOnOnes(m)} label="1:1s realizados" hint="Últimos 90 dias" />
+              <MiniStat value={derived.oneOnOnes} label="1:1s realizados" hint="Últimos 90 dias" />
               <MiniStat value={derived.openDelegs} label="Delegações" hint="Em andamento" />
-              <MiniStat value={0} label="Treinamentos" hint="Concluídos" />
-              <MiniStat value={m.feedbacks.filter((f) => (f.type ?? "").toLowerCase().includes("reconhec")).length} label="Conquistas" hint="Últimos 90 dias" />
+              <MiniStat value={m.pdis.length} label="PDIs" hint="Registrados" />
+              <MiniStat value={derived.recognitionCount} label="Conquistas" hint="Últimos 90 dias" />
             </div>
           </Section>
 
@@ -398,94 +419,61 @@ function Section({
   );
 }
 
-function CoreCard({ score, trend }: { score: number; trend: number }) {
-  const points = sparkPoints(score);
+function EvidenceCard({ facts }: { facts: MemberFacts }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       <div className="flex items-center gap-1.5 text-[13px] font-semibold text-foreground">
-        CORE Score <Info className="h-3.5 w-3.5 text-muted-foreground" />
+        Base real do liderado <Info className="h-3.5 w-3.5 text-muted-foreground" />
       </div>
-      <div className="mt-2 flex items-end gap-2">
-        <div className="font-display text-5xl leading-none text-foreground">{score}</div>
-        <div className="pb-1 text-xs text-muted-foreground">de 100</div>
-      </div>
-      <svg viewBox="0 0 120 40" className="mt-3 h-14 w-full">
-        <polyline
-          points={points}
-          fill="none"
-          stroke="hsl(var(--accent, 20 90% 55%))"
-          className="text-accent"
-          style={{ stroke: "currentColor" }}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <circle cx={110} cy={sparkY(score)} r="3" className="fill-accent" />
-      </svg>
-      <div className={"mt-2 text-xs " + (trend < 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400")}>
-        {trend < 0 ? "↓" : "↑"} {Math.abs(trend)} pontos vs mês anterior
+      {!facts.hasEvidence ? (
+        <div className="mt-3 rounded-2xl border border-dashed border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
+          Este liderado acabou de ser criado. Assim que houver feedbacks, delegações, 1:1s ou PDI, esta área passa a mostrar dados reais.
+        </div>
+      ) : (
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <MiniStat value={facts.evidenceCount} label="Registros reais" hint="Feedbacks, delegações e PDIs" />
+          <MiniStat value={facts.completedDelegs} label="Delegações concluídas" hint="Histórico executado" />
+          <MiniStat value={facts.overdueDelegs} label="Delegações atrasadas" hint="Exigem atenção" />
+          <MiniStat value={facts.hasActivePdi ? "Sim" : "Não"} label="PDI ativo" hint="Status atual" />
+        </div>
+      )}
+      <div className="mt-3 text-xs text-muted-foreground">
+        Não usamos score sintético aqui. Os dados acima vêm do histórico real do liderado.
       </div>
     </div>
   );
 }
 
-function sparkPoints(score: number) {
-  const seed = [60, 58, 62, 66, 63, 68, 70, score];
-  return seed.map((v, i) => `${(i / (seed.length - 1)) * 110 + 5},${40 - (v - 40) * 0.5}`).join(" ");
-}
-function sparkY(score: number) { return 40 - (score - 40) * 0.5; }
-
-function HealthCard({ percent }: { percent: number }) {
-  const pct = Math.max(0, Math.min(100, percent));
-  const angle = -180 + (pct / 100) * 180; // -180 to 0
-  const r = 60, cx = 80, cy = 78;
-  const start = polar(cx, cy, r, -180);
-  const end = polar(cx, cy, r, angle);
-  const largeArc = pct > 50 ? 1 : 0;
-  const arc = `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y}`;
-  const bg = `M ${polar(cx, cy, r, -180).x} ${polar(cx, cy, r, -180).y} A ${r} ${r} 0 1 1 ${polar(cx, cy, r, 0).x} ${polar(cx, cy, r, 0).y}`;
-  const label = pct < 60 ? "Atenção necessária" : pct < 80 ? "Estável" : "Saudável";
+function HealthCard({ facts }: { facts: MemberFacts }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       <div className="text-[13px] font-semibold text-foreground">Saúde geral</div>
-      <div className="relative mt-2 flex flex-col items-center">
-        <svg viewBox="0 0 160 96" className="h-28 w-full max-w-[240px]">
-          <path d={bg} fill="none" stroke="hsl(var(--border))" strokeWidth="12" strokeLinecap="round" />
-          <path d={arc} fill="none" stroke="url(#hg)" strokeWidth="12" strokeLinecap="round" />
-          <defs>
-            <linearGradient id="hg" x1="0" x2="1">
-              <stop offset="0" stopColor="#f97316" />
-              <stop offset="0.5" stopColor="#f59e0b" />
-              <stop offset="1" stopColor="#10b981" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <div className="-mt-14 text-center">
-          <div className="font-display text-3xl leading-none text-foreground">{pct}%</div>
-          <div className="mt-1 text-xs text-muted-foreground">{label}</div>
+      <div className="mt-3 space-y-3">
+        <div className="rounded-2xl border border-border bg-background p-4">
+          <div className="text-xs text-muted-foreground">Último feedback</div>
+          <div className="mt-1 text-sm font-medium text-foreground">
+            {facts.feedbackDays === null ? "Sem feedback registrado" : `${facts.feedbackDays} dia(s) atrás`}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-border bg-background p-4">
+          <div className="text-xs text-muted-foreground">Última atualização de PDI</div>
+          <div className="mt-1 text-sm font-medium text-foreground">
+            {facts.pdiDays === null ? "Sem PDI registrado" : `${facts.pdiDays} dia(s) atrás`}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-border bg-background p-4">
+          <div className="text-xs text-muted-foreground">Leitura atual</div>
+          <div className="mt-1 text-sm font-medium text-foreground">
+            {!facts.hasEvidence
+              ? "Ainda sem base de acompanhamento"
+              : facts.overdueDelegs > 0
+                ? "Há pendências reais pedindo atenção"
+                : facts.feedbackDays !== null && facts.feedbackDays > 30
+                  ? "Precisa retomar o ciclo de feedback"
+                  : "Sem alertas factuais neste momento"}
+          </div>
         </div>
       </div>
-      <button className="mt-3 w-full rounded-full border border-border bg-background py-2 text-xs font-medium text-foreground hover:bg-secondary">
-        Ver diagnóstico completo
-      </button>
-    </div>
-  );
-}
-function polar(cx: number, cy: number, r: number, angleDeg: number) {
-  const a = (angleDeg * Math.PI) / 180;
-  return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
-}
-
-function CompetencyCard({ k, score }: { k: CompetencyKey; score: number }) {
-  const { label, icon: Icon } = COMP_META[k];
-  const b = bandFor(score);
-  return (
-    <div className="rounded-2xl border border-border bg-card p-3">
-      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-        <Icon className="h-3.5 w-3.5" /> {label}
-      </div>
-      <div className="mt-2 font-display text-2xl leading-none text-foreground">{score}</div>
-      <div className={"mt-1 text-[11px] font-medium " + b.tone}>{b.label}</div>
     </div>
   );
 }
@@ -501,7 +489,7 @@ type TL = {
   icon: typeof CheckCircle2;
 };
 
-function buildTimeline(m: MemberDetailData, d: NonNullable<ReturnType<typeof useMemoTypeHelper>>): TL[] {
+function buildTimeline(m: MemberDetailData, d: MemberFacts): TL[] {
   const items: TL[] = [];
   const fbDays = d.feedbackDays;
   if (fbDays !== null && fbDays > 30) {
@@ -551,15 +539,6 @@ function buildTimeline(m: MemberDetailData, d: NonNullable<ReturnType<typeof use
   });
   return items.sort((a, b) => +new Date(b.date) - +new Date(a.date));
 }
-// helper only for typing the derived object
-function useMemoTypeHelper() {
-  return {} as {
-    openDelegs: number; feedbackDays: number | null; hasActivePdi: boolean;
-    pdiDays: number | null; lastPdi: MemberDetailData["pdis"][number] | undefined;
-    core: number; trend: number; scores: Record<CompetencyKey, number>; health: number;
-  };
-}
-
 function TimelineRow({ item }: { item: TL }) {
   const toneMap: Record<TL["tone"], string> = {
     danger: "bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300",
@@ -588,7 +567,9 @@ function TimelineRow({ item }: { item: TL }) {
 
 function IACoachBlock({ member, derived }: { member: MemberDetailData; derived: { feedbackDays: number | null; pdiDays: number | null } }) {
   const first = member.fullName.split(" ")[0];
-  const msg = derived.feedbackDays && derived.feedbackDays > 30
+  const msg = derived.feedbackDays === null && derived.pdiDays === null
+    ? `Ainda não há histórico suficiente de ${first}. O próximo passo é registrar um 1:1, feedback ou PDI para começar a leitura com base real.`
+    : derived.feedbackDays && derived.feedbackDays > 30
     ? `${first} está há ${derived.feedbackDays} dias sem feedback. Recomendamos preparar uma conversa para alinhar expectativas e próximos passos.`
     : derived.pdiDays && derived.pdiDays > 45
     ? `O PDI de ${first} está parado há ${derived.pdiDays} dias. Vale revisar as metas em uma conversa curta.`

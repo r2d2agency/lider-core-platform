@@ -130,6 +130,33 @@ const productModuleTabs = [
   { module: "evolucao", section: "Evolução", to: "/app/evolution" },
 ] as const;
 
+function isModuleActive(pathname: string, module: (typeof productModuleTabs)[number]["module"]) {
+  if (module === "consciencia") {
+    return pathname === "/app"
+      || pathname.startsWith("/app/consciencia")
+      || pathname.startsWith("/app/journey")
+      || pathname.startsWith("/app/team");
+  }
+  if (module === "organizacao") {
+    return pathname.startsWith("/app/organization")
+      || pathname.startsWith("/app/one-on-ones")
+      || pathname.startsWith("/app/ninebox");
+  }
+  if (module === "resultado") {
+    return pathname.startsWith("/app/indicators")
+      || pathname.startsWith("/app/results");
+  }
+  if (module === "evolucao") {
+    return pathname.startsWith("/app/evolution")
+      || pathname.startsWith("/app/cycle-closure")
+      || pathname.startsWith("/app/pdis")
+      || pathname.startsWith("/app/360")
+      || pathname.startsWith("/app/feedbacks")
+      || pathname.startsWith("/app/coach");
+  }
+  return false;
+}
+
 function AppShell() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -273,13 +300,11 @@ function AppShell() {
     visibleNav.find((n) => isActiveRoute(n.to))?.label ?? "Sala de liderança";
   const currentNavItem = visibleNav.find((n) => isActiveRoute(n.to)) ?? null;
   const currentSection = currentNavItem?.section ?? "Navegação";
-  const sectionTabs = productModuleTabs
-    .filter((tab) => !enabledModules || enabledModules.has(tab.module))
-    .map((tab) => ({
-      ...tab,
-      active: visibleNav.some((item) => item.module === tab.module && isActiveRoute(item.to)),
-      color: sectionColor(tab.section),
-    }));
+  const sectionTabs = productModuleTabs.map((tab) => ({
+    ...tab,
+    active: isModuleActive(pathname, tab.module),
+    color: sectionColor(tab.section),
+  }));
   const initials = (user?.fullName || user?.email || "L")
     .split(" ")
     .filter(Boolean)
