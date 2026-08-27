@@ -123,6 +123,13 @@ function sectionColor(section: string) {
     : "var(--accent)";
 }
 
+const productModuleTabs = [
+  { module: "consciencia", section: "Consciência", to: "/app/consciencia" },
+  { module: "organizacao", section: "Organização", to: "/app/organization" },
+  { module: "resultado", section: "Resultado", to: "/app/indicators" },
+  { module: "evolucao", section: "Evolução", to: "/app/evolution" },
+] as const;
+
 function AppShell() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -266,12 +273,13 @@ function AppShell() {
     visibleNav.find((n) => isActiveRoute(n.to))?.label ?? "Sala de liderança";
   const currentNavItem = visibleNav.find((n) => isActiveRoute(n.to)) ?? null;
   const currentSection = currentNavItem?.section ?? "Navegação";
-  const sectionTabs = Object.entries(grouped).map(([section, items]) => ({
-    section,
-    to: items[0]?.to,
-    active: items.some((item) => isActiveRoute(item.to)),
-    color: sectionColor(section),
-  })).filter((tab) => !!tab.to);
+  const sectionTabs = productModuleTabs
+    .filter((tab) => !enabledModules || enabledModules.has(tab.module))
+    .map((tab) => ({
+      ...tab,
+      active: visibleNav.some((item) => item.module === tab.module && isActiveRoute(item.to)),
+      color: sectionColor(tab.section),
+    }));
   const initials = (user?.fullName || user?.email || "L")
     .split(" ")
     .filter(Boolean)
