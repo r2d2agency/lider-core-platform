@@ -476,9 +476,6 @@ function AppShell() {
         </header>
         <div className="sticky top-[61px] z-20 border-b border-border/60 bg-background/92 backdrop-blur md:top-[73px]">
           <div className="mx-auto flex w-full max-w-[1200px] items-center gap-2 overflow-x-auto px-4 py-2 md:px-8 xl:px-12">
-            <span className="shrink-0 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-              Módulos
-            </span>
             {sectionTabs.map((tab) => (
               <Link
                 key={tab.section}
