@@ -32,6 +32,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -175,64 +176,62 @@ function TeamPage() {
             Acompanhe sua equipe, veja indicadores individuais e identifique quem precisa da sua atenção.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setView(view === "lista" ? "nine_box" : "lista")}
-            className={
-              "inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm transition-colors " +
-              (view === "nine_box"
-                ? "border-foreground bg-foreground text-background"
-                : "border-border bg-card text-foreground hover:bg-secondary")
-            }
-          >
-            <Grid3x3 className="h-4 w-4" /> 9-box
-          </button>
-          <button
-            aria-label="Buscar"
-            className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card text-muted-foreground hover:bg-secondary"
-            onClick={() => {
-              const el = document.getElementById("team-search") as HTMLInputElement | null;
-              el?.focus();
-            }}
-          >
-            <Search className="h-4 w-4" />
-          </button>
-          <button className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm text-foreground hover:bg-secondary">
-            <Filter className="h-4 w-4" /> Filtros
-          </button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1"
-            disabled={!enriched.length}
-            onClick={() =>
-              exportCsv(
-                `equipe-${new Date().toISOString().slice(0, 10)}.csv`,
-                enriched,
-                [
-                  { key: "fullName", label: "Nome", get: (e) => e.m.fullName },
-                  { key: "email", label: "E-mail", get: (e) => e.m.email },
-                  { key: "role", label: "Papel", get: (e) => e.m.profile?.roleTitle ?? e.m.role },
-                  { key: "area", label: "Área", get: (e) => e.m.areaName ?? "" },
-                  { key: "team", label: "Time", get: (e) => e.m.teamName ?? "" },
-                  { key: "score", label: "Score CORE" },
-                  { key: "status", label: "Status", get: (e) => STATUS_META[e.status].label },
-                  { key: "autonomy", label: "Autonomia", get: (e) => (e.m.profile ? AUTONOMY_LABEL[e.m.profile.autonomyLevel] : "") },
-                  { key: "openDelegations", label: "Delegações abertas", get: (e) => e.m.openDelegations },
-                  { key: "feedbackCount", label: "Feedbacks", get: (e) => e.m.feedbackCount },
-                  { key: "hasActivePdi", label: "PDI ativo", get: (e) => (e.m.hasActivePdi ? "sim" : "não") },
-                ],
-              )
-            }
-          >
-            <Download className="h-3.5 w-3.5" /> CSV
-          </Button>
+        <div className="w-full space-y-2 sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+            <button
+              onClick={() => setView(view === "lista" ? "nine_box" : "lista")}
+              className={
+                "inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm transition-colors " +
+                (view === "nine_box"
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border bg-card text-foreground hover:bg-secondary")
+              }
+            >
+              <Grid3x3 className="h-4 w-4" /> 9-box
+            </button>
+            <button className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm text-foreground hover:bg-secondary">
+              <Filter className="h-4 w-4" /> Filtros
+            </button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1"
+              disabled={!enriched.length}
+              onClick={() =>
+                exportCsv(
+                  `equipe-${new Date().toISOString().slice(0, 10)}.csv`,
+                  enriched,
+                  [
+                    { key: "fullName", label: "Nome", get: (e) => e.m.fullName },
+                    { key: "email", label: "E-mail", get: (e) => e.m.email },
+                    { key: "role", label: "Papel", get: (e) => e.m.profile?.roleTitle ?? e.m.role },
+                    { key: "area", label: "Área", get: (e) => e.m.areaName ?? "" },
+                    { key: "team", label: "Time", get: (e) => e.m.teamName ?? "" },
+                    { key: "score", label: "Score CORE" },
+                    { key: "status", label: "Status", get: (e) => STATUS_META[e.status].label },
+                    { key: "autonomy", label: "Autonomia", get: (e) => (e.m.profile ? AUTONOMY_LABEL[e.m.profile.autonomyLevel] : "") },
+                    { key: "openDelegations", label: "Delegações abertas", get: (e) => e.m.openDelegations },
+                    { key: "feedbackCount", label: "Feedbacks", get: (e) => e.m.feedbackCount },
+                    { key: "hasActivePdi", label: "PDI ativo", get: (e) => (e.m.hasActivePdi ? "sim" : "não") },
+                  ],
+                )
+              }
+            >
+              <Download className="h-3.5 w-3.5" /> CSV
+            </Button>
+          </div>
+          <div className="flex items-center gap-2 rounded-2xl border border-border bg-card px-3">
+            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <Input
+              id="team-search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Buscar liderado, cargo ou papel"
+              className="h-10 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+            />
+          </div>
         </div>
       </header>
-
-      <div className="sr-only">
-        <Input id="team-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar" />
-      </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -267,7 +266,7 @@ function TeamPage() {
       </div>
 
       {/* Tabs */}
-      <div className="-mx-1 flex gap-2 overflow-x-auto px-1">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
         {tabs.map((t) => {
           const active = filter === t.key;
           return (
@@ -275,7 +274,7 @@ function TeamPage() {
               key={t.key}
               onClick={() => setFilter(t.key)}
               className={
-                "inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm transition-colors " +
+                "inline-flex min-h-12 items-center justify-between gap-2 rounded-2xl px-4 py-2 text-left text-sm transition-colors sm:min-h-0 sm:shrink-0 sm:justify-center sm:rounded-full " +
                 (active
                   ? "bg-foreground text-background"
                   : "border border-border bg-card text-foreground hover:bg-secondary")
@@ -396,21 +395,40 @@ function MemberRow({
   const meta = STATUS_META[status];
   const Secondary = secondaryFor(m);
   return (
-      <Link
-        to="/app/team/$membershipId"
-        params={{ membershipId: m.membershipId }}
-        className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-3 pr-4 transition-shadow hover:shadow-sm"
-      >
+    <Link
+      to="/app/team/$membershipId"
+      params={{ membershipId: m.membershipId }}
+      className="group flex flex-col gap-3 rounded-2xl border border-border bg-card p-3 transition-shadow hover:shadow-sm sm:flex-row sm:items-center sm:pr-4"
+    >
+      <div className="flex items-start gap-3 sm:min-w-0 sm:flex-1 sm:items-center">
         <Avatar name={m.fullName} url={m.avatarUrl ?? null} />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-[15px] font-semibold text-foreground">{m.fullName}</div>
-        <div className="truncate text-xs text-muted-foreground">
-          {m.profile?.roleTitle || AUTONOMY_LABEL[m.profile?.autonomyLevel ?? "n2_acompanho"]}
-          {m.areaName ? ` · ${m.areaName}` : ""}
+        <div className="min-w-0 flex-1">
+          <div className="pr-2 text-[15px] font-semibold leading-tight text-foreground sm:truncate">{m.fullName}</div>
+          <div className="pr-2 text-xs text-muted-foreground sm:truncate">
+            {m.profile?.roleTitle || AUTONOMY_LABEL[m.profile?.autonomyLevel ?? "n2_acompanho"]}
+            {m.areaName ? ` · ${m.areaName}` : ""}
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2 sm:hidden">
+            <span className={"inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold " + meta.className}>
+              <meta.icon className="h-3 w-3" /> {meta.label}
+            </span>
+            <span className={"inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium " + Secondary.tone}>
+              {Secondary.label}: {Secondary.value}
+            </span>
+            <span className={"inline-flex rounded-full border border-border px-2.5 py-1 text-[11px] font-semibold " + scoreColor(score)}>
+              CORE {score}
+            </span>
+          </div>
         </div>
+        <span
+          aria-label="Abrir perfil"
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors group-hover:bg-secondary group-hover:text-foreground sm:hidden"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </span>
       </div>
 
-      <span className={"inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold " + meta.className}>
+      <span className={"hidden items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold sm:inline-flex " + meta.className}>
         <meta.icon className="h-3 w-3" /> {meta.label}
       </span>
 
@@ -426,11 +444,11 @@ function MemberRow({
 
       <span
         aria-label="Abrir perfil"
-        className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition-colors group-hover:bg-secondary group-hover:text-foreground"
+        className="hidden h-8 w-8 place-items-center rounded-full text-muted-foreground transition-colors group-hover:bg-secondary group-hover:text-foreground sm:grid"
       >
         <ChevronRight className="h-4 w-4" />
       </span>
-      </Link>
+    </Link>
   );
 }
 
@@ -659,12 +677,14 @@ const BOX_LABEL: Record<string, { title: string; tone: string }> = {
   "1-2": { title: "Efetivo",          tone: "bg-secondary" },
   "1-3": { title: "Especialista",     tone: "bg-sky-50 dark:bg-sky-500/10" },
 };
+type BoxTarget = { perf: number; pot: number };
 
 function NineBoxMatrix({
   orgId, members, onEdit,
 }: { orgId: string; members: TeamMember[]; onEdit: (m: TeamMember) => void }) {
   const qc = useQueryClient();
   const [picking, setPicking] = useState<TeamMember | null>(null);
+  const [assigning, setAssigning] = useState<BoxTarget | null>(null);
 
   const save = useMutation({
     mutationFn: ({ id, perf, pot }: { id: string; perf: number; pot: number }) =>
@@ -676,6 +696,7 @@ function NineBoxMatrix({
       toast.success("Posição atualizada.");
       qc.invalidateQueries({ queryKey: ["team", orgId] });
       setPicking(null);
+      setAssigning(null);
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -694,7 +715,10 @@ function NineBoxMatrix({
         <div className="mb-3 flex items-baseline justify-between">
           <div>
             <div className="font-display text-lg leading-tight">Matriz 9-box</div>
-            <p className="text-xs text-muted-foreground">Performance atual × potencial futuro. Clique numa pessoa para reposicionar.</p>
+            <p className="text-xs text-muted-foreground">
+              Performance atual × potencial futuro. Toque no nome de uma pessoa para reclassificar
+              ou use "Posicionar aqui" no quadrante desejado.
+            </p>
           </div>
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
             {members.length - unclassified.length}/{members.length} posicionados
@@ -716,18 +740,21 @@ function NineBoxMatrix({
                   const box = BOX_LABEL[key];
                   const people = cellOf(perf, pot);
                   return (
-                    <div key={key} className={"min-h-[110px] rounded-xl border border-border/70 p-2 " + box.tone}>
+                    <div key={key} className={"flex min-h-[160px] flex-col rounded-xl border border-border/70 p-2 " + box.tone}>
                       <div className="mb-1.5 flex items-center justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
                         <span className="font-semibold text-foreground/80">{box.title}</span>
                         <span>{people.length}</span>
                       </div>
-                      <div className="flex flex-wrap gap-1">
+                      <div className="mb-2 text-[11px] text-muted-foreground">
+                        {PERF_LABEL[perf - 1]} performance · {POT_LABEL[pot - 1]} potencial
+                      </div>
+                      <div className="flex flex-1 flex-wrap content-start gap-1">
                         {people.map((m) => (
                           <button
                             key={m.membershipId}
                             title={m.fullName}
                             onClick={() => setPicking(m)}
-                            className="inline-flex items-center gap-1 rounded-full border border-border bg-background/90 px-2 py-0.5 text-[11px] font-medium text-foreground hover:bg-secondary"
+                            className="inline-flex items-center gap-1 rounded-full border border-border bg-background/90 px-2 py-1 text-[11px] font-medium text-foreground hover:bg-secondary"
                           >
                             <span className="grid h-4 w-4 place-items-center rounded-full bg-secondary text-[9px] font-bold">
                               {initials(m.fullName)}
@@ -735,7 +762,18 @@ function NineBoxMatrix({
                             <span className="max-w-[100px] truncate">{m.fullName.split(" ")[0]}</span>
                           </button>
                         ))}
+                        {people.length === 0 && (
+                          <div className="rounded-lg border border-dashed border-border/80 bg-background/50 px-2.5 py-2 text-[11px] text-muted-foreground">
+                            Nenhum liderado posicionado aqui ainda.
+                          </div>
+                        )}
                       </div>
+                      <button
+                        onClick={() => setAssigning({ perf, pot })}
+                        className="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-border bg-background/80 px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-background"
+                      >
+                        Posicionar aqui
+                      </button>
                     </div>
                   );
                 }),
@@ -750,20 +788,31 @@ function NineBoxMatrix({
 
       {unclassified.length > 0 && (
         <div className="rounded-2xl border border-dashed border-border p-4">
-          <div className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <div className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
             Sem classificação ({unclassified.length})
           </div>
-          <div className="flex flex-wrap gap-2">
+          <p className="mb-3 text-sm text-muted-foreground">
+            Essas pessoas ainda não foram posicionadas na matriz. Toque em uma delas para classificar agora.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
             {unclassified.map((m) => (
               <button
                 key={m.membershipId}
                 onClick={() => setPicking(m)}
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm hover:bg-secondary"
+                className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-3 py-3 text-left hover:bg-secondary"
               >
-                <span className="grid h-6 w-6 place-items-center rounded-full bg-secondary text-[10px] font-bold">
-                  {initials(m.fullName)}
-                </span>
-                {m.fullName}
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-secondary text-[10px] font-bold">
+                    {initials(m.fullName)}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium text-foreground">{m.fullName}</div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {m.profile?.roleTitle || AUTONOMY_LABEL[m.profile?.autonomyLevel ?? "n2_acompanho"]}
+                    </div>
+                  </div>
+                </div>
+                <span className="shrink-0 text-xs font-medium text-primary">Classificar agora</span>
               </button>
             ))}
           </div>
@@ -775,6 +824,9 @@ function NineBoxMatrix({
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Posicionar — {picking.fullName}</DialogTitle>
+              <DialogDescription>
+                Escolha o nível de performance atual e o potencial futuro para posicionar este liderado na matriz.
+              </DialogDescription>
             </DialogHeader>
             <NineBoxPicker
               initialPerf={picking.profile?.performanceLevel ?? null}
@@ -782,6 +834,26 @@ function NineBoxMatrix({
               saving={save.isPending}
               onOpenProfile={() => { const m = picking; setPicking(null); onEdit(m); }}
               onSave={(perf, pot) => save.mutate({ id: picking.membershipId, perf, pot })}
+            />
+          </DialogContent>
+        )}
+      </Dialog>
+
+      <Dialog open={!!assigning} onOpenChange={(o) => !o && setAssigning(null)}>
+        {assigning && (
+          <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Posicionar neste quadrante</DialogTitle>
+              <DialogDescription>
+                {BOX_LABEL[`${assigning.perf}-${assigning.pot}`].title}: {PERF_LABEL[assigning.perf - 1]} performance
+                {" "}e {POT_LABEL[assigning.pot - 1]} potencial. Escolha quem deve entrar aqui.
+              </DialogDescription>
+            </DialogHeader>
+            <AssignMemberToBoxDialog
+              members={members}
+              target={assigning}
+              saving={save.isPending}
+              onChoose={(member) => save.mutate({ id: member.membershipId, perf: assigning.perf, pot: assigning.pot })}
             />
           </DialogContent>
         )}
@@ -848,6 +920,84 @@ function NineBoxPicker({
         <Button disabled={saving} onClick={() => onSave(perf, pot)}>
           {saving ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : null}Salvar
         </Button>
+      </div>
+    </div>
+  );
+}
+
+function AssignMemberToBoxDialog({
+  members,
+  target,
+  saving,
+  onChoose,
+}: {
+  members: TeamMember[];
+  target: BoxTarget;
+  saving: boolean;
+  onChoose: (member: TeamMember) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const visible = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    return [...members]
+      .filter((m) => {
+        if (!normalized) return true;
+        return `${m.fullName} ${m.profile?.roleTitle ?? ""}`.toLowerCase().includes(normalized);
+      })
+      .sort((a, b) => {
+        const aUnclassified = !a.profile?.performanceLevel || !a.profile?.potentialLevel;
+        const bUnclassified = !b.profile?.performanceLevel || !b.profile?.potentialLevel;
+        if (aUnclassified !== bUnclassified) return aUnclassified ? -1 : 1;
+        return a.fullName.localeCompare(b.fullName, "pt-BR");
+      });
+  }, [members, query]);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 rounded-2xl border border-border bg-card px-3">
+        <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar liderado para este quadrante"
+          className="h-10 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+        />
+      </div>
+
+      <div className="space-y-2">
+        {visible.map((member) => {
+          const currentKey = member.profile?.performanceLevel && member.profile?.potentialLevel
+            ? `${member.profile.performanceLevel}-${member.profile.potentialLevel}`
+            : null;
+          const currentLabel = currentKey ? BOX_LABEL[currentKey]?.title ?? "Classificado" : "Sem classificação";
+          const alreadyThere = currentKey === `${target.perf}-${target.pot}`;
+          return (
+            <button
+              key={member.membershipId}
+              disabled={saving || alreadyThere}
+              onClick={() => onChoose(member)}
+              className="flex w-full items-center justify-between gap-3 rounded-2xl border border-border bg-card px-3 py-3 text-left transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <div className="min-w-0">
+                <div className="truncate text-sm font-medium text-foreground">{member.fullName}</div>
+                <div className="truncate text-xs text-muted-foreground">
+                  {member.profile?.roleTitle || AUTONOMY_LABEL[member.profile?.autonomyLevel ?? "n2_acompanho"]}
+                </div>
+                <div className="mt-1 text-[11px] text-muted-foreground">
+                  Hoje: {currentLabel}
+                </div>
+              </div>
+              <span className="shrink-0 text-xs font-medium text-primary">
+                {alreadyThere ? "Ja esta aqui" : saving ? "Salvando..." : "Mover para ca"}
+              </span>
+            </button>
+          );
+        })}
+        {visible.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
+            Nao encontrei nenhum liderado com esse filtro.
+          </div>
+        )}
       </div>
     </div>
   );
