@@ -243,13 +243,28 @@ function CreateForm({ onSave, saving }: { onSave: (v: Record<string, unknown>) =
   const [dueAt, setDueAt] = useState("");
   const [priority, setPriority] = useState<Delegation["priority"]>("medium");
   const [doneCriteria, setDoneCriteria] = useState("");
-  const [assigneeId, setAssigneeId] = useState("");
+  const [assigneeUserId, setAssigneeUserId] = useState("");
+  const [assigneeMembershipId, setAssigneeMembershipId] = useState("");
 
+  type TeamRow = {
+    membershipId: string;
+    userId: string;
+    fullName: string;
+    roleTitle?: string | null;
+    areaName?: string | null;
+    teamName?: string | null;
+  };
   const members = useQuery({
-    queryKey: ["org", "members", orgId],
-    queryFn: () => api<any[]>(`/organization/${orgId}/members`),
+    queryKey: ["team", orgId],
+    queryFn: () => api<TeamRow[]>(`/organization/${orgId}/team`),
     enabled: !!orgId,
   });
+
+  function onAssigneeChange(membershipId: string) {
+    setAssigneeMembershipId(membershipId);
+    const row = members.data?.find((m) => m.membershipId === membershipId);
+    setAssigneeUserId(row?.userId ?? "");
+  }
 
   return (
     <div className="space-y-4">
@@ -262,19 +277,30 @@ function CreateForm({ onSave, saving }: { onSave: (v: Record<string, unknown>) =
       </div>
       <div className="space-y-1.5">
         <Label>Responsável (Liderado)</Label>
-        <select
-          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-          value={assigneeId}
-          onChange={(e) => setAssigneeId(e.target.value)}
-          required
-        >
-          <option value="">Selecione um responsável...</option>
-          {members.data?.map((m) => (
-            <option key={m.userId} value={m.userId}>
-              {m.profile.fullName}
-            </option>
-          ))}
-        </select>
+        {members.isLoading && (
+          <div className="h-10 animate-pulse rounded-md border border-border bg-muted/40" />
+        )}
+        {!members.isLoading && (
+          <select
+            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            value={assigneeMembershipId}
+            onChange={(e) => onAssigneeChange(e.target.value)}
+            required
+          >
+            <option value="">Selecione um responsável…</option>
+            {members.data?.map((m) => (
+              <option key={m.membershipId} value={m.membershipId}>
+                {m.fullName}
+                {m.areaName || m.teamName ? ` · ${m.areaName || m.teamName}` : ""}
+              </option>
+            ))}
+          </select>
+        )}
+        {!members.isLoading && members.data && members.data.length === 0 && (
+          <div className="rounded-md border border-dashed border-border p-3 text-xs text-muted-foreground">
+            Nenhum liderado encontrado na sua organização.
+          </div>
+        )}
       </div>
       <div className="space-y-1.5">
         <Label>Descrição</Label>
@@ -305,7 +331,7 @@ function CreateForm({ onSave, saving }: { onSave: (v: Record<string, unknown>) =
       </div>
       <DialogFooter>
         <Button
-          disabled={!title || !assigneeId || saving}
+          disabled={!title || !assigneeUserId || saving}
           onClick={() =>
             onSave({
               title,
@@ -313,7 +339,7 @@ function CreateForm({ onSave, saving }: { onSave: (v: Record<string, unknown>) =
               priority,
               dueAt: dueAt ? new Date(dueAt).toISOString() : null,
               doneCriteria: doneCriteria || null,
-              assigneeId: assigneeId || null,
+              assigneeId: assigneeUserId || null,
             })
           }
         >
