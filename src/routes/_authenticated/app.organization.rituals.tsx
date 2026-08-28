@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Workflow, Plus, Play, Clock } from "lucide-react";
+import { Workflow, Plus, Play, Clock, Sparkles, Check } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/organization/rituals")({
   component: RitualsPage,
@@ -35,6 +35,100 @@ const TYPE_LABELS: Record<string, string> = Object.fromEntries(
 );
 
 function labelType(t: string) { return TYPE_LABELS[t] ?? t; }
+
+type RitualTemplate = {
+  name: string;
+  type: string;
+  objective: string;
+  cadence: string;
+  durationMin: number;
+  weekDay?: string;
+  agendaTemplate: string;
+};
+
+const RITUAL_TEMPLATES: RitualTemplate[] = [
+  {
+    name: "Daily da Equipe",
+    type: "daily",
+    objective: "Alinhamento rápido diário: o que fiz ontem, o que faço hoje, bloqueios.",
+    cadence: "diária",
+    durationMin: 15,
+    agendaTemplate: "## Daily - {data}\n\n### O que foi feito ontem\n- \n\n### O que será feito hoje\n- \n\n### Bloqueios / Riscos\n- ",
+  },
+  {
+    name: "Weekly de Alinhamento",
+    type: "weekly",
+    objective: "Revisar a semana passada, alinhar prioridades da próxima semana e resolver pendências cruzadas.",
+    cadence: "semanal",
+    durationMin: 60,
+    weekDay: "segunda",
+    agendaTemplate: "## Weekly - {semana}\n\n1. Check-in rápido (2 min cada)\n2. Resultados da semana anterior\n3. Prioridades da semana atual\n4. Pendencias e dependências\n5. Decisões pendentes\n6. Feedbacks gerais",
+  },
+  {
+    name: "1:1 Individual",
+    type: "one_on_one",
+    objective: "Conversa individual quinzenal com cada liderado: carreira, desempenho, bloqueios e desenvolvimento.",
+    cadence: "quinzenal",
+    durationMin: 45,
+    agendaTemplate: "## 1:1 - {liderado}\n\n### Como você está? (check-in emocional)\n\n### O que está fluindo bem\n\n### O que está te atrapalhando / bloqueios\n\n### Carreira e desenvolvimento\n\n### Feedback para mim\n\n### Ações combinadas\n- ",
+  },
+  {
+    name: "Retrospectiva de Sprint",
+    type: "retro",
+    objective: "Refletir sobre a sprint passada: o que funcionou, o que melhorar, planos de ação.",
+    cadence: "quinzenal",
+    durationMin: 90,
+    agendaTemplate: "## Retrospectiva - Sprint {N}\n\n### O que deu certo / Continue fazendo\n- \n\n### O que deu errado / Pare de fazer\n- \n\n### O que melhorar / Comece a fazer\n- \n\n### Planos de ação\n- [ ] Ação 1 | responsável | prazo\n- [ ] Ação 2 | responsável | prazo",
+  },
+  {
+    name: "Checkpoint de Indicadores",
+    type: "indicators",
+    objective: "Revisão mensal dos KPIs da área: acompanhamento de metas, desvios e ações corretivas.",
+    cadence: "mensal",
+    durationMin: 60,
+    agendaTemplate: "## Revisão de Indicadores - {mês}\n\n### Mapa de KPIs\n| KPI | Meta | Realizado | % | Desvio |\n|---|---|---|---|---|\n\n### Desvios críticos e análise de causa\n- \n\n### Ações corretivas\n- [ ] \n\n### Riscos identificados\n- ",
+  },
+  {
+    name: "Sessão de Feedback Estruturado",
+    type: "feedback",
+    objective: "Feedback formal sobre desempenho, pontos fortes e pontos de desenvolvimento com plano de ação.",
+    cadence: "trimestral",
+    durationMin: 60,
+    agendaTemplate: "## Feedback - {liderado}\n\n### Pontos fortes (observados com exemplos)\n- \n\n### Pontos de desenvolvimento (com impacto + exemplo)\n- \n\n### Auto-avaliação do colaborador\n\n### Plano de desenvolvimento\n- Meta 1: \n- Meta 2: \n- Apoios: \n\n### Compromissos\n- ",
+  },
+  {
+    name: "Plano de Ação - Fechamento",
+    type: "action_plan",
+    objective: "Validar o andamento do plano de ação do ciclo, remover bloqueios e confirmar entregas.",
+    cadence: "quinzenal",
+    durationMin: 45,
+    agendaTemplate: "## Plano de Ação - {ciclo}\n\n### Atrasadas ou em risco\n- [ ] Tarefa | responsável | prazo | motivo\n\n### Concluídas desde a última\n- [x] \n\n### Ajustes no plano\n- \n\n### Próximas entregas-chave\n- ",
+  },
+  {
+    name: "Onboarding - Primeiro Dia",
+    type: "day_one",
+    objective: "Receber o novo colaborador, apresentar cultura, ferramentas, time e primeiros passos dos 90 dias.",
+    cadence: "eventual",
+    durationMin: 90,
+    agendaTemplate: "## Onboarding - Primeiro dia\n\n### 1. Apresentação pessoal e propósito do papel\n\n### 2. Cultura e valores da empresa\n\n### 3. Ferramentas e acessos\n- [ ] Email\n- [ ] Slack\n- [ ] Sistemas internos\n- [ ] Documentação\n\n### 4. Apresentação do time\n\n### 5. Primeira semana: objetivos de aprendizado\n\n### 6. Check-in: dúvidas e sentimentos",
+  },
+  {
+    name: "Ponto de Controle de Ciclo",
+    type: "checkpoint",
+    objective: "Meio do ciclo: validar progresso de objetivos, identificar desvios e redefinir prioridades.",
+    cadence: "mensal",
+    durationMin: 60,
+    agendaTemplate: "## Checkpoint - {ciclo}\n\n### Progresso dos objetivos (OKR / metas)\n| Objetivo | Início | Atual | Status |\n|---|---|---|---|\n\n### Destaques positivos\n\n### Riscos e bloqueios\n- \n\n### Ajustes necessários\n- \n\n### Prioridades para a 2a metade do ciclo\n- ",
+  },
+  {
+    name: "Reunião Estratégica de Diretoria",
+    type: "strategic",
+    objective: "Alinhamento estratégico trimestral: cenários, prioridades, investimentos e estrutura.",
+    cadence: "trimestral",
+    durationMin: 180,
+    agendaTemplate: "## Reunião Estratégica\n\n### 1. Visão de cenário externo e interno\n\n### 2. Revisão do plano estratégico\n\n### 3. Prioridades do próximo trimestre\n- Objetivo 1\n- Objetivo 2\n- Objetivo 3\n\n### 4. Investimentos e estrutura\n\n### 5. Decisões e donos\n- Decisão | Dono | Prazo\n\n### 6. Riscos estratégicos\n- ",
+  },
+];
 
 function labelCadence(c: string | null) {
   if (!c) return "sem cadência";
@@ -123,9 +217,64 @@ function CreateForm({ onSave, saving }: { onSave: (v: Record<string, unknown>) =
   const [durationMin, setDurationMin] = useState(30);
   const [agenda, setAgenda] = useState("");
   const [weekDay, setWeekDay] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
+
+  function applyTemplate(tpl: RitualTemplate, index: number) {
+    setName(tpl.name);
+    setType(tpl.type);
+    setObjective(tpl.objective);
+    setCadence(tpl.cadence);
+    setDurationMin(tpl.durationMin);
+    setAgenda(tpl.agendaTemplate);
+    setWeekDay(tpl.weekDay ?? "");
+    setSelectedTemplate(index);
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <DialogHeader><DialogTitle>Novo ritual</DialogTitle></DialogHeader>
+
+      <div className="rounded-2xl border border-border bg-secondary/30 p-4">
+        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <Sparkles className="h-3.5 w-3.5" /> Sugestões prontas — clique para usar
+        </div>
+        <div className="mt-3 grid max-h-[340px] grid-cols-1 gap-2 overflow-y-auto pr-1 md:grid-cols-2">
+          {RITUAL_TEMPLATES.map((tpl, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => applyTemplate(tpl, idx)}
+              className={`group flex items-start gap-3 rounded-xl border p-3 text-left transition-all ${
+                selectedTemplate === idx
+                  ? "border-violet-400 bg-violet-50 ring-2 ring-violet-200 dark:border-violet-500 dark:bg-violet-950/40 dark:ring-violet-700/40"
+                  : "border-border bg-card hover:border-violet-300 hover:bg-violet-50/40 dark:hover:border-violet-600 dark:hover:bg-violet-950/20"
+              }`}
+            >
+              <div className={`mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full border text-[10px] ${
+                selectedTemplate === idx
+                  ? "border-violet-500 bg-violet-500 text-white dark:border-violet-400 dark:bg-violet-400"
+                  : "border-muted-foreground/40 text-muted-foreground opacity-0 group-hover:opacity-100"
+              }`}>
+                {selectedTemplate === idx ? <Check className="h-3 w-3" /> : idx + 1}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-display text-sm">{tpl.name}</span>
+                  <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {labelType(tpl.type)}
+                  </span>
+                </div>
+                <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
+                  <span>{tpl.durationMin} min</span>
+                  <span>·</span>
+                  <span>{tpl.cadence}</span>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="space-y-1.5"><Label>Nome</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5"><Label>Tipo</Label>
