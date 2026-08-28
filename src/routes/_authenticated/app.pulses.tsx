@@ -676,43 +676,49 @@ function SuggestionsDialog({
   onApply: (s: Suggestion) => void;
 }) {
   return (
-    <DialogContent className="sm:max-w-2xl max-h-[92vh] flex-col overflow-hidden">
-      <DialogHeader>
-        <DialogTitle className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" />
-          Sugestões de pulsos prontos
-        </DialogTitle>
-      </DialogHeader>
-      <div className="flex-1 overflow-y-auto py-2 pr-1 space-y-3">
-        {suggestions.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => onApply(s)}
-            className="w-full rounded-2xl border border-border bg-background p-4 text-left transition hover:border-primary/50 hover:bg-primary/5"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-violet-600">
-                    {KIND_LABEL[s.kind]}
-                  </span>
+    <DialogContent className="sm:max-w-2xl p-0 overflow-hidden max-h-[92vh]">
+      <div className="flex h-full max-h-[92vh] flex-col">
+        <div className="flex-none p-6 pb-3">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              Sugestões de pulsos prontos
+            </DialogTitle>
+          </DialogHeader>
+        </div>
+        <div className="flex-1 overflow-y-auto px-6 pb-3 space-y-3">
+          {suggestions.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => onApply(s)}
+              className="w-full rounded-2xl border border-border bg-background p-4 text-left transition hover:border-primary/50 hover:bg-primary/5"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-violet-600">
+                      {KIND_LABEL[s.kind]}
+                    </span>
+                  </div>
+                  <div className="mt-1.5 font-semibold leading-snug">{s.title}</div>
+                  <p className="mt-1 text-sm text-muted-foreground">{s.description}</p>
+                  <div className="mt-2 text-[11px] font-medium text-primary/80">
+                    🕒 {s.when}
+                  </div>
                 </div>
-                <div className="mt-1.5 font-semibold leading-snug">{s.title}</div>
-                <p className="mt-1 text-sm text-muted-foreground">{s.description}</p>
-                <div className="mt-2 text-[11px] font-medium text-primary/80">
-                  🕒 {s.when}
-                </div>
+                <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
               </div>
-              <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
-            </div>
-          </button>
-        ))}
+            </button>
+          ))}
+        </div>
+        <div className="flex-none px-6 py-4 border-t border-border/60">
+          <DialogFooter className="!justify-start !m-0">
+            <p className="mr-auto text-[11px] text-muted-foreground">
+              Clique em uma sugestão para abrir o envio com o modelo já selecionado.
+            </p>
+          </DialogFooter>
+        </div>
       </div>
-      <DialogFooter>
-        <p className="mr-auto text-[11px] text-muted-foreground">
-          Clique em uma sugestão para abrir o envio com o modelo já selecionado.
-        </p>
-      </DialogFooter>
     </DialogContent>
   );
 }
