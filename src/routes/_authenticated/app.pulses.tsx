@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -101,10 +101,71 @@ const STATUS_LABEL: Record<Status, string> = {
   revoked: "Cancelado",
 };
 
+type Suggestion = {
+  id: string;
+  title: string;
+  description: string;
+  kind: Kind;
+  when: string;
+};
+
+const PULSE_SUGGESTIONS: Suggestion[] = [
+  {
+    id: "feedback-semanal",
+    title: "Feedback pro líder — 1 vez por mês",
+    description:
+      "Peça 2 coisas que você deve manter, 2 que deve começar a fazer e 1 que deve parar. Crucial para seu desenvolvimento.",
+    kind: "feedback",
+    when: "Primeiro mês no cargo e depois mensal",
+  },
+  {
+    id: "climate-semanal",
+    title: "Pulso de clima semanal",
+    description:
+      "Como foi a semana do time: humor, carga de trabalho, clareza das prioridades. 4 perguntas que guiam sua próxima reunião.",
+    kind: "climate",
+    when: "Toda sexta 16h, para agir na semana seguinte",
+  },
+  {
+    id: "disc-onboarding",
+    title: "DISC leve no onboarding",
+    description:
+      "Entenda o estilo comportamental do novo liderado nos primeiros 15 dias: como ele prefere receber feedback, tomar decisão e se comunicar.",
+    kind: "disc",
+    when: "No onboarding de cada novo membro",
+  },
+  {
+    id: "sabotadores-equipe",
+    title: "Sabotadores — antes da meta importante",
+    description:
+      "Descubra quais padrões emocionais (Abaixador, Perfeccionista, Hiper-Racional etc.) podem atrapalhar a entrega do próximo objetivo.",
+    kind: "disc",
+    when: "Antes de iniciar um projeto crítico",
+  },
+  {
+    id: "cerebral-decisao",
+    title: "Predominância cerebral — antes da promoção",
+    description:
+      "Águia/Lobo/Gato/Tubarão: perfis de decisão e liderança. Use para ajustar seu estilo de gestão com cada pessoa.",
+    kind: "disc",
+    when: "Ao preparar promoções ou redistribuir papéis",
+  },
+  {
+    id: "custom-pre-ciclo",
+    title: "Pré-fechamento de ciclo",
+    description:
+      "Perguntas customizadas: 'Qual seu maior ganho do ciclo?', 'O que mais te bloqueou?', 'Qual apoio você precisa no próximo?'",
+    kind: "custom",
+    when: "1 semana antes do fechamento",
+  },
+];
+
 function PulsesPage() {
   const { orgId } = useCurrentOrg();
   const qc = useQueryClient();
   const [openNew, setOpenNew] = useState(false);
+  const [openSuggestions, setOpenSuggestions] = useState(false);
+  const [presetKind, setPresetKind] = useState<Kind | null>(null);
   const [detail, setDetail] = useState<PulseSend | null>(null);
 
   const { data: sends = [], isLoading } = useQuery<PulseSend[]>({
@@ -165,7 +226,7 @@ function PulsesPage() {
               recebe a resposta, a IA resume e vira insumo pra 1:1 e CORE.
             </p>
             <div className="mt-5 sm:hidden">
-              <Dialog open={openNew} onOpenChange={setOpenNew}>
+              <Dialog open={openNew} onOpenChange={(o) => { if (!o) setPresetKind(null); setOpenNew(o); }}>
                 <DialogTrigger asChild>
                   <Button size="lg" className="gap-2 rounded-full bg-foreground px-5 text-background hover:bg-foreground/90">
                     <Plus className="h-4 w-4" /> Enviar pulso
@@ -174,8 +235,10 @@ function PulsesPage() {
                 <NewSendDialog
                   orgId={orgId}
                   team={team}
+                  presetKind={presetKind ?? undefined}
                   onDone={() => {
                     setOpenNew(false);
+                    setPresetKind(null);
                     qc.invalidateQueries({ queryKey: ["pulses", orgId] });
                   }}
                 />
@@ -184,7 +247,7 @@ function PulsesPage() {
           </div>
           <div className="relative hidden sm:block">
             <div className="absolute right-0 top-0 hidden sm:block">
-              <Dialog open={openNew} onOpenChange={setOpenNew}>
+              <Dialog open={openNew} onOpenChange={(o) => { if (!o) setPresetKind(null); setOpenNew(o); }}>
                 <DialogTrigger asChild>
                   <Button size="lg" className="gap-2 rounded-full bg-foreground px-5 text-background shadow-md hover:bg-foreground/90">
                     <Plus className="h-4 w-4" /> Enviar pulso
@@ -193,8 +256,10 @@ function PulsesPage() {
                 <NewSendDialog
                   orgId={orgId}
                   team={team}
+                  presetKind={presetKind ?? undefined}
                   onDone={() => {
                     setOpenNew(false);
+                    setPresetKind(null);
                     qc.invalidateQueries({ queryKey: ["pulses", orgId] });
                   }}
                 />
@@ -302,9 +367,21 @@ function PulsesPage() {
             Perguntas curtas revelam muito sobre o que realmente importa.
           </p>
         </div>
-        <Button variant="outline" size="sm" className="shrink-0 rounded-full border-primary/30 bg-background text-primary hover:bg-primary/10 hover:text-primary">
-          Ver sugestões <ChevronRight className="ml-0.5 h-3 w-3" />
-        </Button>
+        <Dialog open={openSuggestions} onOpenChange={setOpenSuggestions}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="shrink-0 rounded-full border-primary/30 bg-background text-primary hover:bg-primary/10 hover:text-primary">
+              Ver sugestões <ChevronRight className="ml-0.5 h-3 w-3" />
+            </Button>
+          </DialogTrigger>
+          <SuggestionsDialog
+            suggestions={PULSE_SUGGESTIONS}
+            onApply={(s) => {
+              setOpenSuggestions(false);
+              setPresetKind(s.kind);
+              setOpenNew(true);
+            }}
+          />
+        </Dialog>
       </div>
 
       {rest.length > 0 && (
@@ -591,16 +668,67 @@ function ShareButtons({ send }: { send: PulseSend }) {
   );
 }
 
+function SuggestionsDialog({
+  suggestions,
+  onApply,
+}: {
+  suggestions: Suggestion[];
+  onApply: (s: Suggestion) => void;
+}) {
+  return (
+    <DialogContent className="sm:max-w-2xl max-h-[92vh] flex-col overflow-hidden">
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          Sugestões de pulsos prontos
+        </DialogTitle>
+      </DialogHeader>
+      <div className="flex-1 overflow-y-auto py-2 pr-1 space-y-3">
+        {suggestions.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => onApply(s)}
+            className="w-full rounded-2xl border border-border bg-background p-4 text-left transition hover:border-primary/50 hover:bg-primary/5"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-violet-600">
+                    {KIND_LABEL[s.kind]}
+                  </span>
+                </div>
+                <div className="mt-1.5 font-semibold leading-snug">{s.title}</div>
+                <p className="mt-1 text-sm text-muted-foreground">{s.description}</p>
+                <div className="mt-2 text-[11px] font-medium text-primary/80">
+                  🕒 {s.when}
+                </div>
+              </div>
+              <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
+            </div>
+          </button>
+        ))}
+      </div>
+      <DialogFooter>
+        <p className="mr-auto text-[11px] text-muted-foreground">
+          Clique em uma sugestão para abrir o envio com o modelo já selecionado.
+        </p>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
 function NewSendDialog({
   orgId,
   team,
   onDone,
   presetSubjectUserId,
+  presetKind,
 }: {
   orgId: string;
   team: TeamOption[];
   onDone: () => void;
   presetSubjectUserId?: string;
+  presetKind?: Kind;
 }) {
   const { data: templates = [] } = useQuery<Template[]>({
     queryKey: ["pulse-templates", orgId],
@@ -615,6 +743,13 @@ function NewSendDialog({
   const [expiresInDays, setExpiresInDays] = useState(7);
 
   const selected = useMemo(() => templates.find((t) => t.id === templateId), [templates, subjectUserId, templateId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (templates.length && presetKind && !templateId) {
+      const match = templates.find((t) => t.kind === presetKind);
+      if (match) setTemplateId(match.id);
+    }
+  }, [templates, presetKind, templateId]);
 
   const create = useMutation({
     mutationFn: () =>
