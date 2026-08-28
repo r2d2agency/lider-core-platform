@@ -170,35 +170,83 @@ function RitualsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Dialog open={creating} onOpenChange={setCreating}>
-          <DialogTrigger asChild><Button size="sm"><Plus className="h-3.5 w-3.5" /> Novo ritual</Button></DialogTrigger>
-          <DialogContent><CreateForm onSave={(v) => create.mutate(v)} saving={create.isPending} /></DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {list.data?.map((r) => (
-          <button key={r.id} onClick={() => setDetailId(r.id)} className="rounded-2xl border border-border bg-card p-5 text-left transition-shadow hover:shadow-md">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
-              <Workflow className="h-3.5 w-3.5" /> {labelType(r.type)}
+      {list.data?.length === 0 && (
+        <section className="rounded-3xl border border-border bg-card p-6">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <Workflow className="h-3.5 w-3.5" /> Rituais de gestão
+              </div>
+              <h1 className="mt-2 font-display text-2xl leading-tight">Por que ter rituais?</h1>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Ritual é uma reunião recorrente com propósito claro — o ritmo da sua gestão. Quando eles existem e acontecem,
+                você ganha previsibilidade, alinhamento e controle da operação sem precisar "sair apagando incêndio".
+              </p>
+              <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+                <div className="flex gap-2"><span className="font-semibold text-foreground">Comece pelo mínimo viável:</span></div>
+                <ul className="space-y-1 pl-5 marker:text-violet-500 list-disc">
+                  <li><b>Daily (15 min/dia)</b> — alinhamento rápido de prioridades e bloqueios com a equipe.</li>
+                  <li><b>Weekly (60 min/semana)</b> — revisão da semana, prioridades da próxima e pendências.</li>
+                  <li><b>1:1 (45 min/quinzena)</b> — conversa individual com cada liderado sobre carreira e desempenho.</li>
+                  <li><b>Retrospectiva (90 min/sprint)</b> — lições aprendidas e planos de ação concretos.</li>
+                  <li><b>Checkpoint de Indicadores (60 min/mês)</b> — acompanhamento de metas e desvios dos KPIs.</li>
+                </ul>
+                <p className="mt-4 rounded-2xl border border-violet-200/70 bg-violet-50/70 p-3 text-xs text-violet-800 dark:border-violet-800/50 dark:bg-violet-950/40 dark:text-violet-200">
+                  💡 <b>Dica:</b> ao clicar em <b>Novo ritual</b>, você encontrará <b>10 modelos prontos</b> com nome, objetivo e
+                  pauta padrão. Basta selecionar um deles para já sair com tudo preenchido.
+                </p>
+              </div>
             </div>
-            <div className="mt-2 font-display text-xl">{r.name}</div>
-            <div className="mt-1 line-clamp-2 text-sm text-muted-foreground">{r.objective ?? "Sem objetivo definido."}</div>
-            <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> {r.durationMin} min</span>
-              <span>{labelCadence(r.cadence)}</span>
-              <span>·</span>
-              <span>{r._count.occurrences} ocorrências</span>
+            <div className="flex flex-col gap-3 self-start">
+              <Button className="gap-2" onClick={() => setCreating(true)}>
+                <Plus className="h-4 w-4" /> Criar meu primeiro ritual
+              </Button>
+              <span className="text-center text-[11px] text-muted-foreground">
+                Sugestão: comece criando o Daily da equipe
+              </span>
             </div>
-          </button>
-        ))}
-        {list.data?.length === 0 && (
-          <div className="col-span-full rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-            Nenhum ritual cadastrado. Comece com um Daily, uma Weekly e um 1:1.
           </div>
-        )}
-      </div>
+        </section>
+      )}
+
+      {list.data && list.data.length > 0 && (
+        <div className="flex justify-end">
+          <Dialog open={creating} onOpenChange={setCreating}>
+            <DialogTrigger asChild><Button size="sm"><Plus className="h-3.5 w-3.5" /> Novo ritual</Button></DialogTrigger>
+            <DialogContent className="sm:max-w-2xl max-h-[92vh] overflow-hidden flex flex-col">
+              <CreateForm onSave={(v) => create.mutate(v)} saving={create.isPending} />
+            </DialogContent>
+          </Dialog>
+        </div>
+      )}
+
+      {list.data && list.data.length > 0 && (
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {list.data.map((r) => (
+            <button key={r.id} onClick={() => setDetailId(r.id)} className="rounded-2xl border border-border bg-card p-5 text-left transition-shadow hover:shadow-md">
+              <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+                <Workflow className="h-3.5 w-3.5" /> {labelType(r.type)}
+              </div>
+              <div className="mt-2 font-display text-xl">{r.name}</div>
+              <div className="mt-1 line-clamp-2 text-sm text-muted-foreground">{r.objective ?? "Sem objetivo definido."}</div>
+              <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> {r.durationMin} min</span>
+                <span>{labelCadence(r.cadence)}</span>
+                <span>·</span>
+                <span>{r._count.occurrences} ocorrências</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {list.data?.length === 0 && (
+        <Dialog open={creating} onOpenChange={setCreating}>
+          <DialogContent className="sm:max-w-2xl max-h-[92vh] overflow-hidden flex flex-col">
+            <CreateForm onSave={(v) => create.mutate(v)} saving={create.isPending} />
+          </DialogContent>
+        </Dialog>
+      )}
 
       <Sheet open={!!detailId} onOpenChange={(o) => !o && setDetailId(null)}>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
@@ -231,81 +279,86 @@ function CreateForm({ onSave, saving }: { onSave: (v: Record<string, unknown>) =
   }
 
   return (
-    <div className="space-y-5">
-      <DialogHeader><DialogTitle>Novo ritual</DialogTitle></DialogHeader>
+    <div className="flex min-h-0 flex-col gap-0">
+      <DialogHeader className="flex-none pb-3">
+        <DialogTitle>Novo ritual</DialogTitle>
+      </DialogHeader>
 
-      <div className="rounded-2xl border border-border bg-secondary/30 p-4">
-        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          <Sparkles className="h-3.5 w-3.5" /> Sugestões prontas — clique para usar
-        </div>
-        <div className="mt-3 grid max-h-[340px] grid-cols-1 gap-2 overflow-y-auto pr-1 md:grid-cols-2">
-          {RITUAL_TEMPLATES.map((tpl, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => applyTemplate(tpl, idx)}
-              className={`group flex items-start gap-3 rounded-xl border p-3 text-left transition-all ${
-                selectedTemplate === idx
-                  ? "border-violet-400 bg-violet-50 ring-2 ring-violet-200 dark:border-violet-500 dark:bg-violet-950/40 dark:ring-violet-700/40"
-                  : "border-border bg-card hover:border-violet-300 hover:bg-violet-50/40 dark:hover:border-violet-600 dark:hover:bg-violet-950/20"
-              }`}
-            >
-              <div className={`mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full border text-[10px] ${
-                selectedTemplate === idx
-                  ? "border-violet-500 bg-violet-500 text-white dark:border-violet-400 dark:bg-violet-400"
-                  : "border-muted-foreground/40 text-muted-foreground opacity-0 group-hover:opacity-100"
-              }`}>
-                {selectedTemplate === idx ? <Check className="h-3 w-3" /> : idx + 1}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-display text-sm">{tpl.name}</span>
-                  <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    {labelType(tpl.type)}
-                  </span>
+      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto pr-1 pb-2">
+        <div className="rounded-2xl border border-border bg-secondary/30 p-4">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <Sparkles className="h-3.5 w-3.5" /> Sugestões prontas — clique para usar
+          </div>
+          <div className="mt-3 grid max-h-[260px] grid-cols-1 gap-2 overflow-y-auto pr-1 md:grid-cols-2">
+            {RITUAL_TEMPLATES.map((tpl, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => applyTemplate(tpl, idx)}
+                className={`group flex items-start gap-3 rounded-xl border p-3 text-left transition-all ${
+                  selectedTemplate === idx
+                    ? "border-violet-400 bg-violet-50 ring-2 ring-violet-200 dark:border-violet-500 dark:bg-violet-950/40 dark:ring-violet-700/40"
+                    : "border-border bg-card hover:border-violet-300 hover:bg-violet-50/40 dark:hover:border-violet-600 dark:hover:bg-violet-950/20"
+                }`}
+              >
+                <div className={`mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full border text-[10px] ${
+                  selectedTemplate === idx
+                    ? "border-violet-500 bg-violet-500 text-white dark:border-violet-400 dark:bg-violet-400"
+                    : "border-muted-foreground/40 text-muted-foreground opacity-0 group-hover:opacity-100"
+                }`}>
+                  {selectedTemplate === idx ? <Check className="h-3 w-3" /> : idx + 1}
                 </div>
-                <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
-                  <span>{tpl.durationMin} min</span>
-                  <span>·</span>
-                  <span>{tpl.cadence}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-display text-sm">{tpl.name}</span>
+                    <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {labelType(tpl.type)}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
+                    <span>{tpl.durationMin} min</span>
+                    <span>·</span>
+                    <span>{tpl.cadence}</span>
+                  </div>
                 </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            ))}
+          </div>
         </div>
+
+        <div className="space-y-1.5"><Label>Nome</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5"><Label>Tipo</Label>
+            <select value={type} onChange={(e) => setType(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+              {TYPES.map((t) => <option key={t.v} value={t.v}>{t.l}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1.5"><Label>Dia da semana</Label>
+            <select value={weekDay} onChange={(e) => setWeekDay(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+              <option value="">Selecione…</option>
+              <option value="segunda">Segunda</option>
+              <option value="terca">Terça</option>
+              <option value="quarta">Quarta</option>
+              <option value="quinta">Quinta</option>
+              <option value="sexta">Sexta</option>
+              <option value="sabado">Sábado</option>
+              <option value="domingo">Domingo</option>
+            </select>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5"><Label>Duração (min)</Label><Input type="number" value={durationMin} onChange={(e) => setDurationMin(Number(e.target.value))} /></div>
+          <div className="space-y-1.5"><Label>Cadência</Label><Input value={cadence} placeholder="ex: diária, semanal" onChange={(e) => setCadence(e.target.value)} /></div>
+        </div>
+        <div className="space-y-1.5"><Label>Objetivo</Label><Textarea rows={2} value={objective} onChange={(e) => setObjective(e.target.value)} /></div>
+        <div className="space-y-1.5"><Label>Pauta padrão (Markdown)</Label><Textarea rows={4} value={agenda} onChange={(e) => setAgenda(e.target.value)} /></div>
       </div>
 
-      <div className="space-y-1.5"><Label>Nome</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5"><Label>Tipo</Label>
-          <select value={type} onChange={(e) => setType(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
-            {TYPES.map((t) => <option key={t.v} value={t.v}>{t.l}</option>)}
-          </select>
-        </div>
-        <div className="space-y-1.5"><Label>Dia da semana (opcional)</Label>
-          <select value={weekDay} onChange={(e) => setWeekDay(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
-            <option value="">Selecione...</option>
-            <option value="segunda">Segunda-feira</option>
-            <option value="terca">Terça-feira</option>
-            <option value="quarta">Quarta-feira</option>
-            <option value="quinta">Quinta-feira</option>
-            <option value="sexta">Sexta-feira</option>
-            <option value="sabado">Sábado</option>
-            <option value="domingo">Domingo</option>
-          </select>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5"><Label>Duração (min)</Label><Input type="number" value={durationMin} onChange={(e) => setDurationMin(Number(e.target.value))} /></div>
-        <div className="space-y-1.5"><Label>Cadência (ex: diária, semanal)</Label><Input value={cadence} onChange={(e) => setCadence(e.target.value)} /></div>
-      </div>
-      <div className="space-y-1.5"><Label>Objetivo</Label><Textarea rows={2} value={objective} onChange={(e) => setObjective(e.target.value)} /></div>
-      <div className="space-y-1.5"><Label>Pauta padrão (Markdown)</Label><Textarea rows={4} value={agenda} onChange={(e) => setAgenda(e.target.value)} /></div>
-      <DialogFooter>
+      <DialogFooter className="flex-none border-t border-border pt-3">
         <Button disabled={!name || saving} onClick={() => onSave({
           name, type, objective: objective || null, cadence: cadence || null, durationMin,
           agendaTemplate: agenda || null, weekDay: weekDay || null, scope: "org", scopeId: null,
-        })}>{saving ? "Salvando…" : "Criar"}</Button>
+        })}>{saving ? "Salvando…" : "Criar ritual"}</Button>
       </DialogFooter>
     </div>
   );
