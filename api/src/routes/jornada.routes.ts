@@ -544,7 +544,10 @@ jornadaRouter.get("/:orgId/jornada/progress", async (req, res) => {
       occurrences,
     ] = await Promise.all([
       prisma.leaderProfile.findFirst({ where: { organizationId: orgId, userId } }),
-      prisma.pdi.count({ where: { organizationId: orgId, subjectUserId: userId } }),
+      prisma.pdi.findMany({
+        where: { organizationId: orgId, subjectUserId: userId },
+        select: { id: true, status: true },
+      }),
       prisma.membership.count({ where: { organizationId: orgId } }),
       prisma.teamMemberProfile.count({ where: { organizationId: orgId } }),
       prisma.ritual.count({ where: { organizationId: orgId, status: "active" } }),
@@ -578,6 +581,8 @@ jornadaRouter.get("/:orgId/jornada/progress", async (req, res) => {
 
     const discSecondary = extractDiscSecondary(profile);
     const discProfileLabel = formatDiscProfile(profile?.discPrimary, discSecondary);
+    const activePdis = pdiCount.filter((p) => p.status === "ativo").length;
+    const concludedPdis = pdiCount.filter((p) => p.status === "concluido").length;
     const hsh =
       profile?.hardSelfScore != null &&
       profile?.softSelfScore != null &&
@@ -602,7 +607,18 @@ jornadaRouter.get("/:orgId/jornada/progress", async (req, res) => {
       { key: "cerebral", label: "Predominância cerebral (4 animais)", status: mark(!!profile?.cerebralPrimary), detail: profile?.cerebralPrimary ? `Predominância: ${profile.cerebralPrimary}` : "Ainda não respondido", to: "/app/consciencia/assessment" },
       { key: "hsh", label: "Radar Hard · Soft · Heart", status: mark(hsh), detail: hsh ? `Hard ${profile!.hardSelfScore} · Soft ${profile!.softSelfScore} · Heart ${profile!.heartSelfScore}` : "Radar HSH pendente", to: "/app/consciencia" },
       { key: "cargo", label: "Descrição de cargo e atividades", status: mark(!!(profile?.activityDescription || profile?.activityDocText)), detail: profile?.activityDescription || profile?.activityDocText ? "Descrição registrada" : "Descreva ou envie o documento das suas atividades", to: "/app/consciencia/activity" },
-      { key: "pdi", label: "PDI criado", status: mark(pdiCount > 0), detail: pdiCount > 0 ? `${pdiCount} PDI(s) ativos` : "O PDI nasce do cruzamento Radar + Sabotadores + cargo", to: "/app/consciencia/pdi" },
+      {
+        key: "pdi",
+        label: "PDI pessoal",
+        status: mark(activePdis > 0 || concludedPdis > 0, (pdiCount.length ?? 0) > 0),
+        detail:
+          activePdis > 0
+            ? `${activePdis} ciclo(s) ativo(s) de evolução`
+            : concludedPdis > 0
+              ? `${concludedPdis} ciclo(s) concluído(s)`
+              : "O PDI nasce do cruzamento Radar + Sabotadores + cargo",
+        to: "/app/consciencia/pdi",
+      },
     ];
 
     const organizacao: JourneyStep[] = [

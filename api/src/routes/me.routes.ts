@@ -131,7 +131,7 @@ meRouter.get("/home/attention", async (req, res) => {
           organizationId: orgId,
           OR: [{ subjectUserId: userId }, { authorId: userId }],
         },
-        select: { id: true },
+        select: { id: true, status: true },
       }),
       prisma.pdiSnapshot.findMany({
         where: { organizationId: orgId, subjectUserId: userId },
@@ -230,6 +230,9 @@ meRouter.get("/home/attention", async (req, res) => {
     const lastSnapshot = snapshots?.[0];
     const prevSnapshot = snapshots?.[1];
     
+    const activePdis = pdis.filter((p) => p.status === "ativo").length;
+    const concludedPdis = pdis.filter((p) => p.status === "concluido").length;
+
     if (pdis.length === 0) {
       items.push({
         id: "pdi-none",
@@ -237,7 +240,16 @@ meRouter.get("/home/attention", async (req, res) => {
         reason: "PDI não iniciado",
         severity: "high",
         kind: "pdi",
-        link: "/app/pdis"
+        link: "/app/consciencia/pdi"
+      });
+    } else if (activePdis === 0 && concludedPdis > 0) {
+      items.push({
+        id: "pdi-ready-next",
+        title: "Próximo ciclo de evolução",
+        reason: `Você concluiu ${concludedPdis} ciclo(s). Já pode gerar um novo PDI.`,
+        severity: "low",
+        kind: "pdi",
+        link: "/app/consciencia/pdi",
       });
     } else if (lastSnapshot && prevSnapshot && lastSnapshot.radarSnapshot && prevSnapshot.radarSnapshot) {
       const cur = lastSnapshot.radarSnapshot as any;
@@ -253,7 +265,7 @@ meRouter.get("/home/attention", async (req, res) => {
           reason: `Seu Radar de Autogestão subiu ${diff} pontos no último ciclo!`,
           severity: "low",
           kind: "pdi",
-          link: "/app/pdis"
+          link: "/app/consciencia/pdi"
         });
       }
     }

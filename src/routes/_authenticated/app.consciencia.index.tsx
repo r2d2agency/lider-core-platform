@@ -99,6 +99,22 @@ type MeResponse = {
   commitments: Commitment[];
   signals: CrossSignal[];
   assessmentStale: boolean;
+  currentPersonalPdi?: {
+    id: string;
+    title: string;
+    status: "ativo" | "concluido" | "pausado" | "cancelado";
+    totalGoals: number;
+    completedGoals: number;
+  } | null;
+  personalPdiSummary?: {
+    totalCycles: number;
+    activeCycles: number;
+    concludedCycles: number;
+    currentStatus: "ativo" | "concluido" | "pausado" | "cancelado" | null;
+    currentGoals: number;
+    currentCompletedGoals: number;
+    canStartNewCycle: boolean;
+  };
 };
 
 function formatDiscPair(
@@ -163,6 +179,8 @@ function ConscienciaPage() {
 
   const profile = data?.profile ?? null;
   const commitments = data?.commitments ?? [];
+  const personalPdi = data?.currentPersonalPdi ?? null;
+  const personalPdiSummary = data?.personalPdiSummary ?? null;
 
   const hshFilled =
     profile?.hardSelfScore != null &&
@@ -259,9 +277,15 @@ function ConscienciaPage() {
       key: "pdi",
       icon: Target,
       title: "PDI",
-      subtitle: activeCommitments > 0 ? `${activeCommitments} meta${activeCommitments > 1 ? "s" : ""} ativa${activeCommitments > 1 ? "s" : ""}` : "Plano de desenvolvimento",
+      subtitle: personalPdi
+        ? `${personalPdi.completedGoals}/${personalPdi.totalGoals} metas concluídas`
+        : personalPdiSummary?.concludedCycles
+          ? `${personalPdiSummary.concludedCycles} ciclo${personalPdiSummary.concludedCycles > 1 ? "s" : ""} concluído${personalPdiSummary.concludedCycles > 1 ? "s" : ""}`
+          : activeCommitments > 0
+            ? `${activeCommitments} meta${activeCommitments > 1 ? "s" : ""} ativa${activeCommitments > 1 ? "s" : ""}`
+            : "Plano de desenvolvimento",
       minutes: 3,
-      done: activeCommitments > 0 || !!profile?.autoPdiGeneratedAt,
+      done: !!personalPdi || (personalPdiSummary?.concludedCycles ?? 0) > 0 || activeCommitments > 0 || !!profile?.autoPdiGeneratedAt,
       weight: 20,
       to: "/app/consciencia/pdi",
     },
