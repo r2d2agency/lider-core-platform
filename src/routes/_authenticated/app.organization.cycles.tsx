@@ -69,10 +69,68 @@ function CyclesPage() {
   const closed = useMemo(() => cycles.filter((c) => c.status === "closed"), [cycles]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      <div className="space-y-4">
+        <div>
+          <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600">
+            <Target className="h-3.5 w-3.5" /> Pilar · Resultado
+          </div>
+          <h1 className="mt-3 font-display text-3xl font-bold leading-[1.05] tracking-tight sm:text-4xl">
+            Ciclos & Metas SMART
+          </h1>
+          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+            Defina um <strong className="text-foreground">horizonte de tempo</strong> (trimestre, campanha, entrega) e,
+            dentro dele, compromissos <strong className="text-foreground">SMART</strong> ligados aos indicadores do
+            negócio. Ciclos fecham com retrospectiva e alimentam o Fechamento do CORE.
+          </p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm">
+            <div className="flex items-center gap-2">
+              <div className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                <CalendarRange className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold leading-tight">🎯 O que é um Ciclo?</div>
+                <div className="text-[12px] text-muted-foreground">
+                  O "balde de tempo" onde tudo acontece — trimestre, campanha Black Friday, lançamento de produto.
+                </div>
+              </div>
+            </div>
+            <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+              <li className="flex items-start gap-1.5"><span className="text-emerald-600">•</span> Duração típica: 45 / 60 / 90 dias</li>
+              <li className="flex items-start gap-1.5"><span className="text-emerald-600">•</span> Carrega metas, 9-box, OKRs e retrospectiva</li>
+              <li className="flex items-start gap-1.5"><span className="text-emerald-600">•</span> Ao encerrar, vira histórico do Fechamento de Ciclo</li>
+            </ul>
+          </div>
+
+          <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm">
+            <div className="flex items-center gap-2">
+              <div className="grid h-9 w-9 place-items-center rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
+                <Grid3X3 className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold leading-tight">🧩 O que é uma Meta SMART?</div>
+                <div className="text-[12px] text-muted-foreground">
+                  Compromisso do time com 5 critérios obrigatórios para não ser só "intenção".
+                </div>
+              </div>
+            </div>
+            <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+              <li className="flex items-center gap-1.5"><span className="inline-grid h-4 w-4 place-items-center rounded bg-sky-200/60 text-[10px] font-bold text-sky-700">S</span>Específica — o quê, exatamente?</li>
+              <li className="flex items-center gap-1.5"><span className="inline-grid h-4 w-4 place-items-center rounded bg-sky-200/60 text-[10px] font-bold text-sky-700">M</span>ensurável — qual número mede sucesso?</li>
+              <li className="flex items-center gap-1.5"><span className="inline-grid h-4 w-4 place-items-center rounded bg-sky-200/60 text-[10px] font-bold text-sky-700">A</span>tingível — com o time e recursos atuais?</li>
+              <li className="flex items-center gap-1.5"><span className="inline-grid h-4 w-4 place-items-center rounded bg-sky-200/60 text-[10px] font-bold text-sky-700">R</span>elevante — por que isso agora pro negócio?</li>
+              <li className="flex items-center gap-1.5"><span className="inline-grid h-4 w-4 place-items-center rounded bg-sky-200/60 text-[10px] font-bold text-sky-700">T</span>emporal — até quando? (milestones)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Defina horizontes (trimestre, campanha) e escreva metas <strong className="text-foreground">SMART</strong> ligadas aos indicadores da casa.
+          Lista de ciclos da organização. Clique em <strong className="text-foreground">"+ Meta"</strong> para cadastrar um compromisso SMART.
         </div>
         <Dialog open={openCycle} onOpenChange={setOpenCycle}>
           <DialogTrigger asChild>
@@ -87,9 +145,50 @@ function CyclesPage() {
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       ) : cycles.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border p-10 text-center">
-          <Target className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-3 text-sm text-muted-foreground">Nenhum ciclo ainda. Comece pelo trimestre atual.</p>
+        <div className="space-y-4">
+          <div className="rounded-3xl border border-dashed border-border bg-secondary/30 p-8 text-center sm:p-12">
+            <Target className="mx-auto h-10 w-10 text-emerald-500" />
+            <div className="mt-4 text-lg font-semibold">Nenhum ciclo criado ainda</div>
+            <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
+              Um ciclo é o jeito mais simples de evitar que metas fiquem "abertas para sempre".
+              Comece definindo um horizonte curto (45–90 dias) e 2–3 metas SMART.
+            </p>
+
+            <div className="mx-auto mt-6 max-w-xl rounded-2xl border border-border/70 bg-background p-5 text-left shadow-sm">
+              <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-emerald-600">
+                <BookOpen className="h-3.5 w-3.5" /> Exemplo prático · Q3 2026
+              </div>
+              <div className="text-sm leading-relaxed">
+                <div className="font-semibold">📅 Ciclo: Q3 2026 · Aceleração comercial</div>
+                <div className="text-xs text-muted-foreground">01/jul até 30/set · 90 dias · Status: Ativo</div>
+                <div className="mt-4 space-y-2 text-xs">
+                  <div className="rounded-xl border border-border/60 bg-secondary/40 p-3">
+                    <div className="font-semibold">🎯 Meta 1: Fechar 12 novos contratos</div>
+                    <div className="mt-1 text-muted-foreground">
+                      S· contratos de assinatura full; M· 12 fechados +30% ticket; A· time 4 SDR + 2 closers;
+                      R· meta faturamento anual; T· até 30/09 com milestone dia 10 de cada mês.
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-border/60 bg-secondary/40 p-3">
+                    <div className="font-semibold">🧪 Meta 2: NPS ≥ 55 nos clientes ativos</div>
+                    <div className="mt-1 text-muted-foreground">
+                      S· pesquisa trimestral + follow-up de detratores; M· NPS ≥ 55;
+                      A· base de 340 clientes; R· retenção 92% é meta anual; T· pesquisa encerra 20/09.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <Dialog open={openCycle} onOpenChange={setOpenCycle}>
+              <DialogTrigger asChild>
+                <Button size="lg" className="mt-6 gap-2">
+                  <Plus className="h-4 w-4" /> Criar o primeiro ciclo
+                </Button>
+              </DialogTrigger>
+              <CycleDialog onClose={() => setOpenCycle(false)} />
+            </Dialog>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
@@ -173,14 +272,63 @@ function CycleCard({ cycle, onAddGoal, onRetro, onDelete }: { cycle: Cycle; onAd
 }
 
 function SmartLine({ goal }: { goal: Goal }) {
-  const parts: string[] = [];
-  if (goal.specific)   parts.push(`S · ${goal.specific}`);
-  if (goal.measurable) parts.push(`M · ${goal.measurable}`);
-  if (goal.achievable) parts.push(`A · ${goal.achievable}`);
-  if (goal.relevant)   parts.push(`R · ${goal.relevant}`);
-  if (goal.timeBound)  parts.push(`T · ${goal.timeBound}`);
-  if (!parts.length) return null;
-  return <p className="mt-1 text-xs text-muted-foreground">{parts.join(" · ")}</p>;
+  const items = [
+    { key: "S", label: "Específica",  value: goal.specific,   hint: "o quê exatamente" },
+    { key: "M", label: "Mensurável",  value: goal.measurable, hint: "qual número" },
+    { key: "A", label: "Atingível",   value: goal.achievable, hint: "capacidade atual" },
+    { key: "R", label: "Relevante",   value: goal.relevant,   hint: "por que agora" },
+    { key: "T", label: "Temporal",    value: goal.timeBound,  hint: "até quando" },
+  ] as const;
+  const filled = items.filter((i) => i.value).length;
+  if (filled === 0) {
+    return (
+      <div className="mt-2 flex flex-wrap gap-1">
+        {items.map((i) => (
+          <span key={i.key} className="inline-flex items-center gap-1 rounded-full border border-dashed border-border bg-muted/40 px-2 py-0.5 text-[10px] text-muted-foreground/70">
+            <span className="font-semibold">{i.key}</span>
+            <span>· sem {i.hint}</span>
+          </span>
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div className="mt-2 space-y-1.5">
+      <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+        SMART · <span className={filled === 5 ? "text-emerald-600" : "text-amber-600"}>{filled}/5</span> critérios preenchidos
+      </div>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-sky-100 dark:bg-sky-500/15">
+        <div
+          className="h-full rounded-full bg-sky-500 transition-all"
+          style={{ width: `${(filled / 5) * 100}%` }}
+        />
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {items.map((i) => {
+          const ok = !!i.value;
+          return (
+            <div
+              key={i.key}
+              className={
+                "group relative inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] " +
+                (ok
+                  ? "bg-sky-500/10 text-sky-700 dark:text-sky-300 hover:bg-sky-500/20"
+                  : "bg-muted/50 text-muted-foreground hover:bg-muted")
+              }
+              title={`${i.label} · ${ok ? i.value : "não preenchido"}`}
+            >
+              <span className={"inline-grid h-4 w-4 place-items-center rounded-full text-[10px] font-bold " + (ok ? "bg-sky-500 text-white" : "bg-muted-foreground/20 text-muted-foreground")}>
+                {i.key}
+              </span>
+              <span className="max-w-[180px] truncate">
+                {ok ? i.value : <span className="italic">sem {i.hint}</span>}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function CycleDialog({ onClose }: { onClose: () => void }) {
@@ -210,9 +358,15 @@ function CycleDialog({ onClose }: { onClose: () => void }) {
   });
 
   return (
-    <DialogContent className="sm:max-w-lg">
-      <DialogHeader><DialogTitle>Novo ciclo</DialogTitle></DialogHeader>
-      <div className="space-y-3">
+    <DialogContent className="sm:max-w-lg max-h-[92vh] flex-col overflow-hidden">
+      <DialogHeader>
+        <DialogTitle>Novo ciclo</DialogTitle>
+        <p className="text-xs text-muted-foreground">
+          O ciclo define o <strong>horizonte de tempo</strong> onde suas metas SMART vivem.
+          Exemplos: trimestre, campanha promocional, lançamento de produto.
+        </p>
+      </DialogHeader>
+      <div className="flex-1 space-y-3 overflow-y-auto py-2 pr-1">
         <div><Label>Nome</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Q3 2026 · Aceleração comercial" /></div>
         <div className="grid grid-cols-2 gap-3">
           <div><Label>Início</Label><Input type="date" value={start} onChange={(e) => setStart(e.target.value)} /></div>
@@ -223,18 +377,21 @@ function CycleDialog({ onClose }: { onClose: () => void }) {
           <Select value={status} onValueChange={(v) => setStatus(v as CycleStatus)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="planning">Planejamento</SelectItem>
-              <SelectItem value="active">Ativo</SelectItem>
-              <SelectItem value="closed">Encerrado</SelectItem>
+              <SelectItem value="planning">📝 Planejamento — ainda não começou</SelectItem>
+              <SelectItem value="active">🚀 Ativo — em execução agora</SelectItem>
+              <SelectItem value="closed">✅ Encerrado — virou histórico</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <div><Label>Resumo (opcional)</Label><Textarea rows={3} value={summary} onChange={(e) => setSummary(e.target.value)} /></div>
+        <div>
+          <Label>Resumo do ciclo (opcional)</Label>
+          <Textarea rows={3} value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="O que queremos entregar nesse período? Quais os 2–3 resultados que movem a agulha?" />
+        </div>
       </div>
       <DialogFooter>
         <Button variant="ghost" onClick={onClose}>Cancelar</Button>
         <Button disabled={!name || !start || !end || save.isPending} onClick={() => save.mutate()}>
-          {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Criar"}
+          {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Criar ciclo"}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -257,6 +414,8 @@ function GoalDialog({ cycleId, onClose }: { cycleId: string; onClose: () => void
     queryFn: () => api<any[]>(`/organization/${orgId}/indicators`),
   });
 
+  const filled = [S, M, A, R, T].filter((x) => x.trim()).length;
+
   const save = useMutation({
     mutationFn: () => api(`/organization/${orgId}/cycles/${cycleId}/goals`, {
       method: "POST",
@@ -277,15 +436,33 @@ function GoalDialog({ cycleId, onClose }: { cycleId: string; onClose: () => void
   });
 
   return (
-    <DialogContent className="sm:max-w-xl">
-      <DialogHeader><DialogTitle>Nova meta SMART</DialogTitle></DialogHeader>
-      <div className="space-y-3">
+    <DialogContent className="sm:max-w-xl max-h-[92vh] flex-col overflow-hidden">
+      <DialogHeader>
+        <DialogTitle>Nova meta SMART</DialogTitle>
+        <p className="text-xs text-muted-foreground">
+          Uma meta sem os 5 critérios SMART é só uma <em>intenção</em>. Preencha as 5 letras para
+          virar compromisso rastreável com o time.
+        </p>
+        <div className="mt-2 space-y-1.5">
+          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+            <span>SMART</span>
+            <span className={filled === 5 ? "text-emerald-600" : "text-amber-600"}>{filled}/5</span>
+          </div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+            <div
+              className="h-full rounded-full bg-sky-500 transition-all"
+              style={{ width: `${(filled / 5) * 100}%` }}
+            />
+          </div>
+        </div>
+      </DialogHeader>
+      <div className="flex-1 space-y-3 overflow-y-auto py-2 pr-1">
         <div><Label>Título</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Fechar 12 novos contratos até setembro" /></div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label>Indicador vinculado</Label>
+            <Label>Indicador vinculado (opcional)</Label>
             <Select value={indicatorLinkedId} onValueChange={setIndicatorLinkedId}>
-              <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Selecione um KPI..." /></SelectTrigger>
               <SelectContent>
                 {indicators.map((i) => (
                   <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
@@ -293,18 +470,58 @@ function GoalDialog({ cycleId, onClose }: { cycleId: string; onClose: () => void
               </SelectContent>
             </Select>
           </div>
-          <div><Label>Valor-alvo</Label><Input value={targetValue} onChange={(e) => setTargetValue(e.target.value)} placeholder="Ex: 95" /></div>
+          <div>
+            <Label>Valor-alvo (opcional)</Label>
+            <Input value={targetValue} onChange={(e) => setTargetValue(e.target.value)} placeholder="Ex: 95 ou 300000" />
+          </div>
         </div>
-        <div><Label>S · Específica</Label><Textarea rows={2} value={S} onChange={(e) => setS(e.target.value)} placeholder="O que exatamente?" /></div>
-        <div><Label>M · Mensurável</Label><Input value={M} onChange={(e) => setM(e.target.value)} placeholder="Ex.: 12 contratos, R$ 300k MRR" /></div>
-        <div><Label>A · Atingível</Label><Input value={A} onChange={(e) => setA(e.target.value)} placeholder="Recursos, capacidade" /></div>
-        <div><Label>R · Relevante</Label><Input value={R} onChange={(e) => setR(e.target.value)} placeholder="Por que agora?" /></div>
-        <div><Label>T · Temporal</Label><Input value={T} onChange={(e) => setT(e.target.value)} placeholder="Ex.: até 30/09" /></div>
+        <div className="rounded-xl border border-sky-200/60 bg-sky-500/5 p-3">
+          <div className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-sky-700">
+            <Grid3X3 className="h-3 w-3" /> 5 critérios SMART
+          </div>
+          <div className="space-y-2.5">
+            <div>
+              <Label className="text-[11px]">
+                <span className="mr-1 inline-grid h-4 w-4 place-items-center rounded-full bg-sky-500 text-[10px] font-bold text-white">S</span>
+                Específica — o que <strong>exatamente</strong> será entregue?
+              </Label>
+              <Textarea rows={2} value={S} onChange={(e) => setS(e.target.value)} placeholder="Ex: novos contratos de assinatura full, não de teste / plano básico." />
+            </div>
+            <div>
+              <Label className="text-[11px]">
+                <span className="mr-1 inline-grid h-4 w-4 place-items-center rounded-full bg-sky-500 text-[10px] font-bold text-white">M</span>
+                Mensurável — qual <strong>número</strong> diz que deu certo?
+              </Label>
+              <Input value={M} onChange={(e) => setM(e.target.value)} placeholder="Ex: 12 fechados + 30% de aumento no ticket médio." />
+            </div>
+            <div>
+              <Label className="text-[11px]">
+                <span className="mr-1 inline-grid h-4 w-4 place-items-center rounded-full bg-sky-500 text-[10px] font-bold text-white">A</span>
+                Atingível — com o <strong>time e recursos</strong> que temos hoje?
+              </Label>
+              <Input value={A} onChange={(e) => setA(e.target.value)} placeholder="Ex: time de 4 SDR + 2 closers · histórico 9/mês." />
+            </div>
+            <div>
+              <Label className="text-[11px]">
+                <span className="mr-1 inline-grid h-4 w-4 place-items-center rounded-full bg-sky-500 text-[10px] font-bold text-white">R</span>
+                Relevante — <strong>por que isso agora</strong> pro resultado?
+              </Label>
+              <Input value={R} onChange={(e) => setR(e.target.value)} placeholder="Ex: meta do ano é 500 clientes e H1 ficou 20% abaixo." />
+            </div>
+            <div>
+              <Label className="text-[11px]">
+                <span className="mr-1 inline-grid h-4 w-4 place-items-center rounded-full bg-sky-500 text-[10px] font-bold text-white">T</span>
+                Temporal — <strong>até quando</strong>? (com milestones)
+              </Label>
+              <Input value={T} onChange={(e) => setT(e.target.value)} placeholder="Ex: até 30/09 · 4 fechados até dia 10 de cada mês." />
+            </div>
+          </div>
+        </div>
       </div>
       <DialogFooter>
         <Button variant="ghost" onClick={onClose}>Cancelar</Button>
         <Button disabled={!title || save.isPending} onClick={() => save.mutate()}>
-          {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Adicionar"}
+          {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : `Adicionar meta ${filled ? `· SMART ${filled}/5` : ""}`}
         </Button>
       </DialogFooter>
     </DialogContent>
