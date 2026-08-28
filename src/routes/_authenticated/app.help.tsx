@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   Home, Brain, Users, Building, MessageSquare, Target, Gauge, BookOpen,
-  Compass, Sparkles, ChevronDown, HelpCircle, Download, Smartphone, Search,
+  Compass, Sparkles, ChevronDown, HelpCircle, Download, Smartphone, Search, LayoutGrid,
 } from "lucide-react";
 import { FadeIn } from "@/components/motion";
 import { SectionHeader } from "@/components/ui/metric-card";
@@ -66,6 +66,17 @@ const groups: { section: string; items: Item[] }[] = [
           "Registre Delegações claras — quem, o quê, quando.",
         ],
         tip: "Uma organização saudável tem no mínimo 1 ritual semanal ativo por área.",
+      },
+      {
+        icon: LayoutGrid, title: "Áreas", path: "/app/organization/areas",
+        summary: "Áreas são os grandes núcleos da empresa, acima das equipes. Ex.: Comercial, Marketing, Operações, RH.",
+        steps: [
+          "Abra Áreas para entender a estrutura atual da empresa.",
+          "Use o botão Criar área para cadastrar uma nova frente organizacional.",
+          "Defina um nome claro e uma descrição curta para deixar a finalidade daquele núcleo explícita.",
+          "Depois distribua equipes e responsabilidades dentro dessa área.",
+        ],
+        tip: "Pense em Área como um agrupador organizacional de várias equipes com a mesma função de negócio.",
       },
       {
         icon: MessageSquare, title: "1:1s", path: "/app/one-on-ones",

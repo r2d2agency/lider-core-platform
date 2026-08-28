@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { LayoutGrid } from "lucide-react";
+import { LayoutGrid, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/organization/areas")({
   component: AreasPage,
@@ -17,9 +17,11 @@ export const Route = createFileRoute("/_authenticated/app/organization/areas")({
 
 type Area = {
   id: string; name: string;
+  description?: string | null;
   mission: string | null; objective: string | null; kpis: string[];
   purpose: string | null; deliverables: string[];
   contextMd: string | null;
+  branch?: { id: string; name: string } | null;
   _count?: { memberships: number; teams?: number };
 };
 
@@ -27,6 +29,7 @@ function AreasPage() {
   const { orgId } = useCurrentOrg();
   const qc = useQueryClient();
   const [editing, setEditing] = useState<Area | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const q = useQuery({
     queryKey: ["platform", "areas", orgId],
@@ -46,10 +49,45 @@ function AreasPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const create = useMutation({
+    mutationFn: (payload: { name: string; description?: string | null }) =>
+      api(`/platform/organizations/${orgId}/areas`, { method: "POST", body: payload }),
+    onSuccess: () => {
+      toast.success("Área criada.");
+      qc.invalidateQueries({ queryKey: ["platform", "areas", orgId] });
+      qc.invalidateQueries({ queryKey: ["org"] });
+      setCreating(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   if (!orgId) return null;
 
   return (
     <div className="space-y-6">
+      <section className="rounded-3xl border border-border bg-card p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <LayoutGrid className="h-3.5 w-3.5" /> Áreas da empresa
+            </div>
+            <h1 className="mt-2 font-display text-2xl leading-tight">O que é uma área?</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Área é um agrupador organizacional acima das equipes. Ela serve para separar grandes frentes do negócio,
+              como Marketing, Comercial, Operações, Financeiro ou RH, e ajuda a organizar missão, objetivo e indicadores
+              de cada núcleo.
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Se você ainda não estruturou isso, comece criando as áreas principais da empresa e depois distribua as equipes
+              dentro delas.
+            </p>
+          </div>
+          <Button className="gap-2 self-start" onClick={() => setCreating(true)}>
+            <Plus className="h-4 w-4" /> Criar área
+          </Button>
+        </div>
+      </section>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {q.data?.map((a) => (
           <button
@@ -62,8 +100,13 @@ function AreasPage() {
             </div>
             <div className="mt-2 font-display text-xl">{a.name}</div>
             <div className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-              {a.purpose ?? a.mission ?? "Sem propósito definido."}
+              {a.purpose ?? a.mission ?? a.description ?? "Sem propósito definido."}
             </div>
+            {a.branch?.name && (
+              <div className="mt-2 text-[11px] text-muted-foreground">
+                Vinculada à filial {a.branch.name}
+              </div>
+            )}
             {a.deliverables?.length > 0 && (
               <div className="mt-2 text-[11px] text-muted-foreground">
                 {a.deliverables.length} entrega{a.deliverables.length === 1 ? "" : "s"} esperada{a.deliverables.length === 1 ? "" : "s"}
@@ -79,10 +122,17 @@ function AreasPage() {
         ))}
         {q.data && q.data.length === 0 && (
           <div className="col-span-full rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-            Cadastre áreas em <b>Admin → Hierarquia</b>.
+            Você ainda não criou nenhuma área. Use o botão <b>Criar área</b> para começar a estruturar a empresa.
           </div>
         )}
       </div>
+
+      <Sheet open={creating} onOpenChange={setCreating}>
+        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+          <SheetHeader><SheetTitle>Nova área</SheetTitle></SheetHeader>
+          <CreateAreaForm onSave={(v) => create.mutate(v)} saving={create.isPending} />
+        </SheetContent>
+      </Sheet>
 
       <Sheet open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
@@ -90,6 +140,43 @@ function AreasPage() {
           {editing && <AreaForm key={editing.id} area={editing} onSave={(v) => save.mutate(v)} saving={save.isPending} />}
         </SheetContent>
       </Sheet>
+    </div>
+  );
+}
+
+function CreateAreaForm({
+  onSave,
+  saving,
+}: {
+  onSave: (v: { name: string; description?: string | null }) => void;
+  saving: boolean;
+}) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+
+  return (
+    <div className="mt-4 space-y-4">
+      <div className="rounded-2xl border border-border bg-secondary/30 px-4 py-3 text-sm text-muted-foreground">
+        Crie uma área para representar uma frente maior da empresa. Exemplo: Comercial, Marketing, Operações, Financeiro ou RH.
+      </div>
+      <div className="space-y-1.5">
+        <Label>Nome da área</Label>
+        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex.: Comercial" />
+      </div>
+      <div className="space-y-1.5">
+        <Label>Descrição curta</Label>
+        <Textarea
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Ex.: Área responsável pela geração de receita, gestão do funil e expansão de clientes."
+        />
+      </div>
+      <div className="flex justify-end">
+        <Button disabled={saving || !name.trim()} onClick={() => onSave({ name: name.trim(), description: description.trim() || null })}>
+          {saving ? "Criando…" : "Criar área"}
+        </Button>
+      </div>
     </div>
   );
 }
