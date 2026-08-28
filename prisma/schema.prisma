@@ -2398,6 +2398,8 @@ model TeamAgreement {
   areaId         String?  @map("area_id") @db.Uuid
   kind           String   @default("comportamento") // comportamento | entrega
   text           String
+  description    String?  @map("description")
+  attachments    Json?
   createdBy      String?  @map("created_by") @db.Uuid
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")

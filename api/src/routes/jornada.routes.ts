@@ -1,7 +1,12 @@
 import { Router, type Response } from "express";
 import { z } from "zod";
+import multer from "multer";
+import path from "node:path";
+import fs from "node:fs";
+import crypto from "node:crypto";
 import { prisma } from "../prisma.js";
 import { requireAuth } from "../auth.js";
+import { env } from "../env.js";
 
 /**
  * Jornada C.O.R.E. — modelo transversal (Spec Jornada · caso Mariana).
@@ -457,6 +462,77 @@ jornadaRouter.post("/:orgId/jornada/pdi-snapshots", async (req, res) => {
 // ACORDOS DO TIME (Módulo O)
 // ============================================================
 
+type AgreementAttachment = {
+  id: string;
+  url: string;
+  path: string;
+  name: string;
+  originalName: string;
+  size: number;
+  mimeType: string;
+  uploadedAt: string;
+};
+
+// --- Upload de arquivos para acordos (PDF + imagens) ---
+const AGREEMENT_ALLOWED_MIME = new Set([
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/webp",
+  "image/gif",
+]);
+const AGREEMENT_MAX_FILES = 3;
+const AGREEMENT_MAX_SIZE = 10 * 1024 * 1024; // 10 MB por arquivo
+
+const agreementUploadStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    try {
+      const dir = path.join(env.UPLOADS_DIR, "agreements");
+      fs.mkdirSync(dir, { recursive: true });
+      cb(null, dir);
+    } catch (err) {
+      cb(err as Error, env.UPLOADS_DIR);
+    }
+  },
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase().slice(0, 10) || ".bin";
+    const safeExt = /^\.[a-z0-9]+$/.test(ext) ? ext : ".bin";
+    const id = crypto.randomBytes(12).toString("hex");
+    cb(null, `${Date.now()}-${id}${safeExt}`);
+  },
+});
+
+const agreementUpload = multer({
+  storage: agreementUploadStorage,
+  limits: { fileSize: AGREEMENT_MAX_SIZE },
+  fileFilter: (_req, file, cb) => {
+    if (!AGREEMENT_ALLOWED_MIME.has(file.mimetype)) {
+      return cb(new Error("Formato não suportado. Use PDF ou imagem (PNG, JPG, WEBP, GIF)."));
+    }
+    cb(null, true);
+  },
+});
+
+jornadaRouter.post("/:orgId/jornada/agreements/upload", (req, res) => {
+  agreementUpload.single("file")(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message ?? "Upload falhou" });
+    if (!req.file) return res.status(400).json({ error: "Arquivo ausente." });
+    const base = (env.PUBLIC_API_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
+    const attachment: AgreementAttachment = {
+      id: crypto.randomBytes(8).toString("hex"),
+      url: `${base}/uploads/agreements/${req.file.filename}`,
+      path: `/uploads/agreements/${req.file.filename}`,
+      name: req.file.filename,
+      originalName: req.file.originalname,
+      size: req.file.size,
+      mimeType: req.file.mimetype,
+      uploadedAt: new Date().toISOString(),
+    };
+    res.status(201).json(attachment);
+  });
+});
+
 jornadaRouter.get("/:orgId/jornada/agreements", async (req, res) => {
   const rows = await prisma.teamAgreement.findMany({
     where: { organizationId: req.params.orgId },
@@ -471,6 +547,8 @@ jornadaRouter.post("/:orgId/jornada/agreements", async (req, res) => {
       .object({
         kind: z.enum(["comportamento", "entrega"]).default("comportamento"),
         text: z.string().min(3),
+        description: z.string().optional().nullable(),
+        attachments: z.array(z.any()).max(AGREEMENT_MAX_FILES).optional().nullable(),
         teamId: z.string().uuid().optional().nullable(),
         areaId: z.string().uuid().optional().nullable(),
       })
@@ -480,6 +558,8 @@ jornadaRouter.post("/:orgId/jornada/agreements", async (req, res) => {
         organizationId: req.params.orgId,
         kind: data.kind,
         text: data.text,
+        description: data.description ?? null,
+        attachments: (data.attachments?.length ? data.attachments : null) as unknown as object,
         teamId: data.teamId ?? null,
         areaId: data.areaId ?? null,
         createdBy: req.userId!,
@@ -489,8 +569,48 @@ jornadaRouter.post("/:orgId/jornada/agreements", async (req, res) => {
   } catch (err) { badReq(res, err); }
 });
 
+jornadaRouter.patch("/:orgId/jornada/agreements/:id", async (req, res) => {
+  try {
+    const data = z
+      .object({
+        text: z.string().min(3).optional(),
+        description: z.string().optional().nullable(),
+        attachments: z.array(z.any()).max(AGREEMENT_MAX_FILES).optional().nullable(),
+      })
+      .parse(req.body);
+    const existing = await prisma.teamAgreement.findFirst({
+      where: { id: req.params.id, organizationId: req.params.orgId },
+    });
+    if (!existing) return res.status(404).json({ error: "Acordo não encontrado." });
+    const updated = await prisma.teamAgreement.update({
+      where: { id: existing.id },
+      data: {
+        ...(data.text !== undefined ? { text: data.text } : {}),
+        ...(data.description !== undefined ? { description: data.description ?? null } : {}),
+        ...(data.attachments !== undefined
+          ? { attachments: (data.attachments?.length ? data.attachments : null) as unknown as object }
+          : {}),
+      },
+    });
+    res.json(updated);
+  } catch (err) { badReq(res, err); }
+});
+
 jornadaRouter.delete("/:orgId/jornada/agreements/:id", async (req, res) => {
-  await prisma.teamAgreement.delete({ where: { id: req.params.id } }).catch(() => null);
+  const existing = await prisma.teamAgreement.findFirst({
+    where: { id: req.params.id, organizationId: req.params.orgId },
+  });
+  if (!existing) return res.status(404).end();
+  // Remove arquivos físicos (melhor esforço)
+  if (Array.isArray((existing.attachments as unknown) ?? null)) {
+    (existing.attachments as unknown as AgreementAttachment[]).forEach((a) => {
+      if (a.path) {
+        const abs = path.join(env.UPLOADS_DIR, a.path.replace(/^\/uploads\//, ""));
+        fs.promises.unlink(abs).catch(() => null);
+      }
+    });
+  }
+  await prisma.teamAgreement.delete({ where: { id: existing.id } }).catch(() => null);
   res.status(204).end();
 });
 // ============================================================
