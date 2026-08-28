@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CheckCircle2, Flag, Loader2, Sparkles, Target } from "lucide-react";
 import { api } from "@/lib/api";
 import { useCurrentOrg } from "@/lib/use-current-org";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Accordion,
   AccordionContent,
@@ -84,6 +86,7 @@ function PdiAutoPage() {
   const qc = useQueryClient();
   const [draftGoals, setDraftGoals] = useState<SuggestedGoal[]>([]);
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
+  const [cycleDeadline, setCycleDeadline] = useState(defaultDeadlineDate());
 
   const currentQ = useQuery<CurrentPdiResponse>({
     queryKey: ["consciencia", "pdi", "current", orgId],
@@ -114,9 +117,11 @@ function PdiAutoPage() {
           title: "Meu ciclo de evolução",
           focus: "Autodesenvolvimento do líder",
           summary: "Ciclo pessoal criado a partir do PDI sugerido do módulo Consciência.",
+          reviewAt: cycleDeadline ? localDateToIso(cycleDeadline) : null,
           goals: draftGoals.map((goal, index) => ({
             title: goal.title,
             action: goal.detail?.firstStep ?? goal.description,
+            dueAt: cycleDeadline ? localDateToIso(cycleDeadline) : null,
             evidence: goal.detail?.successSignal ?? `Evolução percebida no objetivo ${index + 1}`,
           })),
         },
@@ -129,6 +134,21 @@ function PdiAutoPage() {
       toast.success("Seu PDI foi salvo como ciclo pessoal.");
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Falha ao salvar o ciclo"),
+  });
+
+  const updateCycle = useMutation({
+    mutationFn: () =>
+      api(`/organization/${orgId}/pdis/${currentQ.data?.current?.id}`, {
+        method: "PATCH",
+        body: { reviewAt: cycleDeadline ? localDateToIso(cycleDeadline) : null },
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["consciencia", "pdi", "current", orgId] });
+      qc.invalidateQueries({ queryKey: ["consciencia", "me", orgId] });
+      qc.invalidateQueries({ queryKey: ["journey", orgId] });
+      toast.success("Prazo do ciclo atualizado.");
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Falha ao atualizar o prazo"),
   });
 
   const updateGoal = useMutation({
@@ -164,7 +184,7 @@ function PdiAutoPage() {
 
   const current = currentQ.data?.current ?? null;
   const summary = currentQ.data?.summary ?? null;
-  const allGoalsDone = !!current && current.goals.length > 0 && current.goals.every((goal) => goal.status === "concluido");
+  const allGoalsDone = !!current && current.goals.every((goal) => goal.status === "concluido");
   const hasDraft = draftGoals.length > 0;
   const canGenerate = !currentQ.isLoading && (!current || current.status !== "ativo");
   const statusLabel = useMemo(() => {
@@ -174,6 +194,16 @@ function PdiAutoPage() {
     if (current.status === "cancelado") return "Ciclo cancelado";
     return "Ciclo ativo";
   }, [current]);
+
+  useEffect(() => {
+    if (current?.reviewAt) {
+      setCycleDeadline(toDateInputValue(current.reviewAt));
+      return;
+    }
+    if (!current) {
+      setCycleDeadline(defaultDeadlineDate());
+    }
+  }, [current?.id, current?.reviewAt]);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -208,13 +238,27 @@ function PdiAutoPage() {
               {current ? "Gerar próximo PDI" : "Gerar PDI agora"}
             </Button>
             {hasDraft && (
-              <Button variant="outline" onClick={() => save.mutate()} disabled={save.isPending} className="gap-2">
+              <Button variant="outline" onClick={() => save.mutate()} disabled={save.isPending || !cycleDeadline} className="gap-2">
                 {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Target className="h-4 w-4" />}
                 Salvar como meu ciclo
               </Button>
             )}
           </div>
         </div>
+        {hasDraft && (
+          <div className="mt-4 grid gap-2 sm:max-w-xs">
+            <Label htmlFor="pdi-cycle-deadline">Concluir este ciclo até</Label>
+            <Input
+              id="pdi-cycle-deadline"
+              type="date"
+              value={cycleDeadline}
+              onChange={(e) => setCycleDeadline(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Esse prazo será salvo no ciclo e replicado como prazo inicial das metas.
+            </p>
+          </div>
+        )}
         {!canGenerate && (
           <div className="mt-4 rounded-xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-muted-foreground">
             Você já tem um ciclo ativo. Conclua este PDI antes de abrir um novo.
@@ -238,6 +282,9 @@ function PdiAutoPage() {
               <p className="mt-2 text-sm text-muted-foreground">
                 {current.summary ?? "Seu PDI salvo aparece aqui como compromisso real de evolução."}
               </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Prazo do ciclo: {current.reviewAt ? formatDate(current.reviewAt) : "a definir"}
+              </p>
             </div>
             <Button
               variant="outline"
@@ -249,6 +296,35 @@ function PdiAutoPage() {
               Concluir ciclo
             </Button>
           </div>
+          {current.status === "ativo" && (
+            <div className="mt-4 grid gap-3 rounded-xl border border-border bg-background/70 p-4 md:grid-cols-[minmax(0,220px)_auto] md:items-end">
+              <div className="space-y-2">
+                <Label htmlFor="current-pdi-deadline">Até quando quer concluir este ciclo?</Label>
+                <Input
+                  id="current-pdi-deadline"
+                  type="date"
+                  value={cycleDeadline}
+                  onChange={(e) => setCycleDeadline(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => updateCycle.mutate()}
+                  disabled={updateCycle.isPending}
+                >
+                  {updateCycle.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  Salvar prazo
+                </Button>
+              </div>
+            </div>
+          )}
+          {current.goals.length === 0 && current.status === "ativo" && (
+            <div className="mt-4 rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">
+              Este ciclo antigo ainda não tem metas registradas nessa estrutura. Você pode concluir o ciclo direto
+              quando fizer sentido, sem ficar travado.
+            </div>
+          )}
           {!allGoalsDone && current.status === "ativo" && (
             <div className="mt-4 rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">
               Marque todas as metas como concluídas para fechar este ciclo e liberar o próximo.
@@ -267,6 +343,9 @@ function PdiAutoPage() {
                     </div>
                     <div className="mt-2 font-medium text-foreground">{goal.title}</div>
                     {goal.action && <p className="mt-1 text-sm text-muted-foreground">{goal.action}</p>}
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Prazo: {goal.dueAt ? formatDate(goal.dueAt) : current.reviewAt ? formatDate(current.reviewAt) : "a definir"}
+                    </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {goal.status !== "em_andamento" && goal.status !== "concluido" && (
@@ -407,4 +486,22 @@ function labelSource(source: string) {
   if (source.startsWith("sabotage:")) return "Sabotadores";
   if (source.startsWith("risk:")) return "Risco declarado";
   return source;
+}
+
+function defaultDeadlineDate() {
+  const d = new Date();
+  d.setDate(d.getDate() + 30);
+  return toDateInputValue(d.toISOString());
+}
+
+function toDateInputValue(iso: string) {
+  return new Date(iso).toISOString().slice(0, 10);
+}
+
+function localDateToIso(value: string) {
+  return new Date(`${value}T23:59:59`).toISOString();
+}
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString("pt-BR");
 }
