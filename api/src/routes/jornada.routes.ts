@@ -548,6 +548,7 @@ jornadaRouter.post("/:orgId/jornada/agreements", async (req, res) => {
         kind: z.enum(["comportamento", "entrega"]).default("comportamento"),
         text: z.string().min(3),
         description: z.string().optional().nullable(),
+        dueAt: z.string().datetime().optional().nullable(),
         attachments: z.array(z.any()).max(AGREEMENT_MAX_FILES).optional().nullable(),
         teamId: z.string().uuid().optional().nullable(),
         areaId: z.string().uuid().optional().nullable(),
@@ -559,6 +560,7 @@ jornadaRouter.post("/:orgId/jornada/agreements", async (req, res) => {
         kind: data.kind,
         text: data.text,
         description: data.description ?? null,
+        dueAt: data.dueAt ? new Date(data.dueAt) : null,
         attachments: (data.attachments?.length ? data.attachments : null) as unknown as object,
         teamId: data.teamId ?? null,
         areaId: data.areaId ?? null,
@@ -575,6 +577,7 @@ jornadaRouter.patch("/:orgId/jornada/agreements/:id", async (req, res) => {
       .object({
         text: z.string().min(3).optional(),
         description: z.string().optional().nullable(),
+        dueAt: z.string().datetime().optional().nullable(),
         attachments: z.array(z.any()).max(AGREEMENT_MAX_FILES).optional().nullable(),
       })
       .parse(req.body);
@@ -587,6 +590,7 @@ jornadaRouter.patch("/:orgId/jornada/agreements/:id", async (req, res) => {
       data: {
         ...(data.text !== undefined ? { text: data.text } : {}),
         ...(data.description !== undefined ? { description: data.description ?? null } : {}),
+        ...(data.dueAt !== undefined ? { dueAt: data.dueAt ? new Date(data.dueAt) : null } : {}),
         ...(data.attachments !== undefined
           ? { attachments: (data.attachments?.length ? data.attachments : null) as unknown as object }
           : {}),

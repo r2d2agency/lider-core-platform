@@ -799,7 +799,7 @@ organizationRouter.get("/:orgId/agenda", async (req, res) => {
   const days = range === "day" ? 1 : range === "month" ? 30 : 7;
   const until = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
 
-  const [occurrences, delegations, decisions] = await Promise.all([
+  const [occurrences, delegations, decisions, agreements] = await Promise.all([
     prisma.ritualOccurrence.findMany({
       where: {
         ritual: { organizationId: req.params.orgId },
@@ -821,6 +821,13 @@ organizationRouter.get("/:orgId/agenda", async (req, res) => {
         organizationId: req.params.orgId,
         dueAt: { gte: now, lte: until },
         status: { notIn: ["done", "reverted"] },
+      },
+      orderBy: { dueAt: "asc" },
+    }),
+    prisma.teamAgreement.findMany({
+      where: {
+        organizationId: req.params.orgId,
+        dueAt: { gte: now, lte: until },
       },
       orderBy: { dueAt: "asc" },
     }),
@@ -851,6 +858,14 @@ organizationRouter.get("/:orgId/agenda", async (req, res) => {
       title: d.title,
       subtitle: "Decisão pendente",
       status: d.status,
+    })),
+    ...agreements.map((a) => ({
+      kind: "agreement" as const,
+      id: a.id,
+      at: a.dueAt!,
+      title: a.text,
+      subtitle: a.kind === "comportamento" ? "Acordo · Comportamento" : "Acordo · Entrega",
+      status: a.dueAt && a.dueAt < now ? "overdue" : "pending",
     })),
   ].sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
 

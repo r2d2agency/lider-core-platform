@@ -14,6 +14,7 @@ import {
   Sparkles,
   CheckCircle2,
   AlertTriangle,
+  Handshake,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/organization/agenda")({
@@ -21,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/app/organization/agenda")(
 });
 
 type Entry = {
-  kind: "ritual" | "delegation" | "decision";
+  kind: "ritual" | "delegation" | "decision" | "agreement";
   id: string;
   at: string;
   title: string;
@@ -64,8 +65,12 @@ function AgendaPage() {
 
   const kpis = useMemo(() => {
     const rituals = entries.filter((e) => e.kind === "ritual").length;
-    const late = entries.filter((e) => e.kind === "delegation" && (e.status === "overdue" || e.status === "late")).length;
-    return { commitments: entries.length, rituals, late };
+    const agreements = entries.filter((e) => e.kind === "agreement").length;
+    const late = entries.filter((e) =>
+      (e.kind === "delegation" || e.kind === "agreement") &&
+      (e.status === "overdue" || e.status === "late"),
+    ).length;
+    return { commitments: entries.length, rituals, agreements, late };
   }, [entries]);
 
   return (
@@ -133,11 +138,11 @@ function AgendaPage() {
       </section>
 
       {/* KPIs */}
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-4">
         <KpiTile
           icon={CalendarDays}
           value={kpis.commitments}
-          label={"Compromissos\nesta semana"}
+          label={"Compromissos\nno período"}
           tint="orange"
         />
         <KpiTile
@@ -145,6 +150,12 @@ function AgendaPage() {
           value={kpis.rituals}
           label={"Rituais\nagendados"}
           tint="violet"
+        />
+        <KpiTile
+          icon={Handshake}
+          value={kpis.agreements}
+          label={"Acordos\ncom prazo"}
+          tint="sky"
         />
         <KpiTile
           icon={kpis.late > 0 ? AlertTriangle : CheckCircle2}
@@ -185,7 +196,11 @@ function AgendaPage() {
 }
 
 function EventRow({ e, index }: { e: Entry; index: number }) {
-  const Icon = e.kind === "ritual" ? Workflow : e.kind === "delegation" ? ClipboardList : ScrollText;
+  const Icon =
+    e.kind === "ritual" ? Workflow :
+    e.kind === "delegation" ? ClipboardList :
+    e.kind === "agreement" ? Handshake :
+    ScrollText;
   // Alterna ícones com base no título quando parece 1:1 / reunião de equipe / indicadores
   const t = e.title.toLowerCase();
   const RealIcon =
@@ -291,12 +306,14 @@ function estimateDuration(e: Entry) {
   if (t.includes("check-in")) return "15min";
   if (t.includes("ritual")) return "45min";
   if (t.includes("reunião") || t.includes("reuniao")) return "1h";
+  if (e.kind === "agreement") return "Prazo";
   return "30min";
 }
 
 function eventTint(kind: Entry["kind"], i: number): { bg: string; fg: string } {
   if (kind === "ritual") return { bg: "bg-violet-100 dark:bg-violet-500/15", fg: "text-violet-600 dark:text-violet-300" };
   if (kind === "decision") return { bg: "bg-sky-100 dark:bg-sky-500/15", fg: "text-sky-600 dark:text-sky-300" };
+  if (kind === "agreement") return { bg: "bg-rose-100 dark:bg-rose-500/15", fg: "text-rose-600 dark:text-rose-300" };
   const alts = [
     { bg: "bg-emerald-100 dark:bg-emerald-500/15", fg: "text-emerald-600 dark:text-emerald-300" },
     { bg: "bg-accent/15", fg: "text-accent" },

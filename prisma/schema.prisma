@@ -2399,6 +2399,7 @@ model TeamAgreement {
   kind           String   @default("comportamento") // comportamento | entrega
   text           String
   description    String?  @map("description")
+  dueAt          DateTime? @map("due_at")
   attachments    Json?
   createdBy      String?  @map("created_by") @db.Uuid
   createdAt      DateTime @default(now()) @map("created_at")

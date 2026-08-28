@@ -16,6 +16,8 @@ import {
   X,
   ChevronDown,
   ChevronUp,
+  CalendarDays,
+  AlertCircle,
 } from "lucide-react";
 import { api, uploadFile } from "@/lib/api";
 import { useCurrentOrg } from "@/lib/use-current-org";
@@ -60,6 +62,7 @@ type Agreement = {
   kind: "comportamento" | "entrega";
   text: string;
   description: string | null;
+  dueAt: string | null;
   attachments: AgreementAttachment[] | null;
   createdAt: string;
 };
@@ -68,6 +71,25 @@ type DraftAttachment = Omit<AgreementAttachment, "uploadedAt"> & { uploading?: b
 
 const MAX_FILES = 3;
 const ACCEPTED = "application/pdf,image/png,image/jpeg,image/jpg,image/webp,image/gif";
+
+function formatDueDate(dueAt: string | null | undefined): { label: string; overdue: boolean; soon: boolean } | null {
+  if (!dueAt) return null;
+  const d = new Date(dueAt);
+  if (Number.isNaN(d.getTime())) return null;
+  const now = new Date();
+  const diffMs = d.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  const overdue = diffMs < 0;
+  const soon = !overdue && diffDays <= 7;
+  const datePart = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "2-digit" });
+  const timePart = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  let suffix = "";
+  if (overdue) suffix = diffDays === 0 ? "· atrasado hoje" : `· atrasado ${Math.abs(diffDays)}d`;
+  else if (diffDays === 0) suffix = "· hoje";
+  else if (diffDays === 1) suffix = "· amanhã";
+  else suffix = `· em ${diffDays}d`;
+  return { label: `${datePart} ${timePart} ${suffix}`, overdue, soon };
+}
 
 const KINDS = [
   {
@@ -204,6 +226,7 @@ function AttachmentList({
 type DraftState = {
   text: string;
   description: string;
+  dueAt: string;
   attachments: DraftAttachment[];
   expanded: boolean;
 };
@@ -213,8 +236,8 @@ function AgreementsPage() {
   const qc = useQueryClient();
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
   const [drafts, setDrafts] = useState<Record<string, DraftState>>({
-    comportamento: { text: "", description: "", attachments: [], expanded: false },
-    entrega: { text: "", description: "", attachments: [], expanded: false },
+    comportamento: { text: "", description: "", dueAt: "", attachments: [], expanded: false },
+    entrega: { text: "", description: "", dueAt: "", attachments: [], expanded: false },
   });
 
   const list = useQuery({
@@ -241,6 +264,7 @@ function AgreementsPage() {
           kind,
           text: drafts[kind].text.trim(),
           description: drafts[kind].description.trim() || null,
+          dueAt: drafts[kind].dueAt ? new Date(drafts[kind].dueAt).toISOString() : null,
           attachments: (drafts[kind].attachments.filter(
             (a) => !(a as DraftAttachment).uploading,
           ) as AgreementAttachment[]).length
@@ -249,8 +273,9 @@ function AgreementsPage() {
         },
       }),
     onSuccess: (_d, kind) => {
-      setDrafts((d) => ({ ...d, [kind]: { text: "", description: "", attachments: [], expanded: false } }));
+      setDrafts((d) => ({ ...d, [kind]: { text: "", description: "", dueAt: "", attachments: [], expanded: false } }));
       qc.invalidateQueries({ queryKey: ["agreements", orgId] });
+      qc.invalidateQueries({ queryKey: ["org", "agenda", orgId] });
       toast.success("Acordo registrado.");
     },
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Não foi possível salvar."),
@@ -259,7 +284,10 @@ function AgreementsPage() {
   const remove = useMutation({
     mutationFn: (id: string) =>
       api(`/organization/${orgId}/jornada/agreements/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["agreements", orgId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["agreements", orgId] });
+      qc.invalidateQueries({ queryKey: ["org", "agenda", orgId] });
+    },
   });
 
   function handleSelectFiles(kind: "comportamento" | "entrega", files: FileList | null) {
@@ -332,15 +360,18 @@ function AgreementsPage() {
   }
 
   const hasExtraFields = (kind: "comportamento" | "entrega") =>
-    drafts[kind].description.trim().length > 0 || drafts[kind].attachments.length > 0;
+    drafts[kind].description.trim().length > 0 ||
+    drafts[kind].attachments.length > 0 ||
+    drafts[kind].dueAt.length > 0;
 
   return (
     <div className="space-y-6 pb-6">
       <div className="rounded-2xl border border-border bg-card/60 p-5">
         <p className="text-sm text-muted-foreground">
           Os acordos são os combinados que sustentam a execução do time: comportamentos que todo mundo segue e
-          regras de entrega que não abrem mão. Cada acordo pode ter uma <b>descrição detalhada</b> e{" "}
-          <b>até {MAX_FILES} arquivos anexos</b> (PDF, PNG, JPG, WEBP ou GIF) para consulta online ou download.
+          regras de entrega que não abrem mão. Cada acordo pode ter uma <b>descrição detalhada</b>,{" "}
+          <b>prazo</b> (que aparece automaticamente na Agenda do líder), e <b>até {MAX_FILES} arquivos anexos</b>{" "}
+          (PDF, PNG, JPG, WEBP ou GIF) para consulta online ou download.
         </p>
       </div>
 
@@ -361,7 +392,7 @@ function AgreementsPage() {
                 </>
               ) : (
                 <>
-                  <ChevronDown className="h-3.5 w-3.5" /> Adicionar descrição / arquivos
+                  <ChevronDown className="h-3.5 w-3.5" /> Adicionar descrição / prazo / arquivos
                 </>
               )}
             </button>
@@ -383,39 +414,57 @@ function AgreementsPage() {
               )}
 
               <ul className="space-y-2.5">
-                {rows.map((a) => (
-                  <li
-                    key={a.id}
-                    className="space-y-2 rounded-xl border border-border/70 p-3.5 text-sm"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <div className="font-medium leading-snug">{a.text}</div>
-                        {a.description && (
-                          <p className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
-                            {a.description}
-                          </p>
-                        )}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => remove.mutate(a.id)}
-                        title="Remover acordo"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    {a.attachments && a.attachments.length > 0 && (
-                      <div className="rounded-lg bg-muted/30 p-2">
-                        <div className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                          Anexos · {a.attachments.length}
+                {rows.map((a) => {
+                  const due = formatDueDate(a.dueAt);
+                  return (
+                    <li
+                      key={a.id}
+                      className="space-y-2 rounded-xl border border-border/70 p-3.5 text-sm"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="font-medium leading-snug">{a.text}</div>
+                          {due && (
+                            <div
+                              className={
+                                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium " +
+                                (due.overdue
+                                  ? "border-destructive/40 bg-destructive/10 text-destructive"
+                                  : due.soon
+                                    ? "border-amber-300/50 bg-amber-50 text-amber-700 dark:border-amber-700/30 dark:bg-amber-950/40 dark:text-amber-300"
+                                    : "border-border bg-muted/40 text-muted-foreground")
+                              }
+                            >
+                              {due.overdue ? <AlertCircle className="h-3 w-3" /> : <CalendarDays className="h-3 w-3" />}
+                              {due.label}
+                            </div>
+                          )}
+                          {a.description && (
+                            <p className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
+                              {a.description}
+                            </p>
+                          )}
                         </div>
-                        <AttachmentList attachments={a.attachments} compact />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => remove.mutate(a.id)}
+                          title="Remover acordo"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                    )}
-                  </li>
-                ))}
+                      {a.attachments && a.attachments.length > 0 && (
+                        <div className="rounded-lg bg-muted/30 p-2">
+                          <div className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                            Anexos · {a.attachments.length}
+                          </div>
+                          <AttachmentList attachments={a.attachments} compact />
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
 
               <div className="space-y-2 rounded-xl border border-border/60 bg-muted/20 p-3">
@@ -428,6 +477,37 @@ function AgreementsPage() {
                   />
                   {draft.expanded && (
                     <>
+                      <div className="space-y-1.5">
+                        <div className="text-xs font-medium text-muted-foreground">
+                          Prazo / Data do acordo
+                        </div>
+                        <div className="flex items-center gap-2 rounded-md border border-input bg-background px-3">
+                          <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          <input
+                            type="datetime-local"
+                            className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                            value={draft.dueAt}
+                            onChange={(e) =>
+                              setDrafts((d) => ({ ...d, [key]: { ...d[key], dueAt: e.target.value } }))
+                            }
+                          />
+                          {draft.dueAt && (
+                            <button
+                              type="button"
+                              className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                              title="Limpar data"
+                              onClick={() =>
+                                setDrafts((d) => ({ ...d, [key]: { ...d[key], dueAt: "" } }))
+                              }
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          Ao definir uma data, o acordo aparece automaticamente na sua Agenda.
+                        </p>
+                      </div>
                       <div className="space-y-1.5">
                         <div className="text-xs font-medium text-muted-foreground">
                           Descrição detalhada (opcional)
@@ -507,10 +587,20 @@ function AgreementsPage() {
                 </div>
                 {hasExtraFields(key) && !draft.expanded && (
                   <div className="rounded-lg border border-dashed border-border/70 bg-background/50 px-2.5 py-1.5 text-[11px] text-muted-foreground">
+                    {draft.dueAt && (
+                      <>
+                        Prazo:{" "}
+                        {new Date(draft.dueAt).toLocaleString("pt-BR", {
+                          day: "2-digit",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        ·{" "}
+                      </>
+                    )}
                     {!!draft.description.trim() && <>Descrição preenchida · </>}
-                    {draft.attachments.length > 0 && <>
-                      {draft.attachments.length} anexo(s)
-                    </>}
+                    {draft.attachments.length > 0 && <>{draft.attachments.length} anexo(s)</>}
                   </div>
                 )}
               </div>
