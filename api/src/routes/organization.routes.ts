@@ -89,7 +89,7 @@ organizationRouter.param("orgId", async (req, res, next, orgId) => {
 // ============================================================
 organizationRouter.get("/:orgId/map", async (req, res) => {
   const orgId = req.params.orgId;
-  const [org, branches, areas, teams, memberships] = await Promise.all([
+  const [org, branches, areas, teams, memberships, tmProfiles] = await Promise.all([
     prisma.organization.findUnique({ where: { id: orgId } }),
     prisma.branch.findMany({ where: { organizationId: orgId }, orderBy: { name: "asc" } }),
     prisma.area.findMany({ where: { organizationId: orgId }, orderBy: { name: "asc" } }),
@@ -98,7 +98,9 @@ organizationRouter.get("/:orgId/map", async (req, res) => {
       where: { organizationId: orgId },
       include: { user: { include: { profile: true } } },
     }),
+    prisma.teamMemberProfile.findMany({ where: { organizationId: orgId } }),
   ]);
+  const roleTitleByMembership = new Map(tmProfiles.map((p) => [p.membershipId, p.roleTitle]));
   if (!org) return res.status(404).json({ error: "Organização não encontrada" });
 
   const membersByTeam = new Map<string, typeof memberships>();
