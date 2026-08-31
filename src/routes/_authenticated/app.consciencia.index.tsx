@@ -623,7 +623,7 @@ function JourneyRow({
     state: "done" | "current" | "todo";
     minutes: number;
     to: string;
-    search?: { step: "behavioral" | "hsh" | "sabotages" | "papel"; reset?: boolean };
+    search?: { step: "behavioral" | "hsh" | "sabotages" | "cerebral" | "papel"; showResults?: boolean; reset?: boolean };
   };
 }) {
   const Icon = step.icon;

@@ -16,7 +16,7 @@ export const Route = createFileRoute("/p/$token")({
 const API_URL = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
 
 type Question =
-  | { id: string; type: "scale"; label: string; minLabel?: string; maxLabel?: string; required?: boolean }
+  | { id: string; type: "scale"; label: string; min?: number; max?: number; minLabel?: string; maxLabel?: string; required?: boolean }
   | { id: string; type: "text"; label: string; placeholder?: string; required?: boolean }
   | { id: string; type: "choice"; label: string; options: string[]; multi?: boolean; required?: boolean }
   | { id: string; type: "disc_pair"; label: string; options: { text: string; dim: "D" | "I" | "S" | "C" }[] };
