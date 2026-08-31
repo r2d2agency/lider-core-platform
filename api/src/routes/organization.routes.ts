@@ -173,6 +173,244 @@ organizationRouter.get("/:orgId/map", async (req, res) => {
 });
 
 // ============================================================
+// 1b. IMPORTAÇÃO DE ORGANOGRAMA (CSV)
+// Colunas aceitas: filial, area, equipe, cargo, nome, email,
+// whatsapp, nivel (lider|colaborador), lider_email
+// ============================================================
+const ORG_IMPORT_TEMPLATE = [
+  "filial,area,equipe,cargo,nome,email,whatsapp,nivel,lider_email",
+  "Matriz,Comercial,Vendas Interna,Gerente Comercial,Ana Souza,ana@empresa.com,+5511999990000,lider,",
+  "Matriz,Comercial,Vendas Interna,Executivo de Vendas,Bruno Lima,bruno@empresa.com,+5511999990001,colaborador,ana@empresa.com",
+  "Matriz,Operações,Logística,Coordenador de Logística,Carla Dias,carla@empresa.com,,lider,",
+].join("\n");
+
+type ImportRow = {
+  branch: string;
+  area: string;
+  team: string;
+  roleTitle: string;
+  name: string;
+  email: string;
+  whatsapp: string;
+  level: "leader" | "collaborator";
+  leaderEmail: string;
+};
+
+function normalizeImportRows(rows: Record<string, string>[]) {
+  const pick = (r: Record<string, string>, keys: string[]) => {
+    for (const k of keys) if (r[k]) return r[k].trim();
+    return "";
+  };
+  const out: ImportRow[] = [];
+  const errors: string[] = [];
+  rows.forEach((r, i) => {
+    const email = pick(r, ["email", "e-mail", "email_corporativo"]).toLowerCase();
+    const name = pick(r, ["nome", "name", "colaborador", "pessoa"]);
+    const area = pick(r, ["area", "área", "departamento", "setor"]);
+    const team = pick(r, ["equipe", "time", "team", "celula", "célula"]);
+    const branch = pick(r, ["filial", "unidade", "branch"]);
+    const roleTitle = pick(r, ["cargo", "role", "posicao", "posição", "funcao", "função"]);
+    const whatsapp = pick(r, ["whatsapp", "celular", "telefone", "phone"]);
+    const levelRaw = pick(r, ["nivel", "nível", "tipo", "level"]).toLowerCase();
+    const leaderEmail = pick(r, ["lider_email", "líder_email", "email_lider", "gestor_email", "lider"]).toLowerCase();
+    if (!name && !email && !area && !team) return;
+    if (!area) {
+      errors.push(`Linha ${i + 2}: coluna "area" é obrigatória.`);
+      return;
+    }
+    if (name && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      errors.push(`Linha ${i + 2}: e-mail inválido ou ausente para "${name}".`);
+      return;
+    }
+    out.push({
+      branch,
+      area,
+      team,
+      roleTitle,
+      name,
+      email,
+      whatsapp,
+      level: /lider|líder|gestor|gerente|coord/.test(levelRaw) ? "leader" : "collaborator",
+      leaderEmail: leaderEmail.includes("@") ? leaderEmail : "",
+    });
+  });
+  return { rows: out, errors };
+}
+
+organizationRouter.get("/:orgId/map/import/template", (_req, res) => {
+  res.type("text/csv").send(ORG_IMPORT_TEMPLATE);
+});
+
+const importBodySchema = z.object({ csv: z.string().min(1), dryRun: z.boolean().default(false) });
+
+organizationRouter.post("/:orgId/map/import", async (req, res) => {
+  try {
+    const orgId = req.params.orgId;
+    const { csv, dryRun } = importBodySchema.parse(req.body);
+    const parsed = parseCsv(csv);
+    if (!parsed.length) return res.status(400).json({ error: "CSV vazio ou sem linhas de dados." });
+    const { rows, errors } = normalizeImportRows(parsed);
+    if (!rows.length) {
+      return res.status(400).json({ error: "Nenhuma linha válida encontrada.", errors });
+    }
+
+    const branchNames = Array.from(new Set(rows.map((r) => r.branch).filter(Boolean)));
+    const areaKeys = Array.from(new Set(rows.map((r) => `${r.branch}|||${r.area}`)));
+    const teamKeys = Array.from(new Set(rows.filter((r) => r.team).map((r) => `${r.branch}|||${r.area}|||${r.team}`)));
+    const roleTitles = Array.from(new Set(rows.map((r) => r.roleTitle).filter(Boolean)));
+    const people = rows.filter((r) => r.name && r.email);
+
+    const summary = {
+      branches: branchNames.length,
+      areas: areaKeys.length,
+      teams: teamKeys.length,
+      roles: roleTitles.length,
+      people: people.length,
+      leaders: people.filter((p) => p.level === "leader").length,
+      errors,
+      preview: rows.slice(0, 25),
+    };
+
+    if (dryRun) return res.json({ dryRun: true, ...summary });
+
+    // --- Filiais
+    const branchByName = new Map<string, string>();
+    for (const name of branchNames) {
+      const existing = await prisma.branch.findFirst({ where: { organizationId: orgId, name } });
+      const b = existing ?? (await prisma.branch.create({ data: { organizationId: orgId, name } }));
+      branchByName.set(name, b.id);
+    }
+
+    // --- Áreas
+    const areaByKey = new Map<string, string>();
+    for (const key of areaKeys) {
+      const [branchName, areaName] = key.split("|||");
+      const branchId = branchName ? branchByName.get(branchName) ?? null : null;
+      const existing = await prisma.area.findFirst({ where: { organizationId: orgId, name: areaName } });
+      const a = existing
+        ? await prisma.area.update({ where: { id: existing.id }, data: { branchId: existing.branchId ?? branchId } })
+        : await prisma.area.create({ data: { organizationId: orgId, name: areaName, branchId } });
+      areaByKey.set(key, a.id);
+    }
+
+    // --- Equipes
+    const teamByKey = new Map<string, string>();
+    for (const key of teamKeys) {
+      const [branchName, areaName, teamName] = key.split("|||");
+      const areaId = areaByKey.get(`${branchName}|||${areaName}`)!;
+      const existing = await prisma.team.findFirst({ where: { organizationId: orgId, areaId, name: teamName } });
+      const t = existing ?? (await prisma.team.create({ data: { organizationId: orgId, areaId, name: teamName } }));
+      teamByKey.set(key, t.id);
+    }
+
+    // --- Cargos
+    const roleByTitle = new Map<string, string>();
+    for (const title of roleTitles) {
+      const existing = await prisma.orgRole.findFirst({ where: { organizationId: orgId, title } });
+      const isLeader = rows.some((r) => r.roleTitle === title && r.level === "leader");
+      const role = existing
+        ? await prisma.orgRole.update({ where: { id: existing.id }, data: { isLeader: existing.isLeader || isLeader } })
+        : await prisma.orgRole.create({ data: { organizationId: orgId, title, isLeader, createdBy: req.userId! } });
+      roleByTitle.set(title, role.id);
+    }
+
+    // --- Pessoas (User + Profile + Membership + cargo)
+    const membershipByEmail = new Map<string, string>();
+    for (const p of people) {
+      let user = await prisma.user.findUnique({ where: { email: p.email }, include: { profile: true } });
+      if (!user) {
+        const tempPass = Math.random().toString(36).slice(2) + "A9!";
+        user = await prisma.user.create({
+          data: {
+            email: p.email,
+            passwordHash: await bcrypt.hash(tempPass, 10),
+            profile: { create: { fullName: p.name, whatsapp: p.whatsapp || null, jobTitle: p.roleTitle || null } },
+          },
+          include: { profile: true },
+        });
+      } else {
+        await prisma.profile.upsert({
+          where: { id: user.id },
+          update: {
+            fullName: user.profile?.fullName ?? p.name,
+            whatsapp: p.whatsapp || user.profile?.whatsapp || null,
+            jobTitle: p.roleTitle || user.profile?.jobTitle || null,
+          },
+          create: { id: user.id, fullName: p.name, whatsapp: p.whatsapp || null, jobTitle: p.roleTitle || null },
+        });
+      }
+
+      const areaId = areaByKey.get(`${p.branch}|||${p.area}`) ?? null;
+      const teamId = p.team ? teamByKey.get(`${p.branch}|||${p.area}|||${p.team}`) ?? null : null;
+      const branchId = p.branch ? branchByName.get(p.branch) ?? null : null;
+
+      const membership = await prisma.membership.upsert({
+        where: { userId_organizationId: { userId: user.id, organizationId: orgId } },
+        update: { areaId, teamId, branchId, role: p.level === "leader" ? "leader" : "collaborator" },
+        create: {
+          userId: user.id,
+          organizationId: orgId,
+          areaId,
+          teamId,
+          branchId,
+          role: p.level === "leader" ? "leader" : "collaborator",
+        },
+      });
+      membershipByEmail.set(p.email, membership.id);
+
+      await prisma.teamMemberProfile.upsert({
+        where: { membershipId: membership.id },
+        update: { roleTitle: p.roleTitle || null, updatedBy: req.userId! },
+        create: {
+          organizationId: orgId,
+          membershipId: membership.id,
+          roleTitle: p.roleTitle || null,
+          updatedBy: req.userId!,
+        },
+      });
+
+      const roleId = p.roleTitle ? roleByTitle.get(p.roleTitle) : null;
+      if (roleId) {
+        const exists = await prisma.roleAssignment.findFirst({ where: { roleId, membershipId: membership.id } });
+        if (!exists) await prisma.roleAssignment.create({ data: { roleId, membershipId: membership.id } });
+      }
+
+      // Líder da equipe
+      if (p.level === "leader" && teamId) {
+        await prisma.team.update({ where: { id: teamId }, data: { leaderMembershipId: membership.id } });
+      }
+    }
+
+    // --- Vínculo líder direto (2ª passada, já com todos os memberships criados)
+    let linkedLeaders = 0;
+    for (const p of people) {
+      if (!p.leaderEmail) continue;
+      const membershipId = membershipByEmail.get(p.email);
+      const leaderMembershipId = membershipByEmail.get(p.leaderEmail);
+      if (!membershipId || !leaderMembershipId) continue;
+      const leaderMembership = await prisma.membership.findUnique({ where: { id: leaderMembershipId } });
+      if (!leaderMembership) continue;
+      await prisma.membership.update({
+        where: { id: membershipId },
+        data: { directLeaderId: leaderMembership.userId },
+      });
+      linkedLeaders++;
+    }
+
+    await audit(req.userId, "org.map.import", "organization", orgId, {
+      ...summary,
+      preview: undefined,
+      linkedLeaders,
+    });
+
+    res.json({ ok: true, ...summary, linkedLeaders, preview: undefined });
+  } catch (err) {
+    return badReq(res, err);
+  }
+});
+
+
+// ============================================================
 // 2. AREAS — extensão (mission, objective, kpis, contextMd)
 // ============================================================
 const areaExtSchema = z.object({
