@@ -6,6 +6,8 @@ import { computeIndicatorSignals } from "./indicators.routes.js";
 import { computeCrossSignals } from "./consciencia.routes.js";
 import { notifyInApp } from "../lib/notifications.js";
 import { assertOrgAccess } from "../lib/org-access.js";
+import { parseCsv } from "../lib/csv.js";
+import bcrypt from "bcryptjs";
 
 /**
  * MÓDULO ORGANIZAÇÃO — base operacional da liderança.
