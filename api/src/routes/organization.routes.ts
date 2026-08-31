@@ -123,6 +123,8 @@ organizationRouter.get("/:orgId/map", async (req, res) => {
     email: m.user.email,
     avatar: m.user.profile?.avatarUrl ?? null,
     role: m.role,
+    roleTitle: roleTitleByMembership.get(m.id) ?? null,
+    directLeaderId: m.directLeaderId,
   });
 
   const areasTree = areas.map((a) => ({
